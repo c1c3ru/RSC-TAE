@@ -5,8 +5,8 @@ import { auth } from '../../services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';
 // Exemplo de uso no componente de registro
-import { validatePasswordStrength } from '../utils/validators';
-import { formatDate } from '../utils/helpers';
+import { validatePasswordStrength } from "../../utils/validators";
+import { formatDate } from "../../utils/helpers";
 
 export default function Register() {
   const [email, setEmail] = useState('');

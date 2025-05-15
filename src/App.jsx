@@ -1,25 +1,24 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Layout from './components/Layout/Header';
+import { BrowserRouter } from 'react-router-dom'
+import AppRoutes from './routes'
+import { AuthProvider } from './contexts/AuthContext'
+import Header from './components/Layout/Header'
+import Footer from './components/Layout/Footer'
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </Layout>
-      </AuthProvider>
-    </Router>
-  );
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-grow">
+            <AppRoutes />
+          </main>
+          <Footer />
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
