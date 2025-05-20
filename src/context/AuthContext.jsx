@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import supabase, { getSession, getCurrentUser } from '../utils/supabaseClient';
 
 // Create Auth context
 const AuthContext = createContext();
@@ -16,70 +17,197 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
   
-  // Check if user is logged in on component mount
+  // Check if user is logged in on component mount & setup session listener
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    // Get initial session
+    const initSession = async () => {
       try {
-        setCurrentUser(JSON.parse(storedUser));
+        // Get current session and user details
+        const session = await getSession();
+        setSession(session);
+        
+        if (session) {
+          // Get user data from our database
+          const { data: userData, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('email', session.user.email)
+            .single();
+            
+          if (!error && userData) {
+            setCurrentUser(userData);
+          } else if (session.user) {
+            // If we don't have user data in our table yet but have authenticated user
+            // Use basic info from auth
+            setCurrentUser({
+              id: session.user.id,
+              nome: session.user.user_metadata?.full_name || session.user.email,
+              email: session.user.email,
+              perfil: 'servidor' // Default role
+            });
+          }
+        }
       } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('user');
+        console.error('Error initializing session:', error);
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+
+    // Setup auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (event === 'SIGNED_IN') {
+          // Get user data from our database
+          const { data: userData, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('email', session.user.email)
+            .single();
+            
+          if (!error && userData) {
+            setCurrentUser(userData);
+          } else if (session.user) {
+            // If we don't have user data in our table yet
+            setCurrentUser({
+              id: session.user.id,
+              nome: session.user.user_metadata?.full_name || session.user.email,
+              email: session.user.email,
+              perfil: 'servidor' // Default role
+            });
+            
+            // Create user profile in our database
+            await createUserProfile(session.user);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setCurrentUser(null);
+        }
+      }
+    );
+    
+    initSession();
+    
+    // Cleanup auth listener on unmount
+    return () => {
+      if (authListener) authListener.subscription.unsubscribe();
+    };
   }, []);
   
-  // Login function
+  // Create user profile in our database if it doesn't exist
+  const createUserProfile = async (user) => {
+    if (!user) return;
+    
+    try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('email', user.email)
+        .single();
+      
+      if (!existingUser) {
+        // Insert new user
+        const { error } = await supabase
+          .from('usuarios')
+          .insert({
+            email: user.email,
+            nome: user.user_metadata?.full_name || user.email,
+            matricula: user.user_metadata?.matricula || '',
+            cargo: user.user_metadata?.cargo || '',
+            perfil: 'servidor',
+            data_cadastro: new Date()
+          });
+          
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+    }
+  };
+  
+  // Login with email and password
   const login = async (email, password) => {
-    // In a real application, this would make an API call
-    // For now, we'll simulate a successful login with mock data
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.user;
+  };
+  
+  // Login with Google
+  const loginWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/dashboard'
+      }
+    });
     
-    // Simulate server delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (error) {
+      throw new Error(error.message);
+    }
     
-    // Mock user data
-    const userData = {
-      id: 1,
-      nome: 'João Silva',
-      email: email,
-      matricula: 'MAT12345',
-      cargo: 'Analista Administrativo',
-      perfil: 'servidor'
-    };
-    
-    // Save user to localStorage and state
-    localStorage.setItem('user', JSON.stringify(userData));
-    setCurrentUser(userData);
-    
-    return userData;
+    return data;
   };
   
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('user');
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+    }
     setCurrentUser(null);
+    setSession(null);
   };
   
-  // Register function (would be implemented in a real app)
+  // Register function
   const register = async (userInfo) => {
-    // In a real app, this would make an API call
-    // For now, we'll just throw an error
-    throw new Error('Registro não implementado nesta versão de demonstração');
+    // Register with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: userInfo.email,
+      password: userInfo.password,
+      options: {
+        data: {
+          full_name: userInfo.nome,
+          matricula: userInfo.matricula,
+          cargo: userInfo.cargo
+        }
+      }
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    // Create user profile in our table
+    await createUserProfile(data.user);
+    
+    return data.user;
   };
   
-  // Forgot password function (would be implemented in a real app)
+  // Forgot password function
   const forgotPassword = async (email) => {
-    // In a real app, this would trigger a password reset email
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password'
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
     return { success: true, message: 'Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.' };
   };
   
   const value = {
     currentUser,
+    session,
     loading,
     login,
+    loginWithGoogle,
     logout,
     register,
     forgotPassword
