@@ -1060,6 +1060,3 @@ export const competencyItems = [
     categoria: 6
   }
 ];
-
-// Note: In a real implementation, this would contain all 87 items as specified in the requirements
-// The items above are just a sample subset to demonstrate the structure
