@@ -1,0 +1,326 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [registerMode, setRegisterMode] = useState(false);
+  const [message, setMessage] = useState('');
+  const [fadeIn, setFadeIn] = useState(false);
+  
+  // Registration form fields
+  const [registerName, setRegisterName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerMatricula, setRegisterMatricula] = useState('');
+  const [registerCargo, setRegisterCargo] = useState('');
+  
+  const { login, register, forgotPassword } = useAuth();
+  const navigate = useNavigate();
+  
+  // Animate component on mount
+  useEffect(() => {
+    setFadeIn(true);
+  }, []);
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    
+    if (forgotPasswordMode) {
+      if (!email) {
+        setError('Digite seu e-mail para recuperar a senha.');
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const result = await forgotPassword(email);
+        setMessage(result.message);
+        setLoading(false);
+      } catch (err) {
+        setError('Erro ao processar a solicitação. Tente novamente.');
+        setLoading(false);
+      }
+      return;
+    }
+    
+    if (registerMode) {
+      if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo) {
+        setError('Preencha todos os campos para realizar o cadastro.');
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        await register({
+          nome: registerName,
+          email: registerEmail,
+          password: registerPassword,
+          matricula: registerMatricula,
+          cargo: registerCargo
+        });
+        setMessage('Cadastro realizado com sucesso! Faça login para continuar.');
+        setRegisterMode(false);
+        setEmail(registerEmail);
+        setLoading(false);
+      } catch (err) {
+        setError('Erro ao realizar cadastro. Por favor, tente novamente.');
+        setLoading(false);
+      }
+      return;
+    }
+    
+    if (!email || !password) {
+      setError('Preencha todos os campos.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Credenciais inválidas. Tente novamente.');
+      setLoading(false);
+    }
+  };
+  
+  const toggleForgotPassword = () => {
+    setFadeIn(false);
+    setTimeout(() => {
+      setForgotPasswordMode(!forgotPasswordMode);
+      setRegisterMode(false);
+      setError('');
+      setMessage('');
+      setFadeIn(true);
+    }, 300);
+  };
+  
+  const toggleRegisterMode = () => {
+    setFadeIn(false);
+    setTimeout(() => {
+      setRegisterMode(!registerMode);
+      setForgotPasswordMode(false);
+      setError('');
+      setMessage('');
+      setFadeIn(true);
+    }, 300);
+  };
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
+      <div 
+        className={`max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+      >
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 relative overflow-hidden">
+          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
+          <div className="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
+          
+          <h1 className="text-white text-center text-3xl font-bold relative z-10">
+            Sistema de Cálculo de Pontuação
+          </h1>
+          <p className="text-blue-100 text-center mt-2 relative z-10">
+            Progressão Funcional
+          </p>
+        </div>
+        
+        <div className="p-8">
+          <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
+            {forgotPasswordMode ? 'Recuperar Senha' : registerMode ? 'Cadastre-se' : 'Login'}
+          </h2>
+          
+          {error && (
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 animate-pulse" role="alert">
+              <div className="flex">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="block sm:inline">{error}</span>
+              </div>
+            </div>
+          )}
+          
+          {message && (
+            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6" role="alert">
+              <div className="flex">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="block sm:inline">{message}</span>
+              </div>
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className={`transition-all duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+            {registerMode ? (
+              <>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-name">
+                    Nome Completo
+                  </label>
+                  <input
+                    id="register-name"
+                    type="text"
+                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="João Silva"
+                    value={registerName}
+                    onChange={(e) => setRegisterName(e.target.value)}
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-email">
+                    E-mail
+                  </label>
+                  <input
+                    id="register-email"
+                    type="email"
+                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="seu.email@exemplo.com"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-password">
+                    Senha
+                  </label>
+                  <input
+                    id="register-password"
+                    type="password"
+                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="********"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-matricula">
+                      Matrícula
+                    </label>
+                    <input
+                      id="register-matricula"
+                      type="text"
+                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="MAT12345"
+                      value={registerMatricula}
+                      onChange={(e) => setRegisterMatricula(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-cargo">
+                      Cargo
+                    </label>
+                    <select
+                      id="register-cargo"
+                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      value={registerCargo}
+                      onChange={(e) => setRegisterCargo(e.target.value)}
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="Analista Administrativo">Analista Administrativo</option>
+                      <option value="Técnico Administrativo">Técnico Administrativo</option>
+                      <option value="Assistente Administrativo">Assistente Administrativo</option>
+                      <option value="Outro">Outro</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+                    E-mail
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="seu.email@exemplo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                
+                {!forgotPasswordMode && (
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+                      Senha
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="********"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+            
+            <div className="flex items-center justify-between mb-6">
+              <button
+                type="submit"
+                className={`bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 w-full transform transition-all hover:scale-[1.02] shadow-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processando...
+                  </span>
+                ) : (
+                  <span>
+                    {forgotPasswordMode ? 'Enviar E-mail de Recuperação' : 
+                     registerMode ? 'Criar Conta' : 'Entrar'}
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            <div className="flex justify-center space-x-4 text-sm">
+              <button
+                type="button"
+                onClick={toggleForgotPassword}
+                className="text-blue-700 hover:text-blue-800 hover:underline focus:outline-none"
+              >
+                {forgotPasswordMode ? 'Voltar para o Login' : 'Esqueceu sua senha?'}
+              </button>
+              
+              <span className="text-gray-400">|</span>
+              
+              <button
+                type="button"
+                onClick={toggleRegisterMode}
+                className="text-blue-700 hover:text-blue-800 hover:underline focus:outline-none"
+              >
+                {registerMode ? 'Já tenho uma conta' : 'Criar nova conta'}
+              </button>
+            </div>
+          </form>
+          
+          <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
+            <p>© 2023 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
+            <p className="mt-1">Versão 1.0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;

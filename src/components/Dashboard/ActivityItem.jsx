@@ -1,15 +1,13 @@
 // src/components/Dashboard/ActivityItem.jsx
-import { useEffect, useState } from 'react';
-import DocumentUpload from './DocumentUpload';
+import { useState, useEffect } from 'react';
 import { useFirestore } from '../../hooks/useFirestore';
-import { calculatePoints } from '../../utils/helpers';
+import DocumentUpload from './DocumentUpload';
 
 export default function ActivityItem({ item }) {
-  const { data, saveData } = useFirestore('activities', item.id);
-  const [quantity, setQuantity] = useState(data?.quantity || 0);
-  const [documents, setDocuments] = useState(data?.documents || []);
+  const { data, loading, error, saveData } = useFirestore('activities', item.id);
+  const [quantity, setQuantity] = useState(0);
+  const [documents, setDocuments] = useState([]);
 
-  // Atualiza quando os dados mudam
   useEffect(() => {
     if (data) {
       setQuantity(data.quantity || 0);
@@ -18,12 +16,24 @@ export default function ActivityItem({ item }) {
   }, [data]);
 
   const handleSave = async () => {
-    await saveData({
-      quantity,
-      documents,
-      lastUpdated: new Date().toISOString()
-    });
+    try {
+      await saveData({
+        quantity,
+        documents,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Erro ao salvar atividade:', err);
+    }
   };
+
+  if (error) {
+    return (
+      <div className="p-4 mb-4 bg-red-50 border-l-4 border-red-500">
+        <p className="text-red-700">Erro ao carregar dados da atividade</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 mb-4 border rounded-lg bg-white shadow-sm">
@@ -42,22 +52,17 @@ export default function ActivityItem({ item }) {
             className="w-20 px-2 py-1 border rounded text-center"
           />
           <span className="text-sm font-medium">
-            Pontos: {calculatePoints(quantity, item.pointsPerUnit)}
+            Pontos: {quantity * (item.pointsPerUnit || 0)}
           </span>
         </div>
       </div>
 
-      {/* Seção de Upload */}
       <div className="mt-4">
-        <label className="block text-sm font-medium mb-2">
-          Documentos Comprobatórios
-        </label>
         <DocumentUpload 
           itemId={item.id}
           onUploadSuccess={(url) => setDocuments([...documents, url])}
         />
         
-        {/* Lista de documentos */}
         <div className="mt-2 space-y-1">
           {documents.map((doc, index) => (
             <a
@@ -76,9 +81,10 @@ export default function ActivityItem({ item }) {
 
       <button
         onClick={handleSave}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        disabled={loading}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
       >
-        Salvar Alterações
+        {loading ? 'Salvando...' : 'Salvar Alterações'}
       </button>
     </div>
   );

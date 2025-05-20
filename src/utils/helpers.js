@@ -6,6 +6,11 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+
+export const calculatePoints = (quantity, pointsPerUnit) => {
+  return quantity * pointsPerUnit;
+};
+
 // Formatação de datas localizada
 export const formatDate = (dateString, pattern = 'dd/MM/yyyy') => {
   try {

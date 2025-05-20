@@ -1,22 +1,21 @@
 // src/services/api.js
 import { db } from './firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
-export async function getActivitiesList() {
-  const querySnapshot = await getDocs(collection(db, 'activities'));
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-}
+export async function getActivitiesList(userId) {
+  try {
+    if (!userId) throw new Error('ID do usuário não fornecido');
 
-export async function updateUserData(uid, data) {
-  const userRef = doc(db, 'RSC', uid);
-  await setDoc(userRef, data, { merge: true });
-}
+    const activitiesRef = collection(db, 'activities');
+    const q = query(activitiesRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
 
-export async function getUserData(uid) {
-  const docRef = doc(db, 'RSC', uid);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data() : null;
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Erro no getActivitiesList:', error);
+    throw error;
+  }
 }

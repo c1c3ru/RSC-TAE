@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { db } from '../services/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
+// Exportação nomeada corrigida
 export function useFirestore(collectionName, docId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,3 +37,6 @@ export function useFirestore(collectionName, docId) {
 
   return { data, loading, error, saveData };
 }
+
+// Exportação padrão adicional (opcional)
+export default useFirestore;
