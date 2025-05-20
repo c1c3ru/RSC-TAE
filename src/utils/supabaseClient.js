@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize the Supabase client
 // In a production environment, these would be stored in environment variables
-const supabaseUrl = 'https://your-supabase-project-url.supabase.co';
-const supabaseAnonKey = 'your-supabase-anon-key';
+const supabaseUrl = 'https://nndkowmwzxfbonbldzsc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGtvd213enhmYm9uYmxkenNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTM1NTMsImV4cCI6MjA2MzA4OTU1M30.qu1ArbyDFJJZehbTU1cY4GldtaazTuiXcvAKAD82xnw';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

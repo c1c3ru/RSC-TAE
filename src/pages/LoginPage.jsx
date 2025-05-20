@@ -351,8 +351,8 @@ const LoginPage = () => {
           </form>
           
           <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
-            <p>© 2023 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
-            <p className="mt-1">Versão 1.0</p>
+            <p>© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
+            <p className="mt-1">Versão 1.0 Teste</p>
           </div>
         </div>
       </div>
