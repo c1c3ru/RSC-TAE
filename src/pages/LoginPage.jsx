@@ -357,7 +357,7 @@ const LoginPage = () => {
                       <option value="Técnico em Tecnologia da Informação">
                         Técnico em Tecnologia da Informação
                       </option>
-                      <option value="Outro">Outro</option>
+                      <option value="Outro">Outro/Cargos extintos</option>
                     </select>
                   </div>
                 </div>
