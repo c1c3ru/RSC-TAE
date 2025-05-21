@@ -46,6 +46,7 @@ const LoginPage = () => {
       } catch (err) {
         setError('Erro ao processar a solicitação. Tente novamente.');
         setLoading(false);
+        console.error('Forgot password error:', err);
       }
       return;
     }
@@ -58,19 +59,31 @@ const LoginPage = () => {
       
       try {
         setLoading(true);
-        await register({
+        
+        // Create user info object with all required fields
+        const userInfo = {
           nome: registerName,
           email: registerEmail,
           password: registerPassword,
           matricula: registerMatricula,
           cargo: registerCargo
-        });
-        setMessage('Cadastro realizado com sucesso! Faça login para continuar.');
-        setRegisterMode(false);
-        setEmail(registerEmail);
+        };
+        
+        // Call register function with proper error handling
+        const user = await register(userInfo);
+        
+        if (user) {
+          setMessage('Cadastro realizado com sucesso! Faça login para continuar.');
+          setRegisterMode(false);
+          setEmail(registerEmail);
+        } else {
+          setError('Não foi possível completar o cadastro. Tente novamente.');
+        }
+        
         setLoading(false);
       } catch (err) {
-        setError('Erro ao realizar cadastro. Por favor, tente novamente.');
+        console.error('Registration error details:', err);
+        setError(err.message || 'Erro ao realizar cadastro. Por favor, tente novamente.');
         setLoading(false);
       }
       return;
@@ -86,6 +99,7 @@ const LoginPage = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
+      console.error('Login error details:', err);
       setError('Credenciais inválidas. Tente novamente.');
       setLoading(false);
     }
@@ -111,6 +125,19 @@ const LoginPage = () => {
       setMessage('');
       setFadeIn(true);
     }, 300);
+  };
+  
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      await loginWithGoogle();
+      // No need to navigate, redirect is handled by Supabase
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError('Erro ao realizar login com Google. Por favor, tente novamente.');
+      setLoading(false);
+    }
   };
   
   return (
@@ -302,17 +329,7 @@ const LoginPage = () => {
                 
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      setLoading(true);
-                      setError('');
-                      await loginWithGoogle();
-                      // No need to navigate, redirect is handled by Supabase
-                    } catch (err) {
-                      setError('Erro ao realizar login com Google. Por favor, tente novamente.');
-                      setLoading(false);
-                    }
-                  }}
+                  onClick={handleGoogleLogin}
                   className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 shadow-sm mb-4 transform transition-all hover:scale-[1.02]"
                   disabled={loading}
                 >
