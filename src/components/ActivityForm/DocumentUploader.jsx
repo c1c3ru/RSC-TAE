@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import supabase from '../../utils/supabaseClient'; // Importa a instância do Supabase
 
 // --- Constantes de Configuração ---
 const VALID_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB em bytes
 const ACCEPTED_FILE_EXTENSIONS_STRING = '.pdf,.png,.jpg,.jpeg';
+const DEFAULT_BUCKET_NAME = 'documents'; // Defina o nome do seu bucket no Supabase Storage aqui
 
 // --- Componentes de Ícone (Idealmente em arquivos separados) ---
 const UploadCloudIcon = ({ className = "w-10 h-10 mb-3 text-gray-400" }) => (
@@ -48,8 +50,6 @@ const formatFileSize = (bytes) => {
 const DocumentUploader = ({
   documents = [],
   onDocumentsChange,
-  supabase, // Instância do cliente Supabase
-  bucketName, // Nome do bucket no Supabase Storage
   userId, // Opcional: para criar um caminho específico do usuário
 }) => {
   const [uploadingOverall, setUploadingOverall] = useState(false); // Para o estado geral de "Enviando..." na UI
@@ -59,16 +59,21 @@ const DocumentUploader = ({
   const handleFileChange = useCallback(async (event) => {
     if (!supabase) {
       console.error("Cliente Supabase não fornecido.");
-      setErrors({ general: "Configuração de upload ausente. Contate o suporte." });
+      setErrors({ general: "Configuração de upload ausente (cliente Supabase). Contate o suporte." });
       return;
     }
-    if (!bucketName) {
+    if (!DEFAULT_BUCKET_NAME) {
       console.error("Nome do bucket Supabase não fornecido.");
       setErrors({ general: "Configuração de bucket ausente. Contate o suporte." });
       return;
     }
+    if (!userId) {
+      console.error("ID do usuário não fornecido para upload.");
+      setErrors({ general: "ID do usuário ausente para upload de documentos. Faça login novamente." });
+      return;
+    }
 
-    setErrors({});
+    setErrors({}); // Limpa erros anteriores
     const selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length === 0) return;
 
@@ -88,7 +93,6 @@ const DocumentUploader = ({
     }));
 
     // Atualiza a UI imediatamente com os arquivos em validação/processamento
-    // O componente pai deve ser capaz de lidar com esses status intermediários
     onDocumentsChange([...documents, ...newClientSideDocuments]);
 
     const uploadPromises = newClientSideDocuments.map(async (doc) => {
@@ -105,38 +109,34 @@ const DocumentUploader = ({
       // Atualiza status para 'uploading'
       onDocumentsChange(prevDocs => prevDocs.map(d => d.id === doc.id ? { ...d, status: 'uploading' } : d));
 
-      // 2. Upload para o Supabase
+      // 2. Upload para o Supabase Storage
       const fileExt = doc.nome.split('.').pop();
-      const uniqueFileName = `${uuidv4()}.${fileExt}`;
-      const filePath = userId ? `${userId}/${uniqueFileName}` : uniqueFileName;
+      // Caminho no Supabase Storage: {userId}/{uniqueFileName}
+      const filePath = `${userId}/${uuidv4()}.${fileExt}`; 
 
       try {
         const { data, error: uploadError } = await supabase.storage
-          .from(bucketName)
+          .from(DEFAULT_BUCKET_NAME)
           .upload(filePath, doc.fileObject, {
             cacheControl: '3600', // Opcional: controle de cache
             upsert: false, // Não sobrescrever se já existir (improvável com uuid)
-            // Para rastrear o progresso (requer configuração adicional ou não é padrão em todas as versões/SDKs)
-            // onUploadProgress: (progressEvent) => {
-            //   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            //   onDocumentsChange(prevDocs => prevDocs.map(d => d.id === doc.id ? { ...d, progress: percentCompleted } : d));
-            // }
+            // Supabase Storage SDK atualmente não oferece onUploadProgress diretamente para .upload()
           });
 
         if (uploadError) {
-          console.error('Erro no upload para Supabase:', uploadError);
+          console.error('Erro no upload para Supabase Storage:', uploadError);
           setErrors(prev => ({ ...prev, [doc.id]: `Falha no upload: ${doc.nome}. ${uploadError.message}` }));
           return { ...doc, status: 'error', storagePath: filePath, fileObject: null };
         }
 
         if (data) {
           // Obter a URL pública
-          const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+          const { data: urlData } = supabase.storage.from(DEFAULT_BUCKET_NAME).getPublicUrl(filePath);
           return {
             ...doc,
             status: 'success',
-            storagePath: data.path, // ou filePath, dependendo da resposta exata
-            publicURL: urlData.publicUrl,
+            storagePath: data.path, // O caminho retornado pelo Supabase (geralmente o mesmo que filePath)
+            publicURL: urlData.publicUrl, // A URL pública para acesso
             fileObject: null, // Remove o objeto File após o upload
             progress: 100,
           };
@@ -169,14 +169,14 @@ const DocumentUploader = ({
     if (event.target) {
       event.target.value = null; // Limpa o input
     }
-  }, [supabase, bucketName, userId, documents, onDocumentsChange]);
+  }, [userId, documents, onDocumentsChange]);
 
 
   // Função para deletar um documento do Supabase Storage e da lista
   const handleDelete = useCallback(async (documentIdToDelete) => {
     if (!supabase) {
       console.error("Cliente Supabase não fornecido para exclusão.");
-      // Poderia definir um erro geral aqui se necessário
+      setErrors({ general: "Configuração de exclusão ausente (cliente Supabase). Contate o suporte." });
       return;
     }
 
@@ -193,11 +193,11 @@ const DocumentUploader = ({
 
     try {
       const { error: deleteError } = await supabase.storage
-        .from(bucketName)
+        .from(DEFAULT_BUCKET_NAME)
         .remove([docToDelete.storagePath]);
 
       if (deleteError) {
-        console.error('Erro ao deletar do Supabase:', deleteError);
+        console.error('Erro ao deletar do Supabase Storage:', deleteError);
         setErrors(prev => ({ ...prev, [documentIdToDelete]: `Falha ao deletar: ${docToDelete.nome}. ${deleteError.message}` }));
         // Reverter status se falhar
         onDocumentsChange(prevDocs => prevDocs.map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d)); // Reverte para status anterior
@@ -218,7 +218,7 @@ const DocumentUploader = ({
       setErrors(prev => ({ ...prev, [documentIdToDelete]: `Erro crítico ao deletar: ${docToDelete.nome}` }));
       onDocumentsChange(prevDocs => prevDocs.map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d));
     }
-  }, [supabase, bucketName, documents, onDocumentsChange]);
+  }, [documents, onDocumentsChange]); // Removido supabase e bucketName das dependências, pois são constantes
 
   return (
     <div className="bg-white p-6 shadow-lg rounded-xl border border-gray-200 w-full max-w-2xl mx-auto">
