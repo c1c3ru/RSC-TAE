@@ -1,5 +1,6 @@
+// src/components/Layout/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, NavLink } from 'react-router-dom'; // Added NavLink
 import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
@@ -11,23 +12,28 @@ const Header = () => {
   // Function to get the current page title
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/dashboard') return 'Dashboard';
-    if (path === '/activity/register') return 'Registrar Atividade';
-    if (path === '/activity/history') return 'Histórico de Atividades';
-    if (path === '/reports') return 'Relatórios';
-    if (path === '/profile') return 'Meu Perfil';
-    return 'Sistema de Cálculo de Pontuação';
+    // Map specific paths to titles. Using a switch or an object map can be cleaner for many routes.
+    switch (path) {
+      case '/dashboard':
+        return 'Dashboard';
+      case '/activity/register':
+        return 'Registrar Atividade';
+      case '/activity/history':
+        return 'Histórico de Atividades';
+      case '/reports':
+        return 'Relatórios';
+      case '/profile':
+        return 'Meu Perfil';
+      default:
+        return 'Sistema de Cálculo de Pontuação';
+    }
   };
   
   // Add scroll event listener to change header style on scroll
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      if (offset > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(offset > 10);
     };
     
     window.addEventListener('scroll', handleScroll);
@@ -39,7 +45,8 @@ const Header = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showDropdown && !event.target.closest('.user-dropdown')) {
+      // Check if the clicked element is outside the dropdown and its toggle button
+      if (showDropdown && event.target && !event.target.closest('.user-dropdown')) {
         setShowDropdown(false);
       }
     };
@@ -57,7 +64,7 @@ const Header = () => {
       <div className="container mx-auto px-6 flex justify-between items-center">
         <div className="flex items-center">
           <div className="font-bold text-xl md:text-2xl transition-all duration-300">
-            <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-opacity">
+            <Link to="/dashboard" className="flex items-center hover:opacity-80 transition-opacity" aria-label="Go to Dashboard">
               <svg xmlns="http://www.w3.org/2000/svg" 
                 className={`h-7 w-7 mr-2 transition-colors ${scrolled ? 'text-blue-600' : 'text-white'}`} 
                 viewBox="0 0 20 20" fill="currentColor"
@@ -85,6 +92,9 @@ const Header = () => {
               <button 
                 onClick={() => setShowDropdown(!showDropdown)} 
                 className={`rounded-full p-2 focus:outline-none focus:ring-2 transition-all transform hover:scale-105 ${scrolled ? 'bg-blue-100 focus:ring-blue-400' : 'bg-blue-800 focus:ring-blue-300'}`}
+                aria-haspopup="true" // Indicates that a dropdown menu is available
+                aria-expanded={showDropdown} // Indicates whether the dropdown is currently expanded or collapsed
+                aria-label="User menu"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -94,35 +104,53 @@ const Header = () => {
               {/* Dropdown menu with animation */}
               <div 
                 className={`absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50 transform transition-all duration-200 origin-top-right ${showDropdown ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+                role="menu" // Indicates that this is a menu
+                aria-orientation="vertical" // Indicates vertical orientation of the menu
+                aria-labelledby="user-menu-button" // Associates the menu with its trigger button
               >
                 <div className="px-4 py-2 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">{currentUser.nome}</p>
                   <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
                 </div>
                 
-                <Link to="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                <NavLink 
+                  to="/dashboard" 
+                  className={({ isActive }) => 
+                    `block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors 
+                    ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : ''}`
+                  }
+                  role="menuitem" // Indicates that this is a menu item
+                >
                   <span className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                     </svg>
                     Dashboard
                   </span>
-                </Link>
+                </NavLink>
                 
-                <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                <NavLink 
+                  to="/profile" 
+                  className={({ isActive }) => 
+                    `block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors 
+                    ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : ''}`
+                  }
+                  role="menuitem"
+                >
                   <span className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
                     </svg>
                     Meu Perfil
                   </span>
-                </Link>
+                </NavLink>
                 
                 <div className="border-t border-gray-100 mt-1"></div>
                 
                 <button 
                   onClick={logout} 
                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  role="menuitem"
                 >
                   <span className="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
