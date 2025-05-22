@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
+import { useAuth } from '../context/AuthContext'; // Importa useAuth para obter o usuário
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
   const [categoryFilter, setCategoryFilter] = useState(null);
-  
-  // Extract category filter from URL if present
+  const { currentUser, loading: authLoading } = useAuth(); // Obtém o usuário logado e o status de carregamento
+
+  // Extrai o filtro de categoria da URL se presente
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
@@ -15,7 +17,7 @@ const ActivityRegistrationPage = () => {
     }
   }, [location]);
   
-  // Define the categories
+  // Define as categorias (se não estiverem centralizadas em um arquivo de dados)
   const categories = [
     { id: 1, name: 'Atividades Administrativas', color: 'blue' },
     { id: 2, name: 'Experiência Profissional', color: 'red' },
@@ -25,7 +27,7 @@ const ActivityRegistrationPage = () => {
     { id: 6, name: 'Atividades de Ensino', color: 'orange' }
   ];
   
-  // Function to generate appropriate color classes based on category
+  // Função para gerar classes de cor apropriadas com base na categoria
   const getCategoryColorClasses = (categoryId, type) => {
     const category = categories.find(cat => cat.id === parseInt(categoryId));
     if (!category) return '';
@@ -70,7 +72,7 @@ const ActivityRegistrationPage = () => {
     <div className="container mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Atividade</h1>
       
-      {/* Category filter tabs */}
+      {/* Abas de filtro de categoria */}
       {categoryFilter && (
         <div className="mb-6">
           <div className={`p-4 rounded-lg ${getCategoryColorClasses(categoryFilter, 'bg')} ${getCategoryColorClasses(categoryFilter, 'border')}`}>
@@ -99,7 +101,7 @@ const ActivityRegistrationPage = () => {
         </div>
       )}
       
-      {/* Category selection buttons (when no filter is selected) */}
+      {/* Botões de seleção de categoria (quando nenhum filtro é selecionado) */}
       {!categoryFilter && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {categories.map(category => (
@@ -122,8 +124,15 @@ const ActivityRegistrationPage = () => {
         </div>
       )}
       
-      {/* Activity registration form */}
-      <ActivityRegistration categoryFilter={categoryFilter} />
+      {/* Formulário de registro de atividade - Passa o userId para o componente */}
+      {/* Renderiza ActivityRegistration apenas se o usuário estiver carregado e autenticado */}
+      {!authLoading && currentUser ? (
+        <ActivityRegistration categoryFilter={categoryFilter} userId={currentUser.id} />
+      ) : (
+        <p className="text-center text-gray-500">
+          {authLoading ? 'Carregando informações do usuário...' : 'Faça login para registrar atividades.'}
+        </p>
+      )}
     </div>
   );
 };

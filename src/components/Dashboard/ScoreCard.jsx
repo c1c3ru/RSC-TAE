@@ -3,13 +3,18 @@ import { useCompetency } from '../../context/CompetencyContext';
 import { useAuth } from '../../context/AuthContext';
 
 const ScoreCard = () => {
-  const { totalScore, nextProgressionScore } = useCompetency();
+  // Desestrutura totalScore, nextProgressionScore e lastCalculationDate (assumindo que foi adicionado ao contexto)
+  const { totalScore, nextProgressionScore, lastCalculationDate } = useCompetency();
   const { currentUser } = useAuth();
   
-  // Calculate progress percentage with caps at 100%
+  // Calcula a porcentagem de progresso, limitando a 100%
   const progressPercentage = Math.min((totalScore / nextProgressionScore) * 100, 100);
   
-  // Format dates
+  /**
+   * Formata uma string de data para exibição no formato localizado.
+   * @param {string} dateString - A string de data a ser formatada.
+   * @returns {string} A data formatada ou 'N/A' se a string for vazia.
+   */
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -23,13 +28,23 @@ const ScoreCard = () => {
       </div>
       <div className="p-6">
         <div className="flex justify-between items-center mb-2">
-          <div className="text-4xl font-bold text-blue-700">{totalScore.toFixed(1)}</div>
-          <div className="bg-blue-100 text-blue-800 text-sm font-medium rounded-full px-3 py-1">
+          {/* Animação sutil para o totalScore quando ele muda */}
+          <div 
+            className="text-4xl font-bold text-blue-700 transition-all duration-500 ease-out"
+            // Adicionar uma key para forçar a re-renderização e animação em caso de mudança
+            key={totalScore} 
+          >
+            {totalScore.toFixed(1)}
+          </div>
+          <div 
+            className="bg-blue-100 text-blue-800 text-sm font-medium rounded-full px-3 py-1"
+            title="Pontuação necessária para a próxima etapa da progressão funcional." // Tooltip para clareza
+          >
             Meta: {nextProgressionScore} pontos
           </div>
         </div>
         
-        {/* Progress bar */}
+        {/* Barra de progresso */}
         <div className="w-full bg-gray-200 rounded-full h-2.5 my-4 dark:bg-gray-700">
           <div 
             className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
@@ -43,7 +58,7 @@ const ScoreCard = () => {
             : 'Pontuação suficiente para a progressão!'}
         </div>
         
-        {/* User details */}
+        {/* Detalhes do usuário */}
         <div className="border-t border-gray-100 pt-4 mt-2">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -60,7 +75,8 @@ const ScoreCard = () => {
             </div>
             <div>
               <p className="text-gray-500">Último cálculo</p>
-              <p className="font-medium">{formatDate(new Date())}</p>
+              {/* Usa lastCalculationDate do contexto, com fallback para a data atual */}
+              <p className="font-medium">{formatDate(lastCalculationDate || new Date())}</p>
             </div>
           </div>
         </div>

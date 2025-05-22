@@ -1,5 +1,6 @@
+// src/components/Layout/Sidebar.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom'; // Changed Link to NavLink
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
@@ -47,15 +48,64 @@ const Sidebar = () => {
     }
   ];
 
-  // Categories with their colors
+  // Categories with their colors for dynamic styling
   const categories = [
-    { name: 'Atividades Administrativas', color: 'blue' },
-    { name: 'Experiência Profissional', color: 'red' },
-    { name: 'Formação e Capacitação', color: 'green' },
-    { name: 'Produção Científica', color: 'yellow' },
-    { name: 'Participação em Eventos', color: 'purple' },
-    { name: 'Atividades de Ensino', color: 'orange' }
+    { id: 1, name: 'Atividades Administrativas', baseColor: 'blue' },
+    { id: 2, name: 'Experiência Profissional', baseColor: 'red' },
+    { id: 3, name: 'Formação e Capacitação', baseColor: 'green' },
+    { id: 4, name: 'Produção Científica', baseColor: 'yellow' },
+    { id: 5, name: 'Participação em Eventos', baseColor: 'purple' },
+    { id: 6, name: 'Atividades de Ensino', baseColor: 'orange' }
   ];
+
+  // Function to get Tailwind color classes dynamically
+  const getCategoryColorClasses = (baseColor, type) => {
+    const colorMap = {
+      blue: {
+        bg: 'bg-blue-50',
+        text: 'text-blue-700',
+        hoverBg: 'hover:bg-blue-100',
+        hoverText: 'hover:text-blue-800',
+        dot: 'bg-blue-500'
+      },
+      red: {
+        bg: 'bg-red-50',
+        text: 'text-red-700',
+        hoverBg: 'hover:bg-red-100',
+        hoverText: 'hover:text-red-800',
+        dot: 'bg-red-500'
+      },
+      green: {
+        bg: 'bg-green-50',
+        text: 'text-green-700',
+        hoverBg: 'hover:bg-green-100',
+        hoverText: 'hover:text-green-800',
+        dot: 'bg-green-500'
+      },
+      yellow: {
+        bg: 'bg-yellow-50',
+        text: 'text-yellow-700',
+        hoverBg: 'hover:bg-yellow-100',
+        hoverText: 'hover:text-yellow-800',
+        dot: 'bg-yellow-500'
+      },
+      purple: {
+        bg: 'bg-purple-50',
+        text: 'text-purple-700',
+        hoverBg: 'hover:bg-purple-100',
+        hoverText: 'hover:text-purple-800',
+        dot: 'bg-purple-500'
+      },
+      orange: {
+        bg: 'bg-orange-50',
+        text: 'text-orange-700',
+        hoverBg: 'hover:bg-orange-100',
+        hoverText: 'hover:text-orange-800',
+        dot: 'bg-orange-500'
+      }
+    };
+    return colorMap[baseColor]?.[type] || '';
+  };
 
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
@@ -65,36 +115,42 @@ const Sidebar = () => {
   return (
     <aside 
       className={`fixed inset-y-0 left-0 z-10 bg-white shadow-lg pt-16 border-r transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}
+      aria-label="Sidebar for navigation"
     >
       {/* Toggle button */}
       <button 
         onClick={toggleSidebar} 
         className={`absolute top-20 -right-3 bg-white border border-gray-200 rounded-full p-1 shadow-md z-20 transition-transform hover:scale-110 ${collapsed ? 'rotate-180' : ''}`}
-        aria-label="Toggle sidebar"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-expanded={collapsed}
+        aria-controls="sidebar-menu"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-700" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
         </svg>
       </button>
 
-      <div className="overflow-y-auto h-full custom-scrollbar">
+      <div id="sidebar-menu" className="overflow-y-auto h-full custom-scrollbar">
         <nav className="px-2 py-2">
           <ul className="space-y-2">
             {navItems.map((item, index) => (
               <li key={index}>
-                <Link
+                <NavLink
                   to={item.path}
-                  className={`flex items-center px-3 py-2 rounded-lg transition-all duration-300 ${collapsed ? 'justify-center' : ''} ${
-                    location.pathname === item.path
-                      ? 'bg-blue-100 text-blue-700'
+                  className={({ isActive }) => 
+                    `flex items-center px-3 py-2 rounded-lg transition-all duration-300 
+                    ${collapsed ? 'justify-center' : ''} 
+                    ${isActive 
+                      ? 'bg-blue-100 text-blue-700' 
                       : 'text-gray-700 hover:bg-gray-100 hover:scale-[1.02]'
-                  }`}
+                    }`
+                  }
                 >
                   <span className={collapsed ? '' : 'mr-3'}>{item.icon}</span>
                   {!collapsed && (
                     <span className="whitespace-nowrap transition-opacity duration-200">{item.title}</span>
                   )}
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -105,6 +161,7 @@ const Sidebar = () => {
           <button
             onClick={logout}
             className={`w-full flex items-center px-3 py-2 rounded-lg transition-all duration-300 ${collapsed ? 'justify-center' : ''} text-gray-700 hover:bg-red-50 hover:text-red-700 hover:scale-[1.02]`}
+            aria-label="Sair da conta"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${collapsed ? '' : 'mr-3'}`} viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 8H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
@@ -120,25 +177,24 @@ const Sidebar = () => {
               Categorias
             </h5>
             <ul className="space-y-1">
-              {categories.map((category, idx) => {
-                const colorClasses = {
-                  blue: 'hover:bg-blue-50 hover:text-blue-700',
-                  red: 'hover:bg-red-50 hover:text-red-700',
-                  green: 'hover:bg-green-50 hover:text-green-700',
-                  yellow: 'hover:bg-yellow-50 hover:text-yellow-700',
-                  purple: 'hover:bg-purple-50 hover:text-purple-700',
-                  orange: 'hover:bg-orange-50 hover:text-orange-700',
-                };
-                
+              {categories.map((category) => {
+                const isActiveCategory = location.pathname === '/activity/register' && 
+                                         new URLSearchParams(location.search).get('category') === category.id.toString();
                 return (
-                  <li key={idx} className="transform transition hover:translate-x-1">
-                    <Link
-                      to={`/activity/register?category=${idx + 1}`}
-                      className={`flex items-center px-3 py-1.5 text-sm text-gray-700 rounded-md ${colorClasses[category.color]}`}
+                  <li key={category.id} className="transform transition hover:translate-x-1">
+                    <NavLink
+                      to={`/activity/register?category=${category.id}`}
+                      className={({ isActive }) => 
+                        `flex items-center px-3 py-1.5 text-sm rounded-md 
+                        ${isActiveCategory 
+                          ? getCategoryColorClasses(category.baseColor, 'bg') + ' ' + getCategoryColorClasses(category.baseColor, 'text')
+                          : 'text-gray-700 ' + getCategoryColorClasses(category.baseColor, 'hoverBg') + ' ' + getCategoryColorClasses(category.baseColor, 'hoverText')
+                        }`
+                      }
                     >
-                      <span className={`w-2 h-2 rounded-full bg-${category.color}-500 mr-2`}></span>
+                      <span className={`w-2 h-2 rounded-full mr-2 ${getCategoryColorClasses(category.baseColor, 'dot')}`}></span>
                       {category.name}
-                    </Link>
+                    </NavLink>
                   </li>
                 );
               })}
@@ -156,8 +212,9 @@ const Sidebar = () => {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(0, 0, 0, 0.1);
           border-radius: 10px;
+          transition: all 0.3s;
+          background-color: rgba(0, 0, 0, 0.1);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background-color: rgba(0, 0, 0, 0.2);
