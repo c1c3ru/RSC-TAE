@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ScoreCard from '../components/Dashboard/ScoreCard';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import ActivityList from '../components/Tables/ActivityList';
@@ -10,6 +10,9 @@ const DashboardPage = () => {
   const { currentUser } = useAuth(); // Get currentUser from AuthContext
   const [showAllActivities, setShowAllActivities] = useState(false);
   
+   useEffect(() => {
+    console.log('DashboardPage mounted.');
+  }, []);
   // Get only the 5 most recent activities for the dashboard preview
   const recentActivities = activities
     .sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro))
