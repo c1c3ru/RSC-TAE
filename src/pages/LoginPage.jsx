@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [registerMode, setRegisterMode] = useState(false);
   const [message, setMessage] = useState('');
-  const [fadeIn, setFadeIn] = useState(false);
+  const [formFadeIn, setFormFadeIn] = useState(false); // Renamed for clarity
   
   // Registration form fields
   const [registerName, setRegisterName] = useState('');
@@ -24,7 +24,7 @@ const LoginPage = () => {
   
   // Animate component on mount
   useEffect(() => {
-    setFadeIn(true);
+    setFormFadeIn(true);
   }, []);
   
   const handleSubmit = async (e) => {
@@ -34,7 +34,7 @@ const LoginPage = () => {
     
     if (forgotPasswordMode) {
       if (!email) {
-        setError('Digite seu e-mail para recuperar a senha.');
+        setError('Por favor, digite seu e-mail para recuperar a senha.');
         return;
       }
       
@@ -44,7 +44,7 @@ const LoginPage = () => {
         setMessage(result.message);
       } catch (err) {
         console.error("Password recovery error:", err);
-        setError('Erro ao processar a solicitação. Tente novamente.');
+        setError('Erro ao processar a solicitação. Por favor, tente novamente.');
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ const LoginPage = () => {
     
     if (registerMode) {
       if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo) {
-        setError('Preencha todos os campos para realizar o cadastro.');
+        setError('Por favor, preencha todos os campos para realizar o cadastro.');
         return;
       }
       
@@ -70,7 +70,7 @@ const LoginPage = () => {
         const user = await register(userInfo);
         
         if (user) {
-          setMessage('Cadastro realizado com sucesso! Verifique seu login para confirmar e continuar.');
+          setMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar e fazer login.');
           setRegisterMode(false);
           setEmail(registerEmail);
           
@@ -85,7 +85,6 @@ const LoginPage = () => {
         }
       } catch (err) {
         console.error("Registration error in component:", err);
-        // Show more specific error message if available
         setError(err.message || 'Erro ao realizar cadastro. Por favor, tente novamente.');
       } finally {
         setLoading(false);
@@ -94,7 +93,7 @@ const LoginPage = () => {
     }
     
     if (!email || !password) {
-      setError('Preencha todos os campos.');
+      setError('Por favor, preencha todos os campos.');
       return;
     }
     
@@ -104,30 +103,30 @@ const LoginPage = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error("Login error in component:", err);
-      setError('Credenciais inválidas. Tente novamente.');
+      setError('Credenciais inválidas. Por favor, tente novamente.');
       setLoading(false);
     }
   };
   
   const toggleForgotPassword = () => {
-    setFadeIn(false);
+    setFormFadeIn(false);
     setTimeout(() => {
       setForgotPasswordMode(!forgotPasswordMode);
       setRegisterMode(false);
       setError('');
       setMessage('');
-      setFadeIn(true);
+      setFormFadeIn(true);
     }, 300);
   };
   
   const toggleRegisterMode = () => {
-    setFadeIn(false);
+    setFormFadeIn(false);
     setTimeout(() => {
       setRegisterMode(!registerMode);
       setForgotPasswordMode(false);
       setError('');
       setMessage('');
-      setFadeIn(true);
+      setFormFadeIn(true);
     }, 300);
   };
   
@@ -149,7 +148,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
       <div 
-        className={`max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+        className={`max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${formFadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
       >
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
@@ -169,28 +168,28 @@ const LoginPage = () => {
           </h2>
           
           {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 animate-pulse" role="alert">
-              <div className="flex">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 animate-shake" role="alert">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/215/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                <span className="block sm:inline">{error}</span>
+                <span className="block sm:inline font-medium">{error}</span>
               </div>
             </div>
           )}
           
           {message && (
-            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6" role="alert">
-              <div className="flex">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6 animate-fade-in" role="alert">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/215/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="block sm:inline">{message}</span>
+                <span className="block sm:inline font-medium">{message}</span>
               </div>
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className={`transition-all duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
+          <form onSubmit={handleSubmit} className={`transition-opacity duration-500 ${formFadeIn ? 'opacity-100' : 'opacity-0'}`}>
             {registerMode ? (
               <>
                 <div className="mb-4">
@@ -200,7 +199,7 @@ const LoginPage = () => {
                   <input
                     id="register-name"
                     type="text"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="form-input"
                     placeholder="João Silva"
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
@@ -214,7 +213,7 @@ const LoginPage = () => {
                   <input
                     id="register-email"
                     type="email"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="form-input"
                     placeholder="seu.email@exemplo.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
@@ -228,7 +227,7 @@ const LoginPage = () => {
                   <input
                     id="register-password"
                     type="password"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="form-input"
                     placeholder="********"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
@@ -243,7 +242,7 @@ const LoginPage = () => {
                     <input
                       id="register-matricula"
                       type="text"
-                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="form-input"
                       placeholder="MAT12345"
                       value={registerMatricula}
                       onChange={(e) => setRegisterMatricula(e.target.value)}
@@ -255,7 +254,7 @@ const LoginPage = () => {
                     </label>
                     <select
                       id="register-cargo"
-                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="form-input"
                       value={registerCargo}
                       onChange={(e) => setRegisterCargo(e.target.value)}
                     >
@@ -277,7 +276,7 @@ const LoginPage = () => {
                   <input
                     id="email"
                     type="email"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="form-input"
                     placeholder="seu.email@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -292,7 +291,7 @@ const LoginPage = () => {
                     <input
                       id="password"
                       type="password"
-                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="form-input"
                       placeholder="********"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -352,7 +351,7 @@ const LoginPage = () => {
               </>
             )}
             
-            <div className="flex justify-center space-x-4 text-sm">
+            <div className="flex justify-center space-x-4 text-sm mt-4">
               <button
                 type="button"
                 onClick={toggleForgotPassword}
@@ -374,11 +373,35 @@ const LoginPage = () => {
           </form>
           
           <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
-            <p>© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
-            <p className="mt-1">Versão 1.0 Teste</p>
+            <p className="mb-1">© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
+            <p>Versão 1.0 Teste</p>
           </div>
         </div>
       </div>
+
+      {/* Tailwind CSS Custom Styles for form inputs and animations */}
+      <style jsx>{`
+        .form-input {
+          @apply shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };

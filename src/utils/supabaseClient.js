@@ -7,8 +7,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
 
 // Verificação básica para garantir que as variáveis foram carregadas
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Erro: Variáveis de ambiente VITE_SUPABASE_URL ou VITE_SUPABASE_KEY não estão definidas. Verifique seu arquivo .env.');
+let supabaseInstance = null;
+if (supabaseUrl && supabaseAnonKey) {
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  console.error('Erro: Variáveis de ambiente VITE_SUPABASE_URL ou VITE_SUPABASE_KEY não estão definidas. O cliente Supabase não será inicializado.');
+  // Opcional: Você pode lançar um erro ou retornar um cliente "mock" para evitar que o aplicativo trave
+  // throw new Error('Variáveis de ambiente Supabase ausentes.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -20,7 +25,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const getSession = async () => {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
-    console.error('Erro ao buscar a sessão:', error);
+    console.error('Erro ao buscar a sessão:', error.message);
     return null;
   }
   return data.session;

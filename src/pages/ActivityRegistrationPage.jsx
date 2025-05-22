@@ -1,35 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
+import ActivityRegistration from '../components/ActivityForm/ActivityRegistration'; // This component will contain the main form logic
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
   const [categoryFilter, setCategoryFilter] = useState(null);
   
-  // Extract category filter from URL if present
+  // Define categories with IDs and colors for mapping
+  const categories = [
+    { id: 1, name: 'Atividades Administrativas', color: 'blue', description: 'Fiscalização de contratos, participação em comissões e atividades de gestão.' },
+    { id: 2, name: 'Experiência Profissional', color: 'red', description: 'Tempo de serviço, cargos e funções ocupadas.' },
+    { id: 3, name: 'Formação e Capacitação', color: 'green', description: 'Cursos, titulação acadêmica e certificações.' },
+    { id: 4, name: 'Produção Científica', color: 'yellow', description: 'Publicações, patentes e desenvolvimento de sistemas.' },
+    { id: 5, name: 'Participação em Eventos', color: 'purple', description: 'Organização de eventos e participação em projetos.' },
+    { id: 6, name: 'Atividades de Ensino', color: 'orange', description: 'Orientações, tutorias e atividades de ensino.' },
+  ];
+
+  // Effect to extract category filter from URL on component mount or URL change
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
-    if (category) {
+    // Ensure the category is a valid number and corresponds to an existing category
+    if (category && categories.some(cat => cat.id === parseInt(category))) {
       setCategoryFilter(category);
+    } else {
+      setCategoryFilter(null); // Clear invalid or non-existent category filters
     }
-  }, [location]);
-  
-  // Define the categories
-  const categories = [
-    { id: 1, name: 'Atividades Administrativas', color: 'blue' },
-    { id: 2, name: 'Experiência Profissional', color: 'red' },
-    { id: 3, name: 'Formação e Capacitação', color: 'green' },
-    { id: 4, name: 'Produção Científica', color: 'yellow' },
-    { id: 5, name: 'Participação em Eventos', color: 'purple' },
-    { id: 6, name: 'Atividades de Ensino', color: 'orange' }
-  ];
-  
-  // Function to generate appropriate color classes based on category
-  const getCategoryColorClasses = (categoryId, type) => {
+  }, [location, categories]);
+
+  // Function to determine CSS classes based on category color
+  const getCategoryColorClasses = useCallback((categoryId, type) => {
     const category = categories.find(cat => cat.id === parseInt(categoryId));
-    if (!category) return '';
-    
+    if (!category) return ''; // Return empty string if category not found
+
     const colorMap = {
       blue: {
         bg: 'bg-blue-50',
@@ -63,66 +66,57 @@ const ActivityRegistrationPage = () => {
       }
     };
     
-    return colorMap[category.color][type];
-  };
-  
+    // Default to a neutral color if the specific color is not mapped
+    return colorMap[category.color]?.[type] || '';
+  }, [categories]);
+
   return (
-    <div className="container mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Atividade</h1>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Registrar Nova Atividade</h1>
       
-      {/* Category filter tabs */}
-      {categoryFilter && (
-        <div className="mb-6">
-          <div className={`p-4 rounded-lg ${getCategoryColorClasses(categoryFilter, 'bg')} ${getCategoryColorClasses(categoryFilter, 'border')}`}>
-            <div className="flex justify-between items-center">
+      {/* Dynamic Category Filter Display / Selection */}
+      {categoryFilter ? (
+        <div className="mb-8">
+          <div className={`p-6 rounded-xl shadow-lg ${getCategoryColorClasses(categoryFilter, 'bg')} ${getCategoryColorClasses(categoryFilter, 'border')} border-2`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
               <div>
-                <h3 className="text-lg font-semibold">
-                  Categoria: {categories.find(cat => cat.id === parseInt(categoryFilter))?.name}
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Categoria Selecionada: {categories.find(cat => cat.id === parseInt(categoryFilter))?.name}
                 </h3>
-                <p className="text-sm text-gray-600">
-                  {categoryFilter === '1' && 'Inclui fiscalização de contratos, participação em comissões e atividades de gestão.'}
-                  {categoryFilter === '2' && 'Inclui tempo de serviço, cargos e funções ocupadas.'}
-                  {categoryFilter === '3' && 'Inclui cursos, titulação acadêmica e certificações.'}
-                  {categoryFilter === '4' && 'Inclui publicações, patentes e desenvolvimento de sistemas.'}
-                  {categoryFilter === '5' && 'Inclui organização de eventos e participação em projetos.'}
-                  {categoryFilter === '6' && 'Inclui orientações, tutorias e atividades de ensino.'}
+                <p className="text-md text-gray-600 mt-2">
+                  {categories.find(cat => cat.id === parseInt(categoryFilter))?.description}
                 </p>
               </div>
               <button
                 onClick={() => setCategoryFilter(null)}
-                className="text-gray-600 hover:text-gray-800"
+                className="mt-4 sm:mt-0 px-4 py-2 bg-white text-gray-700 rounded-md shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors flex items-center"
               >
-                Remover filtro
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Remover Filtro
               </button>
             </div>
           </div>
         </div>
-      )}
-      
-      {/* Category selection buttons (when no filter is selected) */}
-      {!categoryFilter && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           {categories.map(category => (
             <button
               key={category.id}
-              className={`p-4 rounded-lg border ${getCategoryColorClasses(category.id, 'bg')} ${getCategoryColorClasses(category.id, 'border')} text-left transition-colors`}
+              className={`p-6 rounded-xl border-2 shadow-md text-left transition-all transform hover:scale-[1.02] ${getCategoryColorClasses(category.id, 'bg')} ${getCategoryColorClasses(category.id, 'border')}`}
               onClick={() => setCategoryFilter(category.id.toString())}
             >
-              <h3 className="font-semibold">{category.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {category.id === 1 && 'Fiscalização, comissões e gestão'}
-                {category.id === 2 && 'Tempo de serviço e funções'}
-                {category.id === 3 && 'Cursos e titulação acadêmica'}
-                {category.id === 4 && 'Publicações e patentes'}
-                {category.id === 5 && 'Eventos e projetos'}
-                {category.id === 6 && 'Orientações e ensino'}
+              <h3 className="font-bold text-lg text-gray-800">{category.name}</h3>
+              <p className="text-sm text-gray-600 mt-2">
+                {category.description}
               </p>
             </button>
           ))}
         </div>
       )}
       
-      {/* Activity registration form */}
+      {/* Activity Registration Form Component */}
       <ActivityRegistration categoryFilter={categoryFilter} />
     </div>
   );
