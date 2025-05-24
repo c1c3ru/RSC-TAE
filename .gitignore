@@ -25,3 +25,4 @@ dist-ssr
 
 # Sentry Config File
 .env.sentry-build-plugin
+SENTRY_AUTH_TOKEN=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
