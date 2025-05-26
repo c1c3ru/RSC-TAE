@@ -15,8 +15,7 @@ const categoriesData = [
 ];
 
 const CategoryDistribution = () => {
-  // Desestrutura categoryScores e totalScore do contexto de competência
-  const { categoryScores, totalScore } = useCompetency();
+  const { categoryScores, totalScore } = useCompetency(); // Já desestruturado corretamente
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
@@ -120,10 +119,10 @@ const CategoryDistribution = () => {
     };
   }, [categoryScores]); // O gráfico é re-renderizado sempre que as pontuações das categorias mudam
 
-  return (
+   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4">Distribuição por Categoria</h3>
-      {totalScore === 0 ? (
+      {totalScore === 0 ? ( // Renderização condicional para quando não há pontuação
         <div className="text-center py-8 text-gray-500">
           <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -133,17 +132,13 @@ const CategoryDistribution = () => {
         </div>
       ) : (
         <>
-          {/* Contêiner do canvas com classes responsivas para altura */}
           <div className="w-full h-64 md:h-80 lg:h-96">
             <canvas ref={chartRef}></canvas>
           </div>
-          {/* Legenda manual com cores e pontuações */}
           <div className="grid grid-cols-2 gap-2 mt-6">
             {categoriesData.map((category, index) => (
               <div key={index} className="flex items-center">
-                {/* Pequeno círculo colorido para representar a categoria */}
                 <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.borderColor }}></div>
-                {/* Nome da categoria e pontuação */}
                 <span className="text-sm text-gray-700">{category.name}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
               </div>
             ))}
