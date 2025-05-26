@@ -1,12 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { competencyItems as itemsData } from "../data/competencyItems"; // Se seus itens de competência ainda são dados locais
-import supabase from "../utils/supabaseClient"; // Importa a instância do Supabase
-import { useAuth } from "./AuthContext"; // Importa o hook de autenticação para obter o usuário logado
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import supabase from "../utils/supabaseClient"; 
+import { useAuth } from "./AuthContext"; 
 
-// Cria o contexto de Competência
 const CompetencyContext = createContext();
 
-// Hook personalizado para usar o contexto de competência
 export const useCompetency = () => {
   const context = useContext(CompetencyContext);
   if (!context) {
@@ -15,384 +12,324 @@ export const useCompetency = () => {
   return context;
 };
 
-// Componente Provedor de Competência
 export const CompetencyProvider = ({ children }) => {
-  const { currentUser, loading: authLoading } = useAuth(); // Obtém o usuário atual e o estado de carregamento da autenticação
+  const { currentUser, loading: authLoading } = useAuth();
   const [competencyItems, setCompetencyItems] = useState([]);
   const [activities, setActivities] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
   const [categoryScores, setCategoryScores] = useState([0, 0, 0, 0, 0, 0]);
-  const [loading, setLoading] = useState(true); // Estado de carregamento para as atividades
-  const [error, setError] = useState(null); // Novo estado para erros
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Define a meta para a próxima pontuação de progressão
-  const nextProgressionScore = 100;
+  const nextProgressionScore = 100; 
 
-  // Efeito para carregar itens de competência (se forem locais) e atividades do Supabase
-  useEffect(() => {
-    // Carrega itens de competência de dados locais (se ainda não estiverem no Supabase)
-    setCompetencyItems(itemsData);
-
-    const fetchActivities = async () => {
-      if (!currentUser || authLoading) {
-        // Não tenta buscar atividades se não houver usuário logado ou se a autenticação ainda estiver carregando
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null); // Limpa erros anteriores
-
-      try {
-        // CORREÇÃO: String de seleção limpa, sem comentários ou caracteres extras.
-        // As colunas dentro de 'competences:competence_id' são as colunas da tabela 'competences'.
-        const { data, error } = await supabase
-          .from("user_rsc")
-          .select(
-            `
-    id,
-    user_id,
-    competence_id,
-    value,
-    date_awarded,
-    status,
-    observacoes,
-    data_atualizacao,
-    documents_urls,
-    data_inicio,
-    data_fim,
-    quantidade,
-    descricao,
-    competence:user_rsc_competence_id_fkey (
-      id,
-      category,
-      title,
-      type,
-      points_per_unit,
-      max_points,
-      unit,
-      validation_rules
-    )
-  `
-          )
-          .eq("user_id", currentUser.id);
-        // Filtra atividades pelo ID do usuário logado
-
-        if (error) {
-          console.error("Erro ao buscar atividades:", error.message);
-          setError(`Erro ao buscar atividades: "${error.message}"`);
-          setActivities([]); // Limpa atividades em caso de erro
-          return;
-        }
-
-        // Mapeia os dados do Supabase para o formato esperado pelo seu front-end
-        const mappedActivities = data.map((dbActivity) => ({
-          id: dbActivity.id,
-          userId: dbActivity.user_id, // Adicionado para clareza
-          itemCompetenciaId: dbActivity.competence_id, // Usa competence_id do Supabase
-          dataInicio: dbActivity.data_inicio,
-          dataFim: dbActivity.data_fim,
-          quantidade: dbActivity.quantidade,
-          descricao: dbActivity.descricao,
-          pontuacao: dbActivity.value, // Usa 'value' do Supabase como 'pontuacao'
-          status: dbActivity.status,
-          observacoes: dbActivity.observacoes,
-          dataRegistro: dbActivity.date_awarded, // Usa 'date_awarded' do Supabase como 'dataRegistro'
-          dataAtualizacao: dbActivity.data_atualizacao,
-          documents: dbActivity.documents_urls || [], // Garante que é um array, renomeado para 'documents'
-          // Os detalhes do item de competência vêm do join 'competences'
-          itemCompetenciaDetails: dbActivity.competences
-            ? {
-                // Mapeia as colunas da tabela 'competences' para o formato local
-                id: dbActivity.competences.id,
-                categoria: dbActivity.competences.category,
-                titulo: dbActivity.competences.title,
-                tipoCalculo: dbActivity.competences.type,
-                valorPonto: dbActivity.competences.points_per_unit,
-                pontuacaoMaxima: dbActivity.competences.max_points,
-                unidadeMedida: dbActivity.competences.unit,
-                validationRules: dbActivity.competences.validation_rules, // Adicionado validation_rules
-              }
-            : null, // Se o join falhar ou não houver correspondência
-        }));
-
-        setActivities(mappedActivities);
-      } catch (err) {
-        console.error("Erro inesperado ao buscar atividades:", err);
-        setError(`Erro inesperado ao buscar atividades: "${err.message}"`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchActivities();
-  }, [currentUser, authLoading]); // Re-executa quando o usuário muda ou o estado de autenticação muda
-
-  // Calcula pontuação total e por categoria sempre que as atividades ou itens de competência mudam
-  useEffect(() => {
-    if (!activities.length) {
-      setTotalScore(0);
-      setCategoryScores([0, 0, 0, 0, 0, 0]);
-      return;
-    }
-
-    const catScores = [0, 0, 0, 0, 0, 0];
-    let total = 0;
-
-    activities.forEach((activity) => {
-      if (activity.status !== "rejeitada") {
-        total += activity.pontuacao;
-
-        // Prioriza os detalhes do item de competência vindos do join
-        // Se o join não trouxe dados, tenta usar os dados locais (itemsData)
-        const item =
-          activity.itemCompetenciaDetails ||
-          competencyItems.find(
-            (item) => item.id === activity.itemCompetenciaId
-          );
-
-        if (item) {
-          // Mapeamento de categoria string para índice numérico (exemplo, ajuste conforme suas categorias)
-          const categoryMap = {
-            Administrativas: 1,
-            Experiência: 2,
-            Formação: 3,
-            Produção: 4,
-            Eventos: 5,
-            Ensino: 6,
-          };
-
-          const categoryValue = item.categoria || categoryMap[item.category]; // Tenta pegar do join ou do mapeamento
-          const categoryIndex =
-            (categoryValue ? parseInt(categoryValue) : 0) - 1; // Converte para int e subtrai 1
-
-          if (categoryIndex >= 0 && categoryIndex < catScores.length) {
-            catScores[categoryIndex] += activity.pontuacao;
-          } else {
-            console.warn(
-              `Categoria inválida ou não mapeada para o item ${item.id}:`,
-              item.categoria || item.category
-            );
-          }
-        }
-      }
-    });
-
-    setTotalScore(total);
-    setCategoryScores(catScores);
-  }, [activities, competencyItems]); // Depende de activities e competencyItems
-
-  // Registra uma nova atividade no Supabase
-  const registerActivity = async (activityData) => {
-    if (!currentUser) {
-      setError("Usuário não autenticado para registrar atividade.");
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Mapeia o array de objetos de documentos para um array de URLs (ou o formato que documents_urls espera)
-      // Se documents_urls for JSONB, você pode enviar o array de objetos diretamente.
-      // Se for TEXT[], você pode enviar apenas as URLs: activityData.documents.map(doc => doc.url)
-      const documentUrlsToStore = activityData.documents.map((doc) => ({
-        id: doc.id,
-        url: doc.publicURL, // Usar publicURL do Supabase Storage
-        name: doc.nome,
-        storagePath: doc.storagePath, // Armazena o caminho do Storage para futuras exclusões
-      }));
-
-      // Adapta activityData para o formato da sua tabela 'user_rsc' no Supabase
-      const { data, error } = await supabase.from("user_rsc").insert({
-        user_id: currentUser.id,
-        competence_id: activityData.itemCompetenciaId, // Usa competence_id
-        data_inicio: activityData.dataInicio,
-        data_fim: activityData.dataFim,
-        quantidade: activityData.quantidade,
-        descricao: activityData.descricao,
-        value: activityData.pontuacao, // Coluna 'value' no Supabase
-        status: activityData.status,
-        observacoes: activityData.observacoes,
-        date_awarded: new Date().toISOString(), // Coluna 'date_awarded' no Supabase
-        data_atualizacao: new Date().toISOString(),
-        documents_urls: documentUrlsToStore, // Agora armazena as URLs reais dos documentos
-      }).select(`
-            id,
-            user_id,
-            competence_id,
-            value,
-            date_awarded,
-            status,
-            observacoes,
-            data_atualizacao,
-            documents_urls,
-            data_inicio,
-            data_fim,
-            quantidade,
-            descricao,
-            competences:competence_id (
-              id,
-              category,
-              title,
-              type,
-              points_per_unit,
-              max_points,
-              unit,
-              validation_rules
-            )
-        `); // Retorna os dados inseridos com join
-
-      if (error) {
-        throw error;
-      }
-
-      // Mapeia o dado inserido de volta para o formato do front-end
-      const newMappedActivity = {
-        id: data[0].id,
-        userId: data[0].user_id,
-        itemCompetenciaId: data[0].competence_id,
-        dataInicio: data[0].data_inicio,
-        dataFim: data[0].data_fim,
-        quantidade: data[0].quantidade,
-        descricao: data[0].descricao,
-        pontuacao: data[0].value,
-        status: data[0].status,
-        observacoes: data[0].observacoes,
-        dataRegistro: data[0].date_awarded,
-        dataAtualizacao: data[0].data_atualizacao,
-        documents: data[0].documents_urls || [],
-        itemCompetenciaDetails: data[0].competences
-          ? {
-              id: data[0].competences.id,
-              categoria: data[0].competences.category,
-              titulo: data[0].competences.title,
-              tipoCalculo: data[0].competences.type,
-              valorPonto: data[0].competences.points_per_unit,
-              pontuacaoMaxima: data[0].competences.max_points,
-              unidadeMedida: data[0].competences.unit,
-              validationRules: data[0].competences.validation_rules,
-            }
-          : null,
-      };
-
-      setActivities((prev) => [...prev, newMappedActivity]);
-      return newMappedActivity;
-    } catch (err) {
-      console.error("Erro ao registrar atividade:", err.message);
-      setError(`Erro ao registrar atividade: "${err.message}"`);
-      return null;
-    } finally {
+  const fetchCompetencyDefinitions = useCallback(async () => {
+    if (!supabase) {
+      setError("Cliente Supabase não inicializado.");
       setLoading(false);
+      return false;
     }
-  };
-
-  // Atualiza o status de uma atividade no Supabase
-  const updateActivityStatus = async (activityId, status, comments = "") => {
     setLoading(true);
     setError(null);
-
     try {
-      const { data, error } = await supabase
-        .from("user_rsc")
-        .update({
-          status: status,
-          observacoes: comments,
-          data_atualizacao: new Date().toISOString(),
-        })
-        .eq("id", activityId).select(`
-            id,
-            user_id,
-            competence_id,
-            value,
-            date_awarded,
-            status,
-            observacoes,
-            data_atualizacao,
-            documents_urls,
-            data_inicio,
-            data_fim,
-            quantidade,
-            descricao,
-            competences:competence_id (
-              id,
-              category,
-              title,
-              type,
-              points_per_unit,
-              max_points,
-              unit,
-              validation_rules
-            )
+      const { data, error: fetchError } = await supabase
+        .from("competences")
+        .select(`
+          id,
+          category,
+          title,
+          type,
+          points_per_unit,
+          max_points,
+          unit,
+          validation_rules
         `);
 
-      if (error) {
-        throw error;
+      if (fetchError) {
+        console.error("Erro ao buscar definições de competências:", fetchError.message, fetchError.details);
+        setError(`Erro ao buscar definições de competências: ${fetchError.message}`);
+        setCompetencyItems([]);
+        return false;
+      }
+      const mappedItems = data.map(item => ({
+        id: item.id,
+        categoria: item.category, 
+        titulo: item.title,
+        tipoCalculo: item.type,
+        valorPonto: item.points_per_unit,
+        pontuacaoMaxima: item.max_points,
+        unidadeMedida: item.unit,
+        validationRules: item.validation_rules,
+      }));
+      setCompetencyItems(mappedItems);
+      return true;
+    } catch (err) {
+      console.error("Erro inesperado ao buscar definições de competências:", err);
+      setError(`Erro inesperado ao buscar definições de competências: ${err.message}`);
+      setCompetencyItems([]);
+      return false;
+    }
+  }, []);
+
+  const fetchActivities = useCallback(async () => {
+    if (!currentUser || authLoading) {
+      setActivities([]);
+      return false;
+    }
+     if (!supabase) {
+      setError("Cliente Supabase não inicializado.");
+      setLoading(false);
+      return false;
+    }
+    setLoading(true); 
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("user_rsc")
+        .select(
+          `
+            user_id,
+            competence_id,
+            value,
+            date_awarded,
+            quantity,
+            achieved_points, 
+            competence:competences!user_rsc_competence_id_fkey (
+              id,
+              category,
+              title,
+              type,
+              points_per_unit,
+              max_points,
+              unit,
+              validation_rules
+            )
+          `
+        )
+        .eq("user_id", currentUser.id);
+
+      if (fetchError) {
+        // Log detalhado do erro do Supabase
+        console.error("Erro ao buscar atividades do usuário (Supabase):", fetchError);
+        setError(`Erro ao buscar suas atividades: ${fetchError.message}`);
+        setActivities([]);
+        return false;
       }
 
-      // Mapeia o dado atualizado de volta para o formato do front-end
-      const updatedMappedActivity = {
-        id: data[0].id,
-        userId: data[0].user_id,
-        itemCompetenciaId: data[0].competence_id,
-        dataInicio: data[0].data_inicio,
-        dataFim: data[0].data_fim,
-        quantidade: data[0].quantidade,
-        descricao: data[0].descricao,
-        pontuacao: data[0].value,
-        status: data[0].status,
-        observacoes: data[0].observacoes,
-        dataRegistro: data[0].date_awarded,
-        dataAtualizacao: data[0].data_atualizacao,
-        documents: data[0].documents_urls || [],
-        itemCompetenciaDetails: data[0].competences
+      const mappedActivities = data.map((dbActivity) => ({
+        userId: dbActivity.user_id,
+        itemCompetenciaId: dbActivity.competence_id,
+        quantidade: dbActivity.quantity,
+        pontuacao: dbActivity.value, 
+        dataRegistro: dbActivity.date_awarded,
+        achieved_points_from_db: dbActivity.achieved_points, 
+        itemCompetenciaDetails: dbActivity.competence
           ? {
-              id: data[0].competences.id,
-              categoria: data[0].competences.category,
-              titulo: data[0].competences.title,
-              tipoCalculo: data[0].competences.type,
-              valorPonto: data[0].competences.points_per_unit,
-              pontuacaoMaxima: data[0].competences.max_points,
-              unidadeMedida: data[0].competences.unit,
-              validationRules: data[0].competences.validation_rules,
+              id: dbActivity.competence.id,
+              categoria: dbActivity.competence.category,
+              titulo: dbActivity.competence.title,
+              tipoCalculo: dbActivity.competence.type,
+              valorPonto: dbActivity.competence.points_per_unit,
+              pontuacaoMaxima: dbActivity.competence.max_points,
+              unidadeMedida: dbActivity.competence.unit,
+              validationRules: dbActivity.competence.validation_rules,
             }
           : null,
-      };
-
-      setActivities((prev) =>
-        prev.map((activity) =>
-          activity.id === activityId ? updatedMappedActivity : activity
-        )
-      );
+      }));
+      setActivities(mappedActivities);
+      return true;
     } catch (err) {
-      console.error("Erro ao atualizar status da atividade:", err.message);
-      setError(`Erro ao atualizar status da atividade: "${err.message}"`);
+      console.error("Erro inesperado ao buscar atividades do usuário (Catch):", err);
+      setError(`Erro inesperado ao buscar suas atividades: ${err.message}`);
+      setActivities([]);
+      return false;
+    }
+  }, [currentUser, authLoading]);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true); 
+      setError(null);
+      if (authLoading || !supabase) { 
+          if(!supabase && !authLoading) setError("Cliente Supabase não inicializado.");
+          setLoading(false);
+          return;
+      }
+
+      const definitionsSuccess = await fetchCompetencyDefinitions();
+      if (definitionsSuccess && currentUser) {
+        await fetchActivities();
+      } else if (!currentUser) {
+        setActivities([]); 
+      }
+      setLoading(false); 
+    };
+    loadInitialData();
+  }, [currentUser, authLoading, fetchActivities, fetchCompetencyDefinitions]);
+
+  useEffect(() => {
+    if (!activities.length) { 
+      setTotalScore(0);
+      setCategoryScores(Array(6).fill(0)); 
+      return;
+    }
+    // Se competencyItems ainda não carregou, esperamos.
+    // No entanto, itemCompetenciaDetails já deve vir embedado de fetchActivities.
+    // if (!competencyItems.length && activities.some(act => !act.itemCompetenciaDetails)) {
+    //     return; 
+    // }
+
+    const catScores = Array(6).fill(0); 
+    let total = 0;
+    const categoryMap = {
+      "Administrativas": 0, 
+      "Experiência": 1, 
+      "Formação": 2,
+      "Produção Científica": 3, 
+      "Eventos e Cursos": 4,   
+      "Atividades de Ensino": 5 
+    };
+
+    activities.forEach((activity) => {
+      total += activity.pontuacao || 0;
+      const itemDetails = activity.itemCompetenciaDetails; // Usar diretamente o objeto embedado
+      
+      if (itemDetails && itemDetails.categoria) { 
+        const categoryName = itemDetails.categoria; 
+        const categoryIndex = categoryMap[categoryName];
+        
+        if (typeof categoryIndex === 'number' && categoryIndex >= 0 && categoryIndex < catScores.length) {
+          catScores[categoryIndex] += activity.pontuacao || 0;
+        } else {
+          console.warn(`Categoria da competência inválida ou não mapeada no categoryMap: '${categoryName}' para item ID ${activity.itemCompetenciaId}`);
+        }
+      } else {
+        console.warn(`Detalhes da competência ou categoria não encontrados para a atividade com item ID ${activity.itemCompetenciaId}. Detalhes recebidos:`, itemDetails);
+      }
+    });
+    setTotalScore(total);
+    setCategoryScores(catScores);
+  }, [activities]); // Removido competencyItems das dependências, pois itemCompetenciaDetails é usado
+
+  const registerActivity = async (activityDataFromForm) => {
+    if (!currentUser) {
+      setError("Usuário não autenticado para registrar atividade.");
+      return false; 
+    }
+    if (!supabase) {
+      setError("Cliente Supabase não inicializado.");
+      return false;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const newRecord = {
+        user_id: currentUser.id,
+        competence_id: activityDataFromForm.competence_id,
+        value: activityDataFromForm.achieved_points, 
+        quantity: activityDataFromForm.quantity, 
+        date_awarded: activityDataFromForm.date_awarded ? new Date(activityDataFromForm.date_awarded).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        achieved_points: activityDataFromForm.achieved_points, 
+        // Removido: status, pois a coluna não existe na tabela user_rsc conforme o erro.
+        // Se você adicionou a coluna 'status', pode descomentar a linha abaixo.
+        // status: 'pendente', 
+      };
+      
+      // Se você não tem a coluna 'description' ou 'documents' em 'user_rsc', remova-as daqui também.
+      if (activityDataFromForm.description) {
+        newRecord.description = activityDataFromForm.description; // Requer coluna 'description'
+      }
+      if (activityDataFromForm.documents && activityDataFromForm.documents.length > 0) {
+        newRecord.documents = activityDataFromForm.documents; // Requer coluna 'documents' (JSONB)
+      }
+
+
+      const { data, error: insertError } = await supabase
+        .from("user_rsc")
+        .insert(newRecord)
+        .select(`
+            user_id, 
+            competence_id, 
+            value, 
+            date_awarded, 
+            quantity, 
+            achieved_points,
+            description, /* Adicione se a coluna existir */
+            documents, /* Adicione se a coluna existir */
+            competence:competences!user_rsc_competence_id_fkey ( 
+              id, category, title, type, points_per_unit, max_points, unit, validation_rules
+            )
+        `); 
+
+      if (insertError) throw insertError;
+
+      if (!data || data.length === 0) {
+        throw new Error("Nenhum dado retornado após a inserção da atividade.");
+      }
+
+      const insertedData = data[0];
+      const newMappedActivity = {
+        userId: insertedData.user_id,
+        itemCompetenciaId: insertedData.competence_id,
+        quantidade: insertedData.quantity,
+        pontuacao: insertedData.value, 
+        dataRegistro: insertedData.date_awarded,
+        achieved_points_from_db: insertedData.achieved_points,
+        // Adicione description e documents se as colunas existirem e forem selecionadas
+        // description: insertedData.description,
+        // documents: insertedData.documents,
+        itemCompetenciaDetails: insertedData.competence ? {
+              id: insertedData.competence.id,
+              categoria: insertedData.competence.category,
+              titulo: insertedData.competence.title,
+              tipoCalculo: insertedData.competence.type,
+              valorPonto: insertedData.competence.points_per_unit,
+              pontuacaoMaxima: insertedData.competence.max_points,
+              unidadeMedida: insertedData.competence.unit,
+              validationRules: insertedData.competence.validation_rules,
+            } : null,
+      };
+      setActivities((prev) => [...prev, newMappedActivity]);
+      return true; 
+    } catch (err) {
+      console.error("Erro ao registrar atividade (Catch):", err.message, err.details || err);
+      setError(`Erro ao registrar atividade: ${err.message}`);
+      return false; 
     } finally {
       setLoading(false);
     }
   };
 
-  // Exclui uma atividade do Supabase
-  const deleteActivity = async (activityId) => {
+  const updateActivityStatus = async (identifiers, newData) => {
+    console.warn("updateActivityStatus: Função não implementada completamente devido à estrutura atual da tabela user_rsc.");
+    return false; 
+  };
+
+  const deleteActivity = async (identifiers) => {
+     if (!supabase) {
+      setError("Cliente Supabase não inicializado.");
+      return false;
+    }
     setLoading(true);
     setError(null);
-
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from("user_rsc")
         .delete()
-        .eq("id", activityId);
-
-      if (error) {
-        throw error;
-      }
-
-      setActivities((prev) =>
-        prev.filter((activity) => activity.id !== activityId)
+        .eq("user_id", identifiers.userId)
+        .eq("competence_id", identifiers.competenceId); 
+      
+      if (deleteError) throw deleteError;
+      
+      setActivities((prev) => prev.filter(act =>
+          !(act.userId === identifiers.userId && act.itemCompetenciaId === identifiers.competenceId)
+        )
       );
+      return true;
     } catch (err) {
-      console.error("Erro ao excluir atividade:", err.message);
-      setError(`Erro ao excluir atividade: "${err.message}"`);
+      console.error("Erro ao excluir atividade:", err.message, err.details);
+      setError(`Erro ao excluir atividade: ${err.message}`);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -405,18 +342,17 @@ export const CompetencyProvider = ({ children }) => {
     categoryScores,
     nextProgressionScore,
     loading,
-    error, // Expõe o erro para o consumidor do contexto
+    error,
     registerActivity,
     updateActivityStatus,
     deleteActivity,
+    fetchActivities, 
+    fetchCompetencyDefinitions 
   };
 
   return (
     <CompetencyContext.Provider value={value}>
-      {/* Renderiza os filhos apenas quando não estiver carregando */}
-      {!loading && children}
-      {/* Ou, se preferir, pode mostrar um spinner de carregamento aqui */}
-      {/* {loading && <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div></div>} */}
+      {children} 
     </CompetencyContext.Provider>
   );
 };

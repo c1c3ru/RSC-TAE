@@ -1,272 +1,314 @@
-import React, { useState, useEffect } from 'react';
-import { useCompetency } from '../../context/CompetencyContext';
-import DocumentUploader from './DocumentUploader';
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase, getCurrentUser } from '../../utils/supabaseClient'; 
+import DocumentUploader from './DocumentUploader'; 
 
-const ActivityRegistration = ({ categoryFilter }) => {
-  // Use the competencyItems from context, assuming it's loaded from your local itemsData
-  // If you later fetch all competence definitions from Supabase, this will still work
-  const { competencyItems, registerActivity } = useCompetency();
-
+const ActivityRegistrationSupabase = ({ categoryFilter }) => {
+  const [competencyItems, setCompetencyItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [formValues, setFormValues] = useState({
     startDate: '',
     endDate: '',
     quantity: 1,
-    description: '',
-    documents: [] // This will hold URLs/paths after upload, or temporary file objects
+    description: '', 
+    documents: [] // Inicializado como array vazio
   });
   const [calculatedPoints, setCalculatedPoints] = useState(0);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // To prevent double submissions
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUserState] = useState(null);
 
-  // Filter items by category if provided.
-  // Assuming `item.category` is the string like 'Administrativas'
-  // and `categoryFilter` might be a string like 'Administrativas' as well.
-  const filteredItems = categoryFilter
-    ? competencyItems.filter(item => item.category === categoryFilter) // Use 'category' instead of 'categoria'
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser(); // getCurrentUser já lida com supabase null
+        setCurrentUserState(user);
+        if (!user && supabase) { // Só mostra erro de auth se supabase estiver ok mas user não
+          setErrors(prev => ({ ...prev, auth: 'Usuário não autenticado. Faça login para registrar atividades.' }));
+        }
+      } catch (e) {
+        console.error("Erro ao buscar usuário:", e);
+        setErrors(prev => ({ ...prev, auth: 'Erro ao verificar autenticação.' }));
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) {
+        setErrors(prev => ({ ...prev, fetch: 'Cliente Supabase não inicializado.' }));
+        setIsLoading(false);
+        return;
+    }
+    const fetchCompetencies = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('competences')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching competencies:', error);
+        setErrors(prev => ({ ...prev, fetch: 'Falha ao carregar os itens de competência.' }));
+        setCompetencyItems([]);
+      } else {
+        setCompetencyItems(data || []);
+      }
+      setIsLoading(false);
+    };
+
+    fetchCompetencies();
+  }, []);
+
+  const filteredItems = categoryFilter && competencyItems.length > 0
+    ? competencyItems.filter(item => item.category === categoryFilter) // Assumindo que categoryFilter é string como item.category
     : competencyItems;
 
-  // Handle item selection
   const handleItemSelect = (itemId) => {
-    // `itemId` is a string (e.g., 'CAT1-01'), so no parseInt needed here
-    const selected = competencyItems.find(item => item.id === itemId);
+    const selected = competencyItems.find(item => item.id === itemId); // item.id é string
     setSelectedItem(selected);
     setCalculatedPoints(0);
-    // Reset form except for documents (though documents are also part of the reset after submit)
-    setFormValues({
-      ...formValues,
+    setFormValues(prev => ({
+      ...prev,
       startDate: '',
       endDate: '',
       quantity: 1,
-      description: ''
-    });
-    setErrors({}); // Clear errors when a new item is selected
+      description: '',
+      documents: Array.isArray(prev.documents) ? prev.documents : [] // Garante que documents permaneça array
+    }));
+    setErrors({}); 
   };
 
-  // Calculate points based on the selected item and form values
-  const calculatePoints = () => {
+  const calculatePoints = useCallback(() => {
     if (!selectedItem) return 0;
 
     let points = 0;
+    const pointsPerUnit = parseFloat(selectedItem.points_per_unit);
+    const maxPoints = selectedItem.max_points ? parseFloat(selectedItem.max_points) : null;
 
-    // Use `selectedItem.type` for calculation type (from Supabase schema)
-    // Use `selectedItem.points_per_unit` (from Supabase schema)
-    // Use `selectedItem.unit` for unit (from Supabase schema)
-    // Use `selectedItem.max_points` for max points (from Supabase schema)
-    switch (selectedItem.type) { // Changed from `tipoCalculo` to `type`
-      case 'MONTHS': { // Changed from 'tempo' to 'MONTHS'
+    switch (selectedItem.type) {
+      case 'tempo': {
         if (formValues.startDate && formValues.endDate) {
           const start = new Date(formValues.startDate);
           const end = new Date(formValues.endDate);
-
           if (end < start) return 0;
-
-          // Calculate months between dates
           const months = (end.getFullYear() - start.getFullYear()) * 12 +
             (end.getMonth() - start.getMonth());
-
-          points = months * selectedItem.points_per_unit; // Changed from `valorPonto` to `points_per_unit`
+          points = months * pointsPerUnit;
         }
         break;
       }
-      case 'EVENTS': // Changed from 'quantidade' to 'EVENTS' (or other types that imply quantity)
-      case 'HOURS': // Changed from 'cargaHoraria' to 'HOURS'
-      case 'CREDITS': // Added as per your data
-      case 'YEARS': // Added as per your data
-      case 'OTHER_QUANTITY_BASED_TYPE': // Add other types if needed
-      {
-        // For quantity-based types, calculate based on `quantity` directly
-        points = formValues.quantity * selectedItem.points_per_unit;
+      case 'quantidade':
+      case 'cargaHoraria': { 
+        points = parseFloat(formValues.quantity) * pointsPerUnit;
         break;
       }
-      // If there are simple, fixed-point items, they'd fall here
-      default:
-        // If a competence type doesn't fit the above, maybe it's just `points_per_unit` itself (e.g., per occurrence)
-        points = selectedItem.points_per_unit * formValues.quantity; // Assuming 1 unit for default
-        break;
+      default: 
+        points = pointsPerUnit; 
     }
 
-    // Check if there's a maximum points limit for this item
-    if (selectedItem.max_points && points > selectedItem.max_points) { // Changed from `pontuacaoMaxima` to `max_points`
-      points = selectedItem.max_points;
+    if (maxPoints !== null && points > maxPoints) {
+      points = maxPoints;
     }
 
     return parseFloat(points.toFixed(1));
-  };
+  }, [selectedItem, formValues.startDate, formValues.endDate, formValues.quantity]);
 
-  // Update calculated points when form values or selected item changes
   useEffect(() => {
     if (selectedItem) {
       const points = calculatePoints();
       setCalculatedPoints(points);
     }
-  }, [formValues, selectedItem]); // Depend on relevant states
+  }, [formValues, selectedItem, calculatePoints]);
 
-  // Handle form value changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormValues({
-      ...formValues,
+    setFormValues(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
-  // Handle document upload (this will likely involve storing file paths/URLs in Supabase Storage)
-  const handleDocumentsChange = (documents) => {
-    setFormValues({
-      ...formValues,
-      documents
-    });
+  const handleDocumentsChange = (newDocuments) => {
+    setFormValues(prev => ({
+      ...prev,
+      // Garante que newDocuments seja um array, ou usa um array vazio se não for.
+      documents: Array.isArray(newDocuments) ? newDocuments : [] 
+    }));
   };
 
-  // Validate form before submission
   const validateForm = () => {
     const newErrors = {};
-
+    if (!currentUser) {
+        newErrors.auth = 'Você precisa estar logado para registrar uma atividade.';
+    }
     if (!selectedItem) {
       newErrors.item = 'Selecione um item de competência.';
-    } else {
-      // Validation based on the `type` property from the database
-      if (selectedItem.type === 'MONTHS') { // Changed from 'tempo' to 'MONTHS'
-        if (!formValues.startDate) newErrors.startDate = 'Data inicial obrigatória.';
-        if (!formValues.endDate) newErrors.endDate = 'Data final obrigatória.';
-        if (formValues.startDate && formValues.endDate && new Date(formValues.endDate) < new Date(formValues.startDate)) {
-          newErrors.dateRange = 'A data final deve ser posterior à data inicial.';
-        }
+    }
+
+    if (selectedItem?.type === 'tempo') {
+      if (!formValues.startDate) newErrors.startDate = 'Data inicial é obrigatória.';
+      if (!formValues.endDate) newErrors.endDate = 'Data final é obrigatória.';
+      if (formValues.startDate && formValues.endDate && new Date(formValues.endDate) < new Date(formValues.startDate)) {
+        newErrors.dateRange = 'A data final deve ser posterior à data inicial.';
       }
     }
-
-    if (!formValues.description) {
-      newErrors.description = 'Descrição obrigatória.';
-    }
-
-    if (formValues.documents.length === 0) {
-      newErrors.documents = 'Pelo menos um documento comprobatório é obrigatório.';
-    }
-
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Submit form
-  const handleSubmit = async (e) => { // Made async
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess(false);
-    setErrors({}); // Clear previous errors
-    if (isSubmitting) return; // Prevent double submission
-
+    
     if (!validateForm()) {
-        console.log("Validation failed", errors); // Debugging
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+
+    if (!currentUser || !supabase) {
+        setErrors(prev => ({ ...prev, auth: 'Usuário não encontrado ou Supabase não inicializado. Por favor, faça login.' }));
+        setIsLoading(false);
         return;
     }
 
-    setIsSubmitting(true); // Set submitting state
+    // Garante que formValues.documents seja um array antes de usar .filter
+    const safeDocuments = Array.isArray(formValues.documents) ? formValues.documents : [];
+    const documentsToStore = safeDocuments
+      .filter(doc => doc && doc.status === 'success') // Adiciona verificação para 'doc' existir
+      .map(doc => ({
+        nome: doc.nome,
+        publicURL: doc.publicURL,
+        storagePath: doc.storagePath,
+        tipo: doc.tipo,
+        tamanho: doc.tamanho,
+        dataUpload: doc.dataUpload
+      }));
 
-    // The activityData needs to match the `newActivityEntry` structure
-    // that `registerActivity` in CompetencyContext expects for `user_rsc` table.
-    const activityData = {
-      // `itemCompetenciaId` maps to `competence_id` in `user_rsc`
-      itemCompetenciaId: selectedItem.id,
-      // `pontuacao` maps to `value` in `user_rsc`
-      pontuacao: calculatedPoints,
-      // `descricao` maps to `observacoes` in `user_rsc` (or a new field if you add it)
-      observacoes: formValues.description, // Mapping to `observacoes` as a place to store description
-      status: 'pendente', // Default status
-
-      // You might need to add specific fields to `user_rsc`
-      // for startDate, endDate, quantity, and documents if you need to store them
-      // as part of the user's specific activity instance.
-      // For now, these are only used for `calculatedPoints` calculation.
-      // If you want to store them, you'd add columns like `start_date`, `end_date`, `quantity_achieved`, `document_urls`
-      // to the `user_rsc` table.
-      // documents: formValues.documents.map(doc => doc.url), // Assuming DocumentUploader returns objects with `url`
+    const dataToInsert = {
+      user_id: currentUser.id,
+      competence_id: selectedItem.id,
+      achieved_points: calculatedPoints,
+      date_awarded: formValues.startDate || new Date().toISOString().split('T')[0],
+      value: 0, 
+      quantity: null, 
     };
 
-    console.log("Submitting activityData:", activityData); // Debugging
+    if (selectedItem.type === 'tempo') {
+      const start = new Date(formValues.startDate);
+      const end = new Date(formValues.endDate);
+      const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+      dataToInsert.value = months >= 0 ? months : 0;
+      dataToInsert.quantity = 1;
+    } else if (selectedItem.type === 'quantidade' || selectedItem.type === 'cargaHoraria') {
+      dataToInsert.value = parseFloat(formValues.quantity) || 0;
+      dataToInsert.quantity = parseFloat(formValues.quantity) || 0;
+    } else { 
+      dataToInsert.value = 1; 
+      dataToInsert.quantity = 1;
+    }
+    
+    if (formValues.description) {
+        dataToInsert.description = formValues.description;
+    }
+    if (documentsToStore.length > 0) {
+        dataToInsert.documents = documentsToStore; // Para coluna JSONB 'documents'
+    }
+    dataToInsert.status = 'pendente'; // Para coluna 'status'
 
-    const result = await registerActivity(activityData);
+    const { error: insertError } = await supabase
+      .from('user_rsc')
+      .insert([dataToInsert]);
 
-    if (result) {
+    setIsLoading(false);
+
+    if (insertError) {
+      console.error('Error registering activity:', insertError);
+      setErrors(prev => ({ ...prev, submit: `Falha ao registrar atividade: ${insertError.message}` }));
+    } else {
       setSuccess(true);
-      // Reset form after successful registration
       setSelectedItem(null);
       setFormValues({
         startDate: '',
         endDate: '',
         quantity: 1,
         description: '',
-        documents: []
+        documents: [] 
       });
       setCalculatedPoints(0);
-      setErrors({}); // Clear errors
-    } else {
-      // Error handling is done in CompetencyContext, but you can add more specific UI feedback here
-      // For now, the error message from context will show
+      setErrors({});
+      setTimeout(() => setSuccess(false), 3000);
     }
-
-    setIsSubmitting(false); // Reset submitting state
-    setTimeout(() => {
-      setSuccess(false);
-    }, 3000);
   };
 
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-6">Registrar Nova Atividade</h2>
+  if (isLoading && competencyItems.length === 0 && !errors.fetch) {
+    return <div className="text-center p-6 text-gray-600">Carregando dados de competências...</div>;
+  }
+  
+  if (errors.fetch) {
+     return <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 max-w-2xl mx-auto" role="alert"><strong>Erro:</strong> {errors.fetch}</div>;
+  }
+  if (!supabase) { // Verifica se o Supabase foi inicializado
+    return <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 max-w-2xl mx-auto" role="alert"><strong>Erro de Configuração:</strong> Cliente Supabase não está disponível. Verifique as variáveis de ambiente e a inicialização.</div>;
+  }
 
+
+  return (
+    <div className="bg-white rounded-lg shadow-xl p-6 md:p-8 max-w-2xl mx-auto border border-gray-200">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800 border-b pb-4">Registrar Nova Atividade</h2>
+
+      {errors.auth && <p className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md">{errors.auth}</p>}
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
-          <span className="block sm:inline">Atividade registrada com sucesso!</span>
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-md shadow-sm" role="alert">
+          Atividade registrada com sucesso!
         </div>
       )}
+      {errors.submit && <p className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md"><strong>Falha no Registro:</strong> {errors.submit}</p>}
 
       <form onSubmit={handleSubmit}>
-        {/* Item selection */}
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="competencyItem">
-            Item de Competência
+            Item de Competência <span className="text-red-500">*</span>
           </label>
           <select
             id="competencyItem"
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.item ? 'border-red-500' : ''}`}
+            className={`shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors.item ? 'border-red-500' : 'border-gray-300'}`}
             value={selectedItem?.id || ''}
             onChange={(e) => handleItemSelect(e.target.value)}
+            disabled={isLoading || competencyItems.length === 0}
           >
-            <option value="">Selecione um item</option>
-            {/* Displaying `item.id` and `item.title` */}
+            <option value="">Selecione um item...</option>
             {filteredItems.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.id}. {item.title} {/* Use `item.title` from Supabase schema */}
+                {item.id} - {item.title}
               </option>
             ))}
           </select>
           {errors.item && <p className="text-red-500 text-xs italic mt-1">{errors.item}</p>}
         </div>
 
-        {/* Selected item details */}
         {selectedItem && (
-          <div className="mb-6 bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">{selectedItem.title}</h3> {/* Use `selectedItem.title` */}
-            <p className="text-sm mb-2">Detalhes da competência aqui...</p> {/* Placeholder for description, if available */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+            <h3 className="text-lg font-semibold mb-3 text-indigo-700">{selectedItem.title}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <div>
-                <span className="font-medium">Documentação necessária:</span>
-                {/* Access validation rules from selectedItem.validation_rules.docs */}
-                <p>{selectedItem.validation_rules?.docs?.join(', ') || 'N/A'}</p>
+                <span className="font-medium text-gray-700">Regras de Validação:</span>
+                <p className="text-gray-600 text-xs break-words">{selectedItem.validation_rules ? JSON.stringify(selectedItem.validation_rules) : "Não especificadas"}</p>
               </div>
               <div>
-                <span className="font-medium">Unidade de Medida:</span>
-                <p>{selectedItem.unit}</p> {/* Use `selectedItem.unit` */}
+                <span className="font-medium text-gray-700">Unidade de Medida:</span>
+                <p className="text-gray-600">{selectedItem.unit || "N/A"}</p>
               </div>
               <div>
-                <span className="font-medium">Valor por Unidade:</span>
-                <p>{selectedItem.points_per_unit} pontos</p> {/* Use `selectedItem.points_per_unit` */}
+                <span className="font-medium text-gray-700">Pontos por Unidade:</span>
+                <p className="text-gray-600">{selectedItem.points_per_unit} pontos</p>
               </div>
-              {selectedItem.max_points && (
+              {selectedItem.max_points !== null && selectedItem.max_points !== undefined && (
                 <div>
-                  <span className="font-medium">Pontuação Máxima:</span>
-                  <p>{selectedItem.max_points} pontos</p> {/* Use `selectedItem.max_points` */}
+                  <span className="font-medium text-gray-700">Pontuação Máxima:</span>
+                  <p className="text-gray-600">{selectedItem.max_points} pontos</p>
                 </div>
               )}
             </div>
@@ -275,110 +317,98 @@ const ActivityRegistration = ({ categoryFilter }) => {
 
         {selectedItem && (
           <>
-            {/* Dynamic fields based on calculation type */}
-            {selectedItem.type === 'MONTHS' && ( // Changed from `tipoCalculo` to `type`
+            {selectedItem.type === 'tempo' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="startDate">
-                    Data Inicial
+                    Data Inicial <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.startDate ? 'border-red-500' : ''}`}
-                    value={formValues.startDate}
-                    onChange={handleInputChange}
+                    type="date" id="startDate" name="startDate"
+                    className={`shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.startDate || errors.dateRange ? 'border-red-500' : 'border-gray-300'}`}
+                    value={formValues.startDate} onChange={handleInputChange}
                   />
                   {errors.startDate && <p className="text-red-500 text-xs italic mt-1">{errors.startDate}</p>}
                 </div>
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="endDate">
-                    Data Final
+                    Data Final <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.endDate ? 'border-red-500' : ''}`}
-                    value={formValues.endDate}
-                    onChange={handleInputChange}
+                    type="date" id="endDate" name="endDate"
+                    className={`shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.endDate || errors.dateRange ? 'border-red-500' : 'border-gray-300'}`}
+                    value={formValues.endDate} onChange={handleInputChange}
                   />
                   {errors.endDate && <p className="text-red-500 text-xs italic mt-1">{errors.endDate}</p>}
                 </div>
+                {errors.dateRange && <p className="text-red-500 text-xs italic mt-1 md:col-span-2">{errors.dateRange}</p>}
               </div>
             )}
 
-            {/* General quantity input for types that need it */}
-            {(selectedItem.type === 'EVENTS' || selectedItem.type === 'HOURS' || selectedItem.type === 'CREDITS' || selectedItem.type === 'YEARS') && (
+            {(selectedItem.type === 'quantidade' || selectedItem.type === 'cargaHoraria') && (
               <div className="mb-6">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="quantity">
-                  {selectedItem.type === 'HOURS' ? `Carga Horária (${selectedItem.unit})` : `Quantidade (${selectedItem.unit})`}
+                  {selectedItem.type === 'cargaHoraria' ? `Carga Horária (${selectedItem.unit || 'horas'})` : `Quantidade (${selectedItem.unit || 'unidades'})`}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  min="0" // Changed min to 0 as quantity can be 0 sometimes before user input
-                  step={selectedItem.type === 'HOURS' ? '0.1' : '1'} // Allow decimals for hours
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formValues.quantity}
-                  onChange={handleInputChange}
+                  type="number" id="quantity" name="quantity" min="0.1" step="0.1"
+                  className="shadow-sm appearance-none border border-gray-300 rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={formValues.quantity} onChange={handleInputChange}
                 />
               </div>
             )}
-
-            {/* Description field */}
+            
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                Descrição da Atividade
+                Descrição da Atividade 
               </label>
               <textarea
-                id="description"
-                name="description"
-                rows="3"
-                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.description ? 'border-red-500' : ''}`}
-                placeholder="Descreva detalhes sobre a atividade..."
-                value={formValues.description}
-                onChange={handleInputChange}
+                id="description" name="description" rows="3"
+                className={`shadow-sm appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="Descreva detalhes sobre a atividade, se necessário..."
+                value={formValues.description} onChange={handleInputChange}
               />
               {errors.description && <p className="text-red-500 text-xs italic mt-1">{errors.description}</p>}
             </div>
-
-            {/* Document uploader */}
+            
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Documentos Comprobatórios
               </label>
               <DocumentUploader
-                documents={formValues.documents}
+                documents={formValues.documents} // Passa o array (garantidamente)
                 onDocumentsChange={handleDocumentsChange}
+                userId={currentUser?.id} 
               />
               {errors.documents && <p className="text-red-500 text-xs italic mt-1">{errors.documents}</p>}
-              <p className="text-xs text-gray-500 mt-2">
-                Documentos aceitos: PDF, PNG, JPG (máx. 5MB por arquivo)
-              </p>
             </div>
 
-            {/* Calculated points display */}
-            <div className="mb-6 flex items-center">
-              <div className="flex-1">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Pontuação Calculada
-                </label>
-                <div className="bg-gray-100 px-3 py-2 rounded border border-gray-300">
-                  <span className="text-lg font-bold text-blue-700">{calculatedPoints.toFixed(1)}</span> pontos
-                </div>
+            <div className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <label className="block text-gray-700 text-sm font-bold mb-1">
+                Pontuação Calculada Estimada
+              </label>
+              <div className="text-2xl font-bold text-indigo-600">
+                {calculatedPoints.toFixed(1)} <span className="text-lg font-normal text-gray-600">pontos</span>
               </div>
-              <div className="ml-4">
-                <button
-                  type="submit"
-                  className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-                  disabled={isSubmitting} // Disable button during submission
-                >
-                  {isSubmitting ? 'Registrando...' : 'Registrar Atividade'}
-                </button>
-              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-4 border-t">
+              <button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || !selectedItem || !currentUser}
+              >
+                {isLoading ? (
+                    <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Registrando...
+                    </div>
+                ) : 'Registrar Atividade'}
+              </button>
             </div>
           </>
         )}
@@ -387,4 +417,4 @@ const ActivityRegistration = ({ categoryFilter }) => {
   );
 };
 
-export default ActivityRegistration;
+export default ActivityRegistrationSupabase;

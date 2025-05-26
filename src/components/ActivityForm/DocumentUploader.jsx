@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import supabase from '../../utils/supabaseClient'; // Importa a instância do Supabase
+// Certifique-se de que o caminho para supabaseClient está correto
+import supabase from '../../utils/supabaseClient'; 
 
 // --- Constantes de Configuração ---
 const VALID_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB em bytes
 const ACCEPTED_FILE_EXTENSIONS_STRING = '.pdf,.png,.jpg,.jpeg';
-const DEFAULT_BUCKET_NAME = 'documents'; // Defina o nome do seu bucket no Supabase Storage aqui
+const DEFAULT_BUCKET_NAME = 'rscstorage'; // Defina o nome do seu bucket no Supabase Storage aqui
 
-// --- Componentes de Ícone (Idealmente em arquivos separados) ---
+// --- Componentes de Ícone ---
 const UploadCloudIcon = ({ className = "w-10 h-10 mb-3 text-gray-400" }) => (
   <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -36,7 +37,6 @@ const LoadingSpinnerIcon = ({ className = "animate-spin h-5 w-5 text-indigo-600"
     </svg>
 );
 
-
 // --- Função Utilitária ---
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
@@ -48,14 +48,13 @@ const formatFileSize = (bytes) => {
 
 // --- Componente Principal ---
 const DocumentUploader = ({
-  documents = [],
+  documents = [], // Valor padrão é um array vazio
   onDocumentsChange,
-  userId, // Opcional: para criar um caminho específico do usuário
+  userId, 
 }) => {
-  const [uploadingOverall, setUploadingOverall] = useState(false); // Para o estado geral de "Enviando..." na UI
-  const [errors, setErrors] = useState({}); // Para erros por arquivo
+  const [uploadingOverall, setUploadingOverall] = useState(false);
+  const [errors, setErrors] = useState({}); 
 
-  // Função para lidar com a seleção de arquivos e upload para o Supabase
   const handleFileChange = useCallback(async (event) => {
     if (!supabase) {
       console.error("Cliente Supabase não fornecido.");
@@ -73,30 +72,30 @@ const DocumentUploader = ({
       return;
     }
 
-    setErrors({}); // Limpa erros anteriores
+    setErrors({});
     const selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length === 0) return;
 
     setUploadingOverall(true);
 
     const newClientSideDocuments = selectedFiles.map(file => ({
-      id: uuidv4(), // ID único do lado do cliente
+      id: uuidv4(),
       nome: file.name,
       tipo: file.type,
       tamanho: file.size,
       dataUpload: new Date().toISOString(),
       storagePath: '',
       publicURL: '',
-      status: 'validating', // 'validating', 'uploading', 'success', 'error'
-      fileObject: file, // Mantém o objeto File para o upload
-      progress: 0, // Progresso do upload individual
+      status: 'validating',
+      fileObject: file,
+      progress: 0,
     }));
 
-    // Atualiza a UI imediatamente com os arquivos em validação/processamento
-    onDocumentsChange([...documents, ...newClientSideDocuments]);
+    // Garante que 'documents' seja sempre um array antes de concatenar
+    const currentDocsArray = Array.isArray(documents) ? documents : [];
+    onDocumentsChange([...currentDocsArray, ...newClientSideDocuments]);
 
     const uploadPromises = newClientSideDocuments.map(async (doc) => {
-      // 1. Validação
       if (!VALID_FILE_TYPES.includes(doc.tipo)) {
         setErrors(prev => ({ ...prev, [doc.id]: `Tipo de arquivo inválido: ${doc.nome}` }));
         return { ...doc, status: 'error', fileObject: null };
@@ -106,21 +105,19 @@ const DocumentUploader = ({
         return { ...doc, status: 'error', fileObject: null };
       }
 
-      // Atualiza status para 'uploading'
-      onDocumentsChange(prevDocs => prevDocs.map(d => d.id === doc.id ? { ...d, status: 'uploading' } : d));
+      onDocumentsChange(prevDocs => 
+        (Array.isArray(prevDocs) ? prevDocs : []).map(d => d.id === doc.id ? { ...d, status: 'uploading' } : d)
+      );
 
-      // 2. Upload para o Supabase Storage
       const fileExt = doc.nome.split('.').pop();
-      // Caminho no Supabase Storage: {userId}/{uniqueFileName}
       const filePath = `${userId}/${uuidv4()}.${fileExt}`; 
 
       try {
         const { data, error: uploadError } = await supabase.storage
           .from(DEFAULT_BUCKET_NAME)
           .upload(filePath, doc.fileObject, {
-            cacheControl: '3600', // Opcional: controle de cache
-            upsert: false, // Não sobrescrever se já existir (improvável com uuid)
-            // Supabase Storage SDK atualmente não oferece onUploadProgress diretamente para .upload()
+            cacheControl: '3600',
+            upsert: false,
           });
 
         if (uploadError) {
@@ -130,18 +127,16 @@ const DocumentUploader = ({
         }
 
         if (data) {
-          // Obter a URL pública
           const { data: urlData } = supabase.storage.from(DEFAULT_BUCKET_NAME).getPublicUrl(filePath);
           return {
             ...doc,
             status: 'success',
-            storagePath: data.path, // O caminho retornado pelo Supabase (geralmente o mesmo que filePath)
-            publicURL: urlData.publicUrl, // A URL pública para acesso
-            fileObject: null, // Remove o objeto File após o upload
+            storagePath: data.path,
+            publicURL: urlData?.publicUrl || '', // Adiciona verificação para urlData
+            fileObject: null,
             progress: 100,
           };
         }
-        // Caso inesperado se não houver data nem erro
         setErrors(prev => ({ ...prev, [doc.id]: `Falha no upload (resposta inesperada): ${doc.nome}` }));
         return { ...doc, status: 'error', storagePath: filePath, fileObject: null };
 
@@ -152,44 +147,41 @@ const DocumentUploader = ({
       }
     });
 
-    // Processa todas as promessas de upload
     const settledDocuments = await Promise.all(uploadPromises);
 
-    // Atualiza o estado final dos documentos no componente pai
     onDocumentsChange(prevDocs => {
-        // Filtra os documentos que foram processados nesta leva (newClientSideDocuments)
-        // e os substitui pelos resultados de settledDocuments.
-        // Mantém os documentos que já existiam e não foram parte deste batch.
+        const currentDocs = Array.isArray(prevDocs) ? prevDocs : [];
         const existingDocIds = new Set(newClientSideDocuments.map(nd => nd.id));
-        const olderDocs = prevDocs.filter(pd => !existingDocIds.has(pd.id));
-        return [...olderDocs, ...settledDocuments.filter(Boolean)]; // filter(Boolean) para remover nulos se houver
+        const olderDocs = currentDocs.filter(pd => !existingDocIds.has(pd.id));
+        return [...olderDocs, ...settledDocuments.filter(Boolean)];
     });
 
     setUploadingOverall(false);
     if (event.target) {
-      event.target.value = null; // Limpa o input
+      event.target.value = null;
     }
-  }, [userId, documents, onDocumentsChange]);
+  }, [userId, documents, onDocumentsChange]); // supabase não é uma dependência se for estável
 
 
-  // Função para deletar um documento do Supabase Storage e da lista
   const handleDelete = useCallback(async (documentIdToDelete) => {
     if (!supabase) {
       console.error("Cliente Supabase não fornecido para exclusão.");
       setErrors({ general: "Configuração de exclusão ausente (cliente Supabase). Contate o suporte." });
       return;
     }
+    
+    const currentDocsArray = Array.isArray(documents) ? documents : [];
+    const docToDelete = currentDocsArray.find(doc => doc.id === documentIdToDelete);
 
-    const docToDelete = documents.find(doc => doc.id === documentIdToDelete);
     if (!docToDelete || !docToDelete.storagePath) {
       console.warn("Documento ou caminho de armazenamento não encontrado para exclusão:", documentIdToDelete);
-      // Se não tem storagePath, apenas remove da lista local
-      onDocumentsChange(documents.filter(doc => doc.id !== documentIdToDelete));
+      onDocumentsChange(currentDocsArray.filter(doc => doc.id !== documentIdToDelete));
       return;
     }
 
-    // Opcional: Mudar status para 'deleting' na UI
-    onDocumentsChange(prevDocs => prevDocs.map(d => d.id === documentIdToDelete ? { ...d, status: 'deleting' } : d));
+    onDocumentsChange(prevDocs => 
+        (Array.isArray(prevDocs) ? prevDocs : []).map(d => d.id === documentIdToDelete ? { ...d, status: 'deleting' } : d)
+    );
 
     try {
       const { error: deleteError } = await supabase.storage
@@ -199,14 +191,13 @@ const DocumentUploader = ({
       if (deleteError) {
         console.error('Erro ao deletar do Supabase Storage:', deleteError);
         setErrors(prev => ({ ...prev, [documentIdToDelete]: `Falha ao deletar: ${docToDelete.nome}. ${deleteError.message}` }));
-        // Reverter status se falhar
-        onDocumentsChange(prevDocs => prevDocs.map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d)); // Reverte para status anterior
+        onDocumentsChange(prevDocs => 
+            (Array.isArray(prevDocs) ? prevDocs : []).map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d)
+        );
         return;
       }
 
-      // Sucesso na exclusão do storage, agora atualiza a lista no componente pai
-      onDocumentsChange(documents.filter(doc => doc.id !== documentIdToDelete));
-      // Limpar erro específico se houver
+      onDocumentsChange(currentDocsArray.filter(doc => doc.id !== documentIdToDelete));
       setErrors(prev => {
         const newErrors = {...prev};
         delete newErrors[documentIdToDelete];
@@ -216,9 +207,14 @@ const DocumentUploader = ({
     } catch (err) {
       console.error('Erro catastrófico na exclusão:', err);
       setErrors(prev => ({ ...prev, [documentIdToDelete]: `Erro crítico ao deletar: ${docToDelete.nome}` }));
-      onDocumentsChange(prevDocs => prevDocs.map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d));
+      onDocumentsChange(prevDocs => 
+        (Array.isArray(prevDocs) ? prevDocs : []).map(d => d.id === documentIdToDelete ? { ...d, status: docToDelete.status } : d)
+      );
     }
-  }, [documents, onDocumentsChange]); // Removido supabase e bucketName das dependências, pois são constantes
+  }, [documents, onDocumentsChange]); // supabase não é uma dependência se for estável
+
+  // Garante que documents é um array para renderização
+  const safeDocuments = Array.isArray(documents) ? documents : [];
 
   return (
     <div className="bg-white p-6 shadow-lg rounded-xl border border-gray-200 w-full max-w-2xl mx-auto">
@@ -263,23 +259,25 @@ const DocumentUploader = ({
         </div>
       )}
 
-      {documents.length > 0 && (
+      {safeDocuments.length > 0 && (
         <div className="mt-4">
           <h4 className="text-lg font-semibold mb-3 text-gray-700">Documentos Carregados:</h4>
           <ul className="space-y-3">
-            {documents.map((doc) => (
+            {safeDocuments.map((doc) => (
               <li
-                key={doc.id}
+                key={doc.id || uuidv4()} // Adiciona fallback para key se doc.id não estiver presente
                 className="p-3 flex items-center justify-between bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150 ease-in-out"
               >
                 <div className="flex items-center overflow-hidden mr-2 flex-grow">
-                  {doc.tipo.includes('pdf') ? <PdfFileIcon /> : <ImageFileIcon />}
+                  {doc.tipo && doc.tipo.includes('pdf') ? <PdfFileIcon /> : <ImageFileIcon />}
                   <div className="overflow-hidden flex-grow">
-                    <p className="text-sm font-medium text-gray-800 truncate" title={doc.nome}>
-                      {doc.nome}
+                    <p className="text-sm font-medium text-gray-800 truncate" title={doc.nome || 'Nome indisponível'}>
+                      {doc.nome || 'Arquivo sem nome'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {formatFileSize(doc.tamanho)} - {doc.status === 'success' ? new Date(doc.dataUpload).toLocaleDateString() : doc.status}
+                      {typeof doc.tamanho === 'number' ? formatFileSize(doc.tamanho) : ''}
+                      {typeof doc.tamanho === 'number' && (doc.status === 'success' && doc.dataUpload) ? ' - ' : ''}
+                      {doc.status === 'success' && doc.dataUpload ? new Date(doc.dataUpload).toLocaleDateString() : doc.status || 'Status desconhecido'}
                       {doc.status === 'uploading' && ` (${doc.progress || 0}%)`}
                     </p>
                     {errors[doc.id] && <p className="text-xs text-red-500 whitespace-pre-wrap">{errors[doc.id]}</p>}
@@ -287,12 +285,12 @@ const DocumentUploader = ({
                 </div>
                 <div className="flex-shrink-0">
                     {doc.status === 'uploading' && <LoadingSpinnerIcon />}
-                    {(doc.status === 'success' || doc.status === 'error' || doc.status === 'validating') && // 'validating' também permite delete se falhar antes do upload
+                    {(doc.status === 'success' || doc.status === 'error' || doc.status === 'validating') && doc.id &&
                         <button
                         onClick={() => handleDelete(doc.id)}
                         className="p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors duration-150 ease-in-out ml-2"
                         title="Remover documento"
-                        aria-label={`Remover o documento ${doc.nome}`}
+                        aria-label={`Remover o documento ${doc.nome || 'sem nome'}`}
                         disabled={doc.status === 'deleting'}
                         >
                         {doc.status === 'deleting' ? <LoadingSpinnerIcon /> : <TrashIcon />}
@@ -303,6 +301,9 @@ const DocumentUploader = ({
             ))}
           </ul>
         </div>
+      )}
+      {safeDocuments.length === 0 && !uploadingOverall && (
+         <p className="text-sm text-center text-gray-500 py-4">Nenhum documento adicionado.</p>
       )}
     </div>
   );
