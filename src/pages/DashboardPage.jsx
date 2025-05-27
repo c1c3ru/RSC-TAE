@@ -20,11 +20,7 @@ const DashboardPage = () => {
     
   return (
     <div className="container mx-auto">
-      {currentUser && (
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 animate-fade-in-down">
-          Bem-vindo, {currentUser.nome}!
-        </h1>
-      )}
+  
       <p className="text-gray-600 mb-8 animate-fade-in-down delay-100">
         Visão geral da sua pontuação e atividades recentes.
       </p>

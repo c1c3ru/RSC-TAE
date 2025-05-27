@@ -1,16 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import supabase from "../utils/supabaseClient";
-import * as Sentry from "@sentry/react";
+import { motion } from "framer-motion";
 
-// Inicializar Sentry
-Sentry.init({
-  dsn: "https://ab89b790f40d94541025a759d3e66321@o4509356969885696.ingest.us.sentry.io/4509357025591296",
-  sendDefaultPii: true,
-});
-
-// Create Auth context
+// Create the Authentication Context
 const AuthContext = createContext();
 
+// Hook for using the Auth Context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -19,286 +14,204 @@ export const useAuth = () => {
   return context;
 };
 
+// Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
+  const [message, setMessage] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
-  const clearFeedback = () => {
-    setTimeout(() => {
-      setError(null);
-      setMessage(null);
-    }, 5000);
-  };
-
-  const fetchUserProfile = async (userId) => {
-    const { data: userData, error: dbError } = await supabase
-      .from("user_profile")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (dbError && dbError.code !== 'PGRST116') {
-      console.error("Error fetching user profile from DB:", dbError);
-      Sentry.captureException(dbError);
-      return null;
-    }
-    return userData;
-  };
-
-  const createUserProfile = async (user) => {
-    try {
-      if (!user || !user.email || !user.id) {
-        console.error("Invalid user object in createUserProfile: missing ID or email", user);
-        return null;
-      }
-      
-      const { data: existingUser, error: queryError } = await supabase
-        .from("user_profile")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-        
-      if (queryError && queryError.code !== 'PGRST116') {
-        throw queryError;
-      }
-
-      if (!existingUser) {
-        const { data, error } = await supabase.from("user_profile").insert({
-          id: user.id,
-          email: user.email,
-          // Certifique-se de que 'name', 'idjob', 'job' correspondem às suas colunas no DB
-          name: user.user_metadata?.full_name || user.email, 
-          idjob: user.user_metadata?.matricula || "", // Assumindo 'idjob' é a matrícula
-          job: user.user_metadata?.cargo || "", // Assumindo 'job' é o cargo
-          profile: "servidor",
-          date_singin: new Date().toISOString(),
-        }).select();
-
-        if (error) throw error;
-        console.log("User profile created successfully in DB with ID:", data[0].id);
-        return data ? data[0] : null;
-      }
-      console.log("User profile already exists in DB with ID:", existingUser.id);
-      return existingUser;
-    } catch (error) {
-      console.error("Erro ao criar perfil do usuário:", error.message);
-      Sentry.captureException(error);
-      setError("Erro ao criar perfil do usuário: " + error.message);
-      clearFeedback();
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const handleAuthChange = async (event, session) => {
-      console.log('Auth State Change Event:', event);
-      console.log('Auth State Change Session:', session);
-      setAuthLoading(true);
-      setError(null);
-      setMessage(null);
-
-      if (session) {
-        let userProfile = await fetchUserProfile(session.user.id);
-
-        if (!userProfile) {
-          console.log('User profile not found in DB, attempting to create...');
-          userProfile = await createUserProfile(session.user);
-        }
-
-        if (userProfile) {
-          // Garante que o currentUser tenha todas as propriedades do userProfile, incluindo 'idjob' e 'job'
-          setCurrentUser({
-            id: userProfile.id,
-            nome: userProfile.name || session.user.user_metadata?.full_name || session.user.email,
-            email: userProfile.email || session.user.email,
-            matricula: userProfile.idjob || 'N/A', // Mapeia idjob para matricula
-            cargo: userProfile.job || 'N/A',     // Mapeia job para cargo
-            perfil: userProfile.profile || 'servidor',
-            // Adicione outras propriedades que você possa precisar do userProfile
-          });
-          console.log('Current User set:', currentUser); // Note: currentUser aqui pode ser o valor antigo antes do setState
-          if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
-            setMessage("Login bem-sucedido!");
-            clearFeedback();
-          }
-        } else {
-          // Fallback se o perfil não puder ser carregado/criado
-          setCurrentUser({
-            id: session.user.id,
-            nome: session.user.user_metadata?.full_name || session.user.email,
-            email: session.user.email,
-            matricula: 'N/A',
-            cargo: 'N/A',
-            perfil: "servidor",
-          });
-          setError("Não foi possível carregar o perfil completo do usuário.");
-          clearFeedback();
-          console.warn('Fallback: Current User set with basic session info.');
-        }
-      } else if (event === "SIGNED_OUT") {
-        setCurrentUser(null);
-        setMessage("Logout realizado com sucesso.");
-        clearFeedback();
-        console.log('User signed out.');
-      }
-      setAuthLoading(false);
+  // Function to map database user to app user format
+  const mapUser = (user, metadata) => {
+    if (!user) return null;
+    return {
+      id: user.id,
+      email: user.email,
+      nome: metadata?.nome || metadata?.full_name || "Usuário",
+      matricula: metadata?.matricula || "N/A",
+      cargo: metadata?.cargo || "N/A",
+      role: metadata?.profile || "user",
+      createdAt: user.created_at
     };
+  };
 
-    // Listen to auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(handleAuthChange);
+  // Check user session on component mount
+  useEffect(() => {
+    const initAuth = async () => {
+      setLoading(true);
+      try {
+        // Get session and subscribe to auth changes
+        const { data: { session } } = await supabase.auth.getSession();
+        setCurrentUser(
+          session?.user ? 
+            mapUser(
+              session.user, 
+              session.user.user_metadata
+            ) : null
+        );
 
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        handleAuthChange("INITIAL_SESSION", session);
-      } else {
+        // Set up auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log("Auth state changed:", event);
+            if (session?.user) {
+              setCurrentUser(mapUser(session.user, session.user.user_metadata));
+            } else {
+              setCurrentUser(null);
+            }
+          }
+        );
+
+        return () => {
+          subscription?.unsubscribe();
+        };
+      } catch (err) {
+        console.error("Auth initialization error:", err);
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
-    });
-
-    return () => {
-      authListener?.subscription.unsubscribe();
     };
+
+    initAuth();
   }, []);
 
-  // Dummy implementations for missing functions
+  // Sign In function
   const login = async (email, password) => {
+    clearMessages();
     setAuthLoading(true);
-    setError(null);
-    setMessage(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      setMessage("Login bem-sucedido!");
-      clearFeedback();
-    } catch (err) {
-      setError(err.message || "Erro ao fazer login.");
-      clearFeedback();
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const loginWithGoogle = async () => {
-    setAuthLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
-      if (error) throw error;
-      setMessage("Redirecionando para login com Google...");
-      clearFeedback();
-    } catch (err) {
-      setError(err.message || "Erro ao fazer login com Google.");
-      clearFeedback();
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    setAuthLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setMessage("Logout realizado com sucesso.");
-      clearFeedback();
-    } catch (err) {
-      setError(err.message || "Erro ao fazer logout.");
-      clearFeedback();
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const register = async (email, password, user_metadata = {}) => {
-    setAuthLoading(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: { data: user_metadata },
       });
+
       if (error) throw error;
-      setMessage("Cadastro realizado com sucesso! Verifique seu e-mail.");
-      clearFeedback();
+      return { user: data.user ? mapUser(data.user, data.user.user_metadata) : null };
     } catch (err) {
-      setError(err.message || "Erro ao cadastrar.");
-      clearFeedback();
+      console.error("Login error:", err);
+      setError(err.message);
+      return { error: err.message };
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const forgotPassword = async (email) => {
+  // Sign In with Google
+  const loginWithGoogle = async () => {
+    clearMessages();
     setAuthLoading(true);
-    setError(null);
-    setMessage(null);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
       if (error) throw error;
-      setMessage("E-mail de redefinição de senha enviado.");
-      clearFeedback();
     } catch (err) {
-      setError(err.message || "Erro ao solicitar redefinição de senha.");
-      clearFeedback();
+      console.error("Google login error:", err);
+      setError(err.message);
+      return { error: err.message };
     } finally {
       setAuthLoading(false);
     }
   };
 
-  const resetPassword = async (accessToken, newPassword) => {
+  // Sign Up function
+  const register = async (email, password, metadata) => {
+    clearMessages();
     setAuthLoading(true);
-    setError(null);
-    setMessage(null);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (error) {
-        throw new Error(error.message);
+      if (error) throw error;
+      
+      if (data.user && !data.session) {
+        setMessage("Verifique seu email para confirmar o cadastro.");
       }
+      
+      return { user: data.user ? mapUser(data.user, data.user.user_metadata) : null };
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(err.message);
+      return { error: err.message };
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
-      setMessage("Sua senha foi redefinida com sucesso. Você pode fazer login agora.");
-      clearFeedback();
-      console.log('Password reset successful.');
+  // Reset password function
+  const forgotPassword = async (email) => {
+    clearMessages();
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+      
+      if (error) throw error;
+      
+      setMessage("Instruções para redefinição de senha enviadas para seu email.");
       return { success: true };
     } catch (err) {
-      console.error("Reset password error:", err);
-      Sentry.captureException(err);
-      setError(err.message || "Erro ao redefinir a senha. Por favor, tente novamente.");
-      clearFeedback();
-      throw err;
+      console.error("Password reset error:", err);
+      setError(err.message);
+      return { error: err.message };
     } finally {
       setAuthLoading(false);
     }
   };
 
+  // Sign Out function
+  const logout = async () => {
+    clearMessages();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout error:", error);
+      setError(error.message);
+    }
+  };
+
+  // Clear error and message states
+  const clearMessages = () => {
+    setError(null);
+    setMessage("");
+  };
+
+  // Create context value object with memoization
   const value = {
     currentUser,
+    login,
+    loginWithGoogle,
+    register,
+    forgotPassword,
+    logout,
     loading,
     authLoading,
     error,
     message,
-    login,
-    loginWithGoogle,
-    logout,
-    register,
-    forgotPassword,
-    resetPassword,
+    clearMessages,
   };
 
+  // Return provider with animated children
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children} 
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {children}
+      </motion.div>
     </AuthContext.Provider>
   );
 };

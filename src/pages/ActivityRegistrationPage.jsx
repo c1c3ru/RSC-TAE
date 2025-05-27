@@ -1,138 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React from 'react';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
-import { useAuth } from '../context/AuthContext'; // Importa useAuth para obter o usuário
+import { useAuth } from '../context/AuthContext';
+import { useCompetency } from '../context/CompetencyContext';
 
 const ActivityRegistrationPage = () => {
-  const location = useLocation();
-  const [categoryFilter, setCategoryFilter] = useState(null);
-  const { currentUser, loading: authLoading } = useAuth(); // Obtém o usuário logado e o status de carregamento
+  const { currentUser, loading: authLoading } = useAuth();
+  const { activeCategoryFilter, filterItemsByCategory } = useCompetency();
 
-  // Extrai o filtro de categoria da URL se presente
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const category = params.get('category');
-    if (category) {
-      setCategoryFilter(category);
-    }
-  }, [location]);
-  
-  // Define as categorias (se não estiverem centralizadas em um arquivo de dados)
   const categories = [
-    { id: 1, name: 'Atividades Administrativas', color: 'blue' },
-    { id: 2, name: 'Experiência Profissional', color: 'red' },
-    { id: 3, name: 'Formação e Capacitação', color: 'green' },
-    { id: 4, name: 'Produção Científica', color: 'yellow' },
-    { id: 5, name: 'Participação em Eventos', color: 'purple' },
-    { id: 6, name: 'Atividades de Ensino', color: 'orange' }
+    { id: 1, name: 'Atividades Administrativas', desc: 'Fiscalização, comissões e gestão', color: 'blue' },
+    { id: 2, name: 'Experiência Profissional', desc: 'Tempo de serviço e funções', color: 'red' },
+    { id: 3, name: 'Formação e Capacitação', desc: 'Cursos e titulação acadêmica', color: 'green' },
+    { id: 4, name: 'Produção Científica', desc: 'Publicações e patentes', color: 'yellow' },
+    { id: 5, name: 'Participação em Eventos', desc: 'Eventos e projetos', color: 'purple' },
+    { id: 6, name: 'Atividades de Ensino', desc: 'Orientações e ensino', color: 'orange' },
   ];
-  
-  // Função para gerar classes de cor apropriadas com base na categoria
-  const getCategoryColorClasses = (categoryId, type) => {
-    const category = categories.find(cat => cat.id === parseInt(categoryId));
-    if (!category) return '';
-    
-    const colorMap = {
-      blue: {
-        bg: 'bg-blue-50',
-        border: 'border-blue-200',
-        button: 'bg-blue-600 hover:bg-blue-700'
-      },
-      red: {
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        button: 'bg-red-600 hover:bg-red-700'
-      },
-      green: {
-        bg: 'bg-green-50',
-        border: 'border-green-200',
-        button: 'bg-green-600 hover:bg-green-700'
-      },
-      yellow: {
-        bg: 'bg-yellow-50',
-        border: 'border-yellow-200',
-        button: 'bg-yellow-600 hover:bg-yellow-700'
-      },
-      purple: {
-        bg: 'bg-purple-50',
-        border: 'border-purple-200',
-        button: 'bg-purple-600 hover:bg-purple-700'
-      },
-      orange: {
-        bg: 'bg-orange-50',
-        border: 'border-orange-200',
-        button: 'bg-orange-600 hover:bg-orange-700'
-      }
+
+  const getCategoryColorClasses = (color, isActive) => {
+    // ... (sua função de cores permanece a mesma)
+    const colorStyles = {
+      blue: { inactive: 'bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100', active: 'bg-blue-600 border-blue-700 text-white shadow-lg scale-105' },
+      red: { inactive: 'bg-red-50 border-red-200 text-red-800 hover:bg-red-100', active: 'bg-red-600 border-red-700 text-white shadow-lg scale-105' },
+      green: { inactive: 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100', active: 'bg-green-600 border-green-700 text-white shadow-lg scale-105' },
+      yellow: { inactive: 'bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100', active: 'bg-yellow-500 border-yellow-600 text-white shadow-lg scale-105' },
+      purple: { inactive: 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100', active: 'bg-purple-600 border-purple-700 text-white shadow-lg scale-105' },
+      orange: { inactive: 'bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100', active: 'bg-orange-500 border-orange-600 text-white shadow-lg scale-105' },
     };
-    
-    return colorMap[category.color][type];
+    return isActive ? colorStyles[color].active : colorStyles[color].inactive;
   };
-  
+
   return (
-    <div className="container mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Atividade</h1>
-      
-      {/* Abas de filtro de categoria */}
-      {categoryFilter && (
-        <div className="mb-6">
-          <div className={`p-4 rounded-lg ${getCategoryColorClasses(categoryFilter, 'bg')} ${getCategoryColorClasses(categoryFilter, 'border')}`}>
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  Categoria: {categories.find(cat => cat.id === parseInt(categoryFilter))?.name}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {categoryFilter === '1' && 'Inclui fiscalização de contratos, participação em comissões e atividades de gestão.'}
-                  {categoryFilter === '2' && 'Inclui tempo de serviço, cargos e funções ocupadas.'}
-                  {categoryFilter === '3' && 'Inclui cursos, titulação acadêmica e certificações.'}
-                  {categoryFilter === '4' && 'Inclui publicações, patentes e desenvolvimento de sistemas.'}
-                  {categoryFilter === '5' && 'Inclui organização de eventos e participação em projetos.'}
-                  {categoryFilter === '6' && 'Inclui orientações, tutorias e atividades de ensino.'}
-                </p>
-              </div>
-              <button
-                onClick={() => setCategoryFilter(null)}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Remover filtro
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Botões de seleção de categoria (quando nenhum filtro é selecionado) */}
-      {!categoryFilter && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {categories.map(category => (
-            <button
-              key={category.id}
-              className={`p-4 rounded-lg border ${getCategoryColorClasses(category.id, 'bg')} ${getCategoryColorClasses(category.id, 'border')} text-left transition-colors`}
-              onClick={() => setCategoryFilter(category.id.toString())}
-            >
-              <h3 className="font-semibold">{category.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {category.id === 1 && 'Fiscalização, comissões e gestão'}
-                {category.id === 2 && 'Tempo de serviço e funções'}
-                {category.id === 3 && 'Cursos e titulação acadêmica'}
-                {category.id === 4 && 'Publicações e patentes'}
-                {category.id === 5 && 'Eventos e projetos'}
-                {category.id === 6 && 'Orientações e ensino'}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Registrar Nova Atividade</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {categories.map(category => {
+          const isActive = activeCategoryFilter === category.id;
+          return (
+            <button key={category.id} onClick={() => filterItemsByCategory(category.id)} className={`p-4 rounded-lg border text-left transition-all duration-300 ease-in-out transform ${getCategoryColorClasses(category.color, isActive)}`}>
+              <h3 className="font-semibold text-lg">{category.name}</h3>
+              <p className={`text-sm mt-1 ${isActive ? 'text-white opacity-80' : 'text-gray-600'}`}>
+                {category.desc}
               </p>
             </button>
-          ))}
-        </div>
-      )}
-      
-      {/* Formulário de registro de atividade - Passa o userId para o componente */}
-      {/* Renderiza ActivityRegistration apenas se o usuário estiver carregado e autenticado */}
-      {!authLoading && currentUser ? (
-        <ActivityRegistration categoryFilter={categoryFilter} userId={currentUser.id} />
-      ) : (
-        <p className="text-center text-gray-500">
-          {authLoading ? 'Carregando informações do usuário...' : 'Faça login para registrar atividades.'}
-        </p>
-      )}
+          );
+        })}
+      </div>
+
+      {/* --- INÍCIO DA MUDANÇA PRINCIPAL --- */}
+
+      {/* Wrapper para o Efeito de "Acordeão/Expandir" */}
+      <div
+        className={`transition-all duration-700 ease-in-out overflow-hidden ${
+          activeCategoryFilter ? 'max-h-[2000px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'
+        }`}
+      >
+        {/* Renderiza o conteúdo do formulário aqui dentro */}
+        {/* Ele sempre estará no DOM, mas só será visível quando a categoria estiver ativa */}
+        {!authLoading && currentUser ? (
+          <ActivityRegistration categoryFilter={activeCategoryFilter} />
+        ) : (
+          <p className="text-center text-gray-500 py-8">
+            {authLoading ? 'Carregando...' : 'Faça login para registrar atividades.'}
+          </p>
+        )}
+      </div>
+
+      {/* --- FIM DA MUDANÇA PRINCIPAL --- */}
+
     </div>
   );
 };
