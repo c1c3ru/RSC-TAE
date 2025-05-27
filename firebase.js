@@ -6,6 +6,7 @@ import {
   signInWithPopup
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // Importa funções do Storage
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,4 +21,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
+export const storage = getStorage(app); // Inicializa e exporta o Firebase Storage
+
+// Funções utilitárias para o Storage (opcional, mas útil para centralizar)
+export { ref, uploadBytes, getDownloadURL, deleteObject };
 

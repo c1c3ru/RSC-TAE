@@ -1,42 +1,78 @@
+// supabase/supabaseClient.js
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize the Supabase client
-// In a production environment, these would be stored in environment variables
-const supabaseUrl = 'https://nndkowmwzxfbonbldzsc.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGtvd213enhmYm9uYmxkenNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1MTM1NTMsImV4cCI6MjA2MzA4OTU1M30.qu1ArbyDFJJZehbTU1cY4GldtaazTuiXcvAKAD82xnw';
+// Inicialize o cliente Supabase lendo das variáveis de ambiente
+// O prefixo VITE_ é necessário para que o Vite exponha a variável no lado do cliente
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+let supabaseInstance = null;
+
+if (supabaseUrl && supabaseAnonKey) {
+  // Cria a instância do Supabase APENAS UMA VEZ
+  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  console.error(
+    'Erro Crítico: Variáveis de ambiente VITE_SUPABASE_URL ou VITE_SUPABASE_KEY não estão definidas. O cliente Supabase não foi inicializado.'
+  );
+  // Em um cenário real, você poderia lançar um erro aqui para parar a execução
+  // ou ter uma lógica de fallback mais robusta se o app puder funcionar parcialmente sem Supabase.
+  // throw new Error('Variáveis de ambiente Supabase ausentes. A aplicação não pode continuar.');
+}
+
+// Exporta a ÚNICA instância do cliente Supabase
+// Se supabaseInstance for null devido a variáveis ausentes, qualquer tentativa de usá-lo
+// resultará em erro, o que é esperado e ajuda a identificar o problema de configuração.
+export const supabase = supabaseInstance;
 
 /**
- * Get the current session
+ * Obtém a sessão atual.
+ * @returns {Promise<object|null>} A sessão do usuário ou null em caso de erro/sem sessão.
  */
 export const getSession = async () => {
+  // Verifica se o cliente Supabase foi inicializado
+  if (!supabase) {
+    console.error('Cliente Supabase não inicializado. Não é possível buscar a sessão.');
+    return null;
+  }
   const { data, error } = await supabase.auth.getSession();
   if (error) {
-    console.error('Error fetching session:', error);
+    console.error('Erro ao buscar a sessão:', error.message);
     return null;
   }
   return data.session;
 };
 
 /**
- * Get the current user
+ * Obtém o usuário atualmente autenticado.
+ * @returns {Promise<object|null>} O objeto do usuário ou null em caso de erro/sem usuário.
  */
 export const getCurrentUser = async () => {
+  if (!supabase) {
+    console.error('Cliente Supabase não inicializado. Não é possível buscar o usuário.');
+    return null;
+  }
   const { data, error } = await supabase.auth.getUser();
   if (error) {
-    console.error('Error fetching user:', error);
+    console.error('Erro ao buscar o usuário:', error);
     return null;
   }
   return data.user;
 };
 
 /**
- * Check if the user has an active session
+ * Verifica se o usuário tem uma sessão ativa.
+ * @returns {Promise<boolean>} True se autenticado, false caso contrário.
  */
 export const isAuthenticated = async () => {
+  if (!supabase) {
+    console.error('Cliente Supabase não inicializado. Não é possível verificar a autenticação.');
+    return false; // Retorna false se não puder verificar
+  }
   const session = await getSession();
   return !!session;
 };
 
+// Exporta a instância do cliente Supabase como default também, para consistência
+// se você estiver usando import default em algum lugar.
 export default supabase;

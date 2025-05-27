@@ -1,96 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { useCompetency } from '../../context/CompetencyContext';
-import DocumentUploader from './DocumentUploader';
+import { useAuth } from '../../context/AuthContext';
 
 const ActivityRegistration = ({ categoryFilter }) => {
-  const { competencyItems, registerActivity } = useCompetency();
-  
+  const { competencyItems, registerActivity, error: competencyError } = useCompetency();
+  const { currentUser } = useAuth();
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [formValues, setFormValues] = useState({
-    startDate: '',
-    endDate: '',
     quantity: 1,
-    description: '',
-    documents: []
+    dataInicio: '', // Adicionado de volta para ser enviado para o DB
+    dataFim: '', // Adicionado de volta para ser enviado para o DB
   });
   const [calculatedPoints, setCalculatedPoints] = useState(0);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
-  
-  // Filter items by category if provided
-  const filteredItems = categoryFilter 
+  const [localError, setLocalError] = useState(null); // Erro local para mensagens específicas do formulário
+
+  const filteredItems = categoryFilter
     ? competencyItems.filter(item => item.categoria === parseInt(categoryFilter))
     : competencyItems;
-  
-  // Handle item selection
+
   const handleItemSelect = (itemId) => {
-    const selected = competencyItems.find(item => item.id === parseInt(itemId));
+    const selected = competencyItems.find(item => item.id === itemId);
     setSelectedItem(selected);
     setCalculatedPoints(0);
-    // Reset form except for documents
+    setErrors({}); // Limpa erros ao mudar de item
     setFormValues({
-      ...formValues,
-      startDate: '',
-      endDate: '',
       quantity: 1,
-      description: ''
+      dataInicio: '',
+      dataFim: '',
     });
   };
-  
-  // Calculate points based on the selected item and form values
+
   const calculatePoints = () => {
     if (!selectedItem) return 0;
-    
+
     let points = 0;
-    
-    switch (selectedItem.tipoCalculo) {
-      case 'tempo': {
-        // Calculate based on time period
-        if (formValues.startDate && formValues.endDate) {
-          const start = new Date(formValues.startDate);
-          const end = new Date(formValues.endDate);
-          
-          if (end < start) return 0;
-          
-          // Calculate months between dates
-          const months = (end.getFullYear() - start.getFullYear()) * 12 + 
-            (end.getMonth() - start.getMonth());
-            
-          points = months * selectedItem.valorPonto;
-        }
-        break;
-      }
-      case 'quantidade': {
-        // Calculate based on quantity
-        points = formValues.quantity * selectedItem.valorPonto;
-        break;
-      }
-      case 'cargaHoraria': {
-        // Calculate based on workload (hours)
-        points = (formValues.quantity / selectedItem.unidadeBase) * selectedItem.valorPonto;
-        break;
-      }
-      default:
-        points = selectedItem.valorPonto;
+    const quantity = parseFloat(formValues.quantity);
+
+    if (isNaN(quantity) || quantity < 0) { // Quantidade pode ser 0 em alguns casos, mas não negativa
+      return 0;
     }
-    
-    // Check if there's a maximum points limit for this item
-    if (selectedItem.pontuacaoMaxima && points > selectedItem.pontuacaoMaxima) {
+
+    const valorPonto = parseFloat(selectedItem.valorPonto) || 0;
+    const tipoCalculo = selectedItem.tipoCalculo;
+    const unidadeBase = parseFloat(selectedItem.unidadeBase) || 1; // Garante que unidadeBase seja número
+
+    switch (tipoCalculo) {
+      case 'tempo': // Ex: meses
+      case 'MONTHS':
+        points = quantity * valorPonto;
+        break;
+      case 'quantidade': // Ex: certificações, eventos
+      case 'EVENTS':
+      case 'YEARS':
+      case 'CREDITS':
+        points = quantity * valorPonto;
+        break;
+      case 'cargaHoraria': // Ex: horas de curso
+      case 'HOURS':
+        // Carga horária é dividida pela unidade base antes de multiplicar pelos pontos por unidade
+        points = (quantity / unidadeBase) * valorPonto;
+        break;
+      default:
+        points = quantity * valorPonto;
+    }
+
+    // Aplica pontuação máxima
+    if (selectedItem.pontuacaoMaxima !== null && selectedItem.pontuacaoMaxima !== undefined && points > selectedItem.pontuacaoMaxima) {
       points = selectedItem.pontuacaoMaxima;
     }
-    
+
     return parseFloat(points.toFixed(1));
   };
-  
-  // Update calculated points when form values or selected item changes
+
   useEffect(() => {
     if (selectedItem) {
       const points = calculatePoints();
       setCalculatedPoints(points);
     }
-  }, [formValues, selectedItem]);
-  
-  // Handle form value changes
+  }, [formValues.quantity, selectedItem]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues({
@@ -98,81 +89,74 @@ const ActivityRegistration = ({ categoryFilter }) => {
       [name]: value
     });
   };
-  
-  // Handle document upload
-  const handleDocumentsChange = (documents) => {
-    setFormValues({
-      ...formValues,
-      documents
-    });
-  };
-  
-  // Validate form before submission
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!selectedItem) {
-      newErrors.item = 'Selecione um item de competência';
+      newErrors.item = 'Selecione um item de competência.';
     }
-    
-    if (selectedItem?.tipoCalculo === 'tempo') {
-      if (!formValues.startDate) newErrors.startDate = 'Data inicial obrigatória';
-      if (!formValues.endDate) newErrors.endDate = 'Data final obrigatória';
-      if (formValues.startDate && formValues.endDate && new Date(formValues.endDate) < new Date(formValues.startDate)) {
-        newErrors.dateRange = 'A data final deve ser posterior à data inicial';
+
+    const quantity = parseFloat(formValues.quantity);
+    if (isNaN(quantity) || quantity < 0) { // Quantidade pode ser 0, dependendo da regra de negócio
+      newErrors.quantity = 'Quantidade deve ser um número não negativo.';
+    }
+
+    // Validações adicionais baseadas no tipo de cálculo ou regras específicas do item
+    if (selectedItem) {
+      if (selectedItem.tipoCalculo === 'tempo' || selectedItem.tipoCalculo === 'HOURS') {
+        if (!formValues.dataInicio) {
+          newErrors.dataInicio = 'Data de início é obrigatória para este tipo de atividade.';
+        }
+        if (!formValues.dataFim) {
+          newErrors.dataFim = 'Data de fim é obrigatória para este tipo de atividade.';
+        }
+        if (formValues.dataInicio && formValues.dataFim && new Date(formValues.dataInicio) > new Date(formValues.dataFim)) {
+          newErrors.dataFim = 'Data de fim não pode ser anterior à data de início.';
+        }
       }
     }
-    
-    if (!formValues.description) {
-      newErrors.description = 'Descrição obrigatória';
-    }
-    
-    if (formValues.documents.length === 0) {
-      newErrors.documents = 'Pelo menos um documento comprobatório é obrigatório';
-    }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
-  // Submit form
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess(false);
-    
-    if (!validateForm()) return;
-    
+    setLocalError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     const activityData = {
       itemCompetenciaId: selectedItem.id,
-      dataInicio: formValues.startDate || null,
-      dataFim: formValues.endDate || null,
-      quantidade: formValues.quantity,
-      descricao: formValues.description,
-      documentos: formValues.documents,
+      quantidade: parseFloat(formValues.quantity),
+      dataInicio: formValues.dataInicio || null,
+      dataFim: formValues.dataFim || null,
       pontuacao: calculatedPoints,
-      status: 'pendente'
     };
-    
-    registerActivity(activityData);
-    
-    // Reset form
-    setSelectedItem(null);
-    setFormValues({
-      startDate: '',
-      endDate: '',
-      quantity: 1,
-      description: '',
-      documents: []
-    });
-    setCalculatedPoints(0);
-    setSuccess(true);
-    
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setSuccess(false);
-    }, 3000);
+
+    const registered = await registerActivity(activityData);
+
+    if (registered) {
+      setSelectedItem(null);
+      setFormValues({
+        quantity: 1,
+        dataInicio: '',
+        dataFim: '',
+      });
+      setCalculatedPoints(0);
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+    } else {
+      setLocalError(competencyError); // Usa o erro do contexto se houver
+    }
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-6">Registrar Nova Atividade</h2>
@@ -182,9 +166,13 @@ const ActivityRegistration = ({ categoryFilter }) => {
           <span className="block sm:inline">Atividade registrada com sucesso!</span>
         </div>
       )}
-      
+      {localError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+          <span className="block sm:inline">{localError}</span>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
-        {/* Item selection */}
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="competencyItem">
             Item de Competência
@@ -205,16 +193,12 @@ const ActivityRegistration = ({ categoryFilter }) => {
           {errors.item && <p className="text-red-500 text-xs italic mt-1">{errors.item}</p>}
         </div>
         
-        {/* Selected item details */}
         {selectedItem && (
           <div className="mb-6 bg-blue-50 p-4 rounded-lg">
             <h3 className="font-semibold mb-2">{selectedItem.titulo}</h3>
             <p className="text-sm mb-2">{selectedItem.descricao}</p>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Documentação necessária:</span>
-                <p>{selectedItem.documentosComprobatorios}</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              
               <div>
                 <span className="font-medium">Unidade de Medida:</span>
                 <p>{selectedItem.unidadeMedida}</p>
@@ -223,10 +207,16 @@ const ActivityRegistration = ({ categoryFilter }) => {
                 <span className="font-medium">Valor por Unidade:</span>
                 <p>{selectedItem.valorPonto} pontos</p>
               </div>
-              {selectedItem.pontuacaoMaxima && (
+              {selectedItem.pontuacaoMaxima !== null && selectedItem.pontuacaoMaxima !== undefined && (
                 <div>
                   <span className="font-medium">Pontuação Máxima:</span>
                   <p>{selectedItem.pontuacaoMaxima} pontos</p>
+                </div>
+              )}
+               {selectedItem.unidadeBase !== null && selectedItem.unidadeBase !== undefined && selectedItem.tipoCalculo === 'cargaHoraria' && (
+                <div>
+                  <span className="font-medium">Unidade Base (Carga Horária):</span>
+                  <p>{selectedItem.unidadeBase} horas</p>
                 </div>
               )}
             </div>
@@ -235,91 +225,60 @@ const ActivityRegistration = ({ categoryFilter }) => {
         
         {selectedItem && (
           <>
-            {/* Dynamic fields based on calculation type */}
-            {selectedItem.tipoCalculo === 'tempo' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="startDate">
-                    Data Inicial
-                  </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.startDate ? 'border-red-500' : ''}`}
-                    value={formValues.startDate}
-                    onChange={handleInputChange}
-                  />
-                  {errors.startDate && <p className="text-red-500 text-xs italic mt-1">{errors.startDate}</p>}
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="endDate">
-                    Data Final
-                  </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.endDate ? 'border-red-500' : ''}`}
-                    value={formValues.endDate}
-                    onChange={handleInputChange}
-                  />
-                  {errors.endDate && <p className="text-red-500 text-xs italic mt-1">{errors.endDate}</p>}
-                </div>
-              </div>
-            )}
-            
-            {(selectedItem.tipoCalculo === 'quantidade' || selectedItem.tipoCalculo === 'cargaHoraria') && (
-              <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="quantity">
-                  {selectedItem.tipoCalculo === 'cargaHoraria' ? 'Carga Horária (horas)' : 'Quantidade'}
-                </label>
-                <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  min="1"
-                  step={selectedItem.tipoCalculo === 'cargaHoraria' ? '0.1' : '1'}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  value={formValues.quantity}
-                  onChange={handleInputChange}
-                />
-              </div>
-            )}
-            
-            {/* Description field */}
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                Descrição da Atividade
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="quantity">
+                Quantidade ({selectedItem.unidadeMedida || 'unidades'})
               </label>
-              <textarea
-                id="description"
-                name="description"
-                rows="3"
-                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.description ? 'border-red-500' : ''}`}
-                placeholder="Descreva detalhes sobre a atividade..."
-                value={formValues.description}
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                min="0"
+                step="any"
+                className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.quantity ? 'border-red-500' : ''}`}
+                value={formValues.quantity}
                 onChange={handleInputChange}
               />
-              {errors.description && <p className="text-red-500 text-xs italic mt-1">{errors.description}</p>}
+              {errors.quantity && <p className="text-red-500 text-xs italic mt-1">{errors.quantity}</p>}
             </div>
+
+            {/* Campos de Data de Início e Fim - Renderização Condicional */}
+            {(selectedItem.tipoCalculo === 'tempo' || selectedItem.tipoCalculo === 'HOURS') && (
+              <>
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="dataInicio">
+                    Data de Início
+                  </label>
+                  <input
+                    type="date"
+                    id="dataInicio"
+                    name="dataInicio"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.dataInicio ? 'border-red-500' : ''}`}
+                    value={formValues.dataInicio}
+                    onChange={handleInputChange}
+                  />
+                  {errors.dataInicio && <p className="text-red-500 text-xs italic mt-1">{errors.dataInicio}</p>}
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="dataFim">
+                    Data de Fim
+                  </label>
+                  <input
+                    type="date"
+                    id="dataFim"
+                    name="dataFim"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.dataFim ? 'border-red-500' : ''}`}
+                    value={formValues.dataFim}
+                    onChange={handleInputChange}
+                  />
+                  {errors.dataFim && <p className="text-red-500 text-xs italic mt-1">{errors.dataFim}</p>}
+                </div>
+              </>
+            )}
+
             
-            {/* Document uploader */}
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Documentos Comprobatórios
-              </label>
-              <DocumentUploader 
-                documents={formValues.documents} 
-                onDocumentsChange={handleDocumentsChange} 
-              />
-              {errors.documents && <p className="text-red-500 text-xs italic mt-1">{errors.documents}</p>}
-              <p className="text-xs text-gray-500 mt-2">
-                Documentos aceitos: PDF, PNG, JPG (máx. 5MB por arquivo)
-              </p>
-            </div>
-            
-            {/* Calculated points display */}
+            {/* Exibição de pontos calculados */}
             <div className="mb-6 flex items-center">
               <div className="flex-1">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
