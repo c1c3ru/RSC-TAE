@@ -1,0 +1,44 @@
+hook.js:608 Error loading data: Error: User not authenticated
+    at getUserActivities (activityService.js:12:22)
+    at async Promise.all (index 1)
+    at async loadData (CompetencyContext.jsx:34:47)
+
+nndkowmwzxfbonbldzsc…a5d1-f42f912d385c:1 
+ Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 Warning: Received `true` for a non-boolean attribute `jsx`.
+
+If you want to write it to the DOM, pass a string instead: jsx="true" or jsx={value.toString()}. Error Component Stack
+    at style (<anonymous>)
+    at Sidebar (Sidebar.jsx:6:20)
+    at div (<anonymous>)
+    at div (<anonymous>)
+    at MainLayout (App.jsx:30:23)
+    at ProtectedRoute (App.jsx:15:27)
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:608 No routes matched location "/register"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:600 No routes matched location "/register"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:608 No routes matched location "/history"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:600 No routes matched location "/history"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:608 No routes matched location "/register"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+hook.js:600 No routes matched location "/register"  Error Component Stack
+    at AppContent (App.jsx:46:27)
+    at CompetencyProvider (CompetencyContext.jsx:17:38)
+    at AuthProvider (AuthContext.jsx:17:32)
+﻿

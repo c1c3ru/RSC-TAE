@@ -1,87 +1,110 @@
-import React, { useState } from 'react';
-import ScoreCard from '../components/Dashboard/ScoreCard';
-import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
-import ActivityList from '../components/Tables/ActivityList';
+
+import React from 'react';
 import { useCompetency } from '../context/CompetencyContext';
+import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 
 const DashboardPage = () => {
-  const { activities } = useCompetency();
-  const [showAllActivities, setShowAllActivities] = useState(false);
-  
-  // Get only the 5 most recent activities for the dashboard preview
-  const recentActivities = activities
-    .sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro))
-    .slice(0, 5);
-    
+  const { 
+    totalScore, 
+    categoryScores, 
+    nextProgressionScore, 
+    getActivityStats, 
+    getProgressPercentage,
+    loading 
+  } = useCompetency();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const stats = getActivityStats();
+  const progressPercentage = getProgressPercentage();
+
   return (
-    <div className="container mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Score Card */}
-        <ScoreCard />
-        
-        {/* Category Distribution */}
-        <CategoryDistribution />
-      </div>
-      
-      {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Atividades Recentes</h2>
-          <button 
-            onClick={() => setShowAllActivities(!showAllActivities)}
-            className="text-blue-700 hover:text-blue-900"
-          >
-            {showAllActivities ? 'Mostrar Recentes' : 'Ver Todas'}
-          </button>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <div className="text-sm text-gray-500">
+          Acompanhe seu progresso de competências
         </div>
-        
-        {activities.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <p className="mt-2">Nenhuma atividade registrada.</p>
-            <p className="text-sm">Comece registrando suas atividades para pontuação.</p>
-          </div>
-        ) : (
-          <ActivityList activities={showAllActivities ? activities : recentActivities} />
-        )}
       </div>
-      
-      {/* Quick Links Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
-            <a href="/activity/register" className="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-700 mb-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <span className="font-medium text-gray-800">Registrar Nova Atividade</span>
-            </a>
+
+      {/* Main Score Card */}
+      <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-8 text-white transform transition-all duration-300 hover:scale-105">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Pontuação Total</h2>
+          <div className="text-6xl font-bold mb-4 animate-pulse">
+            {totalScore.toFixed(1)}
+          </div>
+          <div className="text-blue-100 mb-6">
+            de {nextProgressionScore} pontos
           </div>
           
-          <div className="bg-green-50 p-4 rounded-lg border border-green-100 hover:bg-green-100 transition-colors">
-            <a href="/activity/history" className="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-700 mb-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-              <span className="font-medium text-gray-800">Ver Histórico Completo</span>
-            </a>
+          {/* Progress Bar */}
+          <div className="w-full bg-blue-300 bg-opacity-30 rounded-full h-4 mb-4">
+            <div 
+              className="bg-white h-4 rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+            ></div>
           </div>
           
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 hover:bg-purple-100 transition-colors">
-            <a href="/reports" className="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-700 mb-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm4-1a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-2-2a1 1 0 10-2 0v5a1 1 0 102 0V9zm4-1a1 1 0 011 1v5a1 1 0 11-2 0V9a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-              <span className="font-medium text-gray-800">Gerar Relatório</span>
-            </a>
+          <div className="text-blue-100">
+            {progressPercentage.toFixed(1)}% do objetivo
           </div>
         </div>
       </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-green-100 mr-4">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total de Atividades</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-blue-100 mr-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Progresso</p>
+              <p className="text-2xl font-bold text-gray-900">{progressPercentage.toFixed(1)}%</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-purple-100 mr-4">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Pontos por Atividade</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total > 0 ? (totalScore / stats.total).toFixed(1) : '0.0'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Distribution */}
+      <CategoryDistribution categoryScores={categoryScores} />
     </div>
   );
 };

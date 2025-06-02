@@ -1,5 +1,5 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { competencyItems as itemsData } from '../data/competencyItems';
 
 // Create Competency context
 const CompetencyContext = createContext();
@@ -20,30 +20,51 @@ export const CompetencyProvider = ({ children }) => {
   const [totalScore, setTotalScore] = useState(0);
   const [categoryScores, setCategoryScores] = useState([0, 0, 0, 0, 0, 0]);
   const [loading, setLoading] = useState(true);
-  
+
   // Set next progression score goal
   const nextProgressionScore = 100;
-  
+
   // Load competency items and activities on component mount
   useEffect(() => {
-    // Load competency items from data
-    setCompetencyItems(itemsData);
-    
-    // Load saved activities from localStorage
-    const storedActivities = localStorage.getItem('activities');
-    if (storedActivities) {
+    const loadData = async () => {
       try {
-        const parsed = JSON.parse(storedActivities);
-        setActivities(parsed);
+        // Load competences from Supabase
+        const { getCompetences, getUserActivities } = await import('../services/activityService');
+        
+        const [competences, userActivities] = await Promise.all([
+          getCompetences(),
+          getUserActivities()
+        ]);
+
+        setCompetencyItems(competences || []);
+        setActivities(userActivities || []);
       } catch (error) {
-        console.error('Error parsing stored activities:', error);
-        localStorage.removeItem('activities');
+        console.error('Error loading data:', error);
+        // Set empty arrays as fallback
+        setCompetencyItems([]);
+        setActivities([]);
+        
+        // Try to load from localStorage as backup
+        const storedActivities = localStorage.getItem('activities');
+        if (storedActivities) {
+          try {
+            const parsed = JSON.parse(storedActivities);
+            if (Array.isArray(parsed)) {
+              setActivities(parsed);
+            }
+          } catch (parseError) {
+            console.error('Error parsing stored activities:', parseError);
+            localStorage.removeItem('activities');
+          }
+        }
+      } finally {
+        setLoading(false);
       }
-    }
-    
-    setLoading(false);
+    };
+
+    loadData();
   }, []);
-  
+
   // Calculate total score and category scores whenever activities change
   useEffect(() => {
     if (!activities.length) {
@@ -51,75 +72,124 @@ export const CompetencyProvider = ({ children }) => {
       setCategoryScores([0, 0, 0, 0, 0, 0]);
       return;
     }
-    
-    // Initialize category scores array
+
+    // Initialize category scores array (6 categories)
     const catScores = [0, 0, 0, 0, 0, 0];
-    
+
     // Calculate total and category scores
     let total = 0;
     activities.forEach(activity => {
-      // Only count approved or pending activities
-      if (activity.status !== 'rejeitada') {
-        total += activity.pontuacao;
-        
-        // Get the item to determine its category
+      total += activity.pontuacao || 0;
+
+      // Get category from the activity or find the competence
+      let categoryIndex = 0;
+      if (activity.categoria) {
+        categoryIndex = parseInt(activity.categoria) - 1;
+      } else {
         const item = competencyItems.find(item => item.id === activity.itemCompetenciaId);
         if (item) {
-          // Categories are 1-indexed in the data, so we subtract 1
-          const categoryIndex = item.categoria - 1;
-          if (categoryIndex >= 0 && categoryIndex < catScores.length) {
-            catScores[categoryIndex] += activity.pontuacao;
-          }
+          categoryIndex = parseInt(item.category) - 1;
         }
       }
+
+      if (categoryIndex >= 0 && categoryIndex < catScores.length) {
+        catScores[categoryIndex] += activity.pontuacao || 0;
+      }
     });
-    
+
     setTotalScore(total);
     setCategoryScores(catScores);
   }, [activities, competencyItems]);
-  
+
   // Register a new activity
-  const registerActivity = (activityData) => {
-    const newActivity = {
-      id: Date.now() + Math.random().toString(36).substring(2, 9),
-      ...activityData,
-      dataRegistro: new Date().toISOString(),
-    };
-    
-    const updatedActivities = [...activities, newActivity];
-    setActivities(updatedActivities);
-    
-    // Save to localStorage
-    localStorage.setItem('activities', JSON.stringify(updatedActivities));
-    
-    return newActivity;
+  const registerActivity = async (activityData) => {
+    try {
+      const { createActivity } = await import('../services/activityService');
+      const newActivity = await createActivity(activityData);
+
+      const updatedActivities = [...activities, newActivity];
+      setActivities(updatedActivities);
+
+      // Also save to localStorage as backup
+      localStorage.setItem('activities', JSON.stringify(updatedActivities));
+
+      return newActivity;
+    } catch (error) {
+      console.error('Error registering activity:', error);
+      throw error;
+    }
   };
-  
-  // Update an activity's status (e.g., when approved or rejected)
-  const updateActivityStatus = (activityId, status, comments = '') => {
-    const updatedActivities = activities.map(activity => {
-      if (activity.id === activityId) {
-        return {
-          ...activity,
-          status,
-          observacoes: comments,
-          dataAtualizacao: new Date().toISOString()
-        };
-      }
-      return activity;
-    });
-    
-    setActivities(updatedActivities);
-    localStorage.setItem('activities', JSON.stringify(updatedActivities));
+
+  // Update an activity's status
+  const updateActivityStatus = async (activityId, status, comments = '') => {
+    try {
+      const { updateActivityStatus: updateActivityStatusService } = await import('../services/activityService');
+      await updateActivityStatusService(activityId, status, comments);
+
+      const updatedActivities = activities.map(activity => {
+        if (activity.id === activityId) {
+          return {
+            ...activity,
+            status,
+            observacoes: comments,
+            updated_at: new Date().toISOString()
+          };
+        }
+        return activity;
+      });
+
+      setActivities(updatedActivities);
+      localStorage.setItem('activities', JSON.stringify(updatedActivities));
+    } catch (error) {
+      console.error('Error updating activity status:', error);
+      throw error;
+    }
   };
-  
+
+  // Get activity statistics
+  const getActivityStats = () => {
+    const total = activities.length;
+    const approved = activities.filter(a => a.status === 'aprovada').length;
+    const pending = activities.filter(a => a.status === 'pendente').length;
+    const rejected = activities.filter(a => a.status === 'rejeitada').length;
+
+    return { approved, pending, rejected, total };
+  };
+
+  // Get progress percentage
+  const getProgressPercentage = () => {
+    return Math.min((totalScore / nextProgressionScore) * 100, 100);
+  };
+
   // Delete an activity
-  const deleteActivity = (activityId) => {
-    const updatedActivities = activities.filter(activity => activity.id !== activityId);
-    setActivities(updatedActivities);
-    localStorage.setItem('activities', JSON.stringify(updatedActivities));
+  const deleteActivity = async (activityId) => {
+    try {
+      const { deleteActivity: deleteActivityService } = await import('../services/activityService');
+      await deleteActivityService(activityId);
+
+      const updatedActivities = activities.filter(activity => activity.id !== activityId);
+      setActivities(updatedActivities);
+      localStorage.setItem('activities', JSON.stringify(updatedActivities));
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+      throw error;
+    }
   };
-  
+
+  // Refresh data from server
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      const { getUserActivities } = await import('../services/activityService');
+      const userActivities = await getUserActivities();
+      setActivities(userActivities);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     competencyItems,
     activities,
@@ -129,9 +199,12 @@ export const CompetencyProvider = ({ children }) => {
     loading,
     registerActivity,
     updateActivityStatus,
-    deleteActivity
+    getActivityStats,
+    getProgressPercentage,
+    deleteActivity,
+    refreshData
   };
-  
+
   return (
     <CompetencyContext.Provider value={value}>
       {!loading && children}
