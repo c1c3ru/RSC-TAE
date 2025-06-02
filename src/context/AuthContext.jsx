@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           // Get user profile data
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('user_profile')
             .select('*')
             .eq('id', session.user.id)
             .single();
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           // Get user profile data
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('user_profile')
             .select('*')
             .eq('id', session.user.id)
             .single();
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }) => {
       // Create user profile in database
       if (data.user) {
         const { error: profileError } = await supabase
-          .from('profiles')
+          .from('user_profile')
           .insert([
             {
               id: data.user.id,

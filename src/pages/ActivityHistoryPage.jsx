@@ -19,8 +19,13 @@ const ActivityHistoryPage = () => {
     // Filter by category
     if (filters.category !== 'all') {
       result = result.filter(activity => {
+        // First check if activity has direct category
+        if (activity.categoria) {
+          return activity.categoria === parseInt(filters.category);
+        }
+        // Fallback to competency item category
         const item = competencyItems.find(item => item.id === activity.itemCompetenciaId);
-        return item && item.categoria === parseInt(filters.category);
+        return item && item.category === parseInt(filters.category);
       });
     }
     
@@ -95,10 +100,11 @@ const ActivityHistoryPage = () => {
               <option value="all">Todas as Categorias</option>
               <option value="1">Atividades Administrativas</option>
               <option value="2">Experiência Profissional</option>
-              <option value="3">Formação e Capacitação</option>
-              <option value="4">Produção Científica</option>
-              <option value="5">Participação em Eventos</option>
-              <option value="6">Atividades de Ensino</option>
+              <option value="3">Formação Acadêmica</option>
+              <option value="4">Formação Complementar</option>
+              <option value="5">Produção Científica</option>
+              <option value="6">Participação em Eventos</option>
+              <option value="7">Atividades de Ensino</option>
             </select>
           </div>
           

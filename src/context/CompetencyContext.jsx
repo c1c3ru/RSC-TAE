@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Create Competency context
@@ -30,7 +29,7 @@ export const CompetencyProvider = ({ children }) => {
       try {
         // Load competences from Supabase
         const { getCompetences, getUserActivities } = await import('../services/activityService');
-        
+
         const [competences, userActivities] = await Promise.all([
           getCompetences(),
           getUserActivities()
@@ -43,7 +42,7 @@ export const CompetencyProvider = ({ children }) => {
         // Set empty arrays as fallback
         setCompetencyItems([]);
         setActivities([]);
-        
+
         // Try to load from localStorage as backup
         const storedActivities = localStorage.getItem('activities');
         if (storedActivities) {
