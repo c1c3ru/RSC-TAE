@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'; // Import useCallback and useMemo
 import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 // Create Competency context
@@ -135,7 +135,7 @@ export const CompetencyProvider = ({ children }) => {
   }, [activities, competencyItems]);
 
   // Register a new activity
-  const registerActivity = async (activityData) => {
+  const registerActivity = useCallback(async (activityData) => {
     try {
       const { createActivity } = await import('../services/activityService');
       const newActivity = await createActivity(activityData);
@@ -151,10 +151,10 @@ export const CompetencyProvider = ({ children }) => {
       console.error('Error registering activity:', error);
       throw error;
     }
-  };
+  }, [activities]);
 
   // Update an activity's status
-  const updateActivityStatus = async (activityId, status, comments = '') => {
+  const updateActivityStatus = useCallback(async (activityId, status, comments = '') => {
     try {
       const { updateActivityStatus: updateActivityStatusService } = await import('../services/activityService');
       await updateActivityStatusService(activityId, status, comments);
@@ -177,25 +177,25 @@ export const CompetencyProvider = ({ children }) => {
       console.error('Error updating activity status:', error);
       throw error;
     }
-  };
+  }, [activities]);
 
   // Get activity statistics
-  const getActivityStats = () => {
+  const getActivityStats = useCallback(() => {
     const total = activities.length;
     const approved = activities.filter(a => a.status === 'aprovada').length;
     const pending = activities.filter(a => a.status === 'pendente').length;
     const rejected = activities.filter(a => a.status === 'rejeitada').length;
 
     return { approved, pending, rejected, total };
-  };
+  }, [activities]);
 
   // Get progress percentage
-  const getProgressPercentage = () => {
+  const getProgressPercentage = useCallback(() => {
     return Math.min((totalScore / nextProgressionScore) * 100, 100);
-  };
+  }, [totalScore, nextProgressionScore]);
 
   // Delete an activity
-  const deleteActivity = async (activityId) => {
+  const deleteActivity = useCallback(async (activityId) => {
     try {
       const { deleteActivity: deleteActivityService } = await import('../services/activityService');
       await deleteActivityService(activityId);
@@ -207,10 +207,10 @@ export const CompetencyProvider = ({ children }) => {
       console.error('Error deleting activity:', error);
       throw error;
     }
-  };
+  }, [activities]);
 
   // Refresh data from server
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setLoading(true);
     try {
       const { getUserActivities } = await import('../services/activityService');
@@ -221,9 +221,9 @@ export const CompetencyProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // setLoading and setActivities are stable
 
-  const value = {
+  const value = useMemo(() => ({
     competencyItems,
     activities,
     totalScore,
@@ -236,7 +236,20 @@ export const CompetencyProvider = ({ children }) => {
     getProgressPercentage,
     deleteActivity,
     refreshData
-  };
+  }), [
+    competencyItems,
+    activities,
+    totalScore,
+    categoryScores,
+    nextProgressionScore,
+    loading,
+    registerActivity,
+    updateActivityStatus,
+    getActivityStats,
+    getProgressPercentage,
+    deleteActivity,
+    refreshData
+  ]);
 
   return (
     <CompetencyContext.Provider value={value}>
