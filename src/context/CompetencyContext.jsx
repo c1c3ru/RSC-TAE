@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 // Create Competency context
 const CompetencyContext = createContext();
@@ -14,6 +15,7 @@ export const useCompetency = () => {
 
 // Competency Provider component
 export const CompetencyProvider = ({ children }) => {
+  const { currentUser, loading: authLoading } = useAuth(); // Call useAuth
   const [competencyItems, setCompetencyItems] = useState([]);
   const [activities, setActivities] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
@@ -61,8 +63,15 @@ export const CompetencyProvider = ({ children }) => {
       }
     };
 
-    loadData();
-  }, []);
+    if (!authLoading && currentUser) {
+      loadData();
+    } else if (!authLoading && !currentUser) {
+      // User is not logged in, clear data and set loading to false
+      setCompetencyItems([]);
+      setActivities([]);
+      setLoading(false);
+    }
+  }, [currentUser, authLoading]); // Add currentUser and authLoading as dependencies
 
   // Calculate total score and category scores whenever activities change
   useEffect(() => {
