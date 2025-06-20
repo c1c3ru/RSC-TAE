@@ -9,7 +9,7 @@ import Sidebar from './components/Layout/Sidebar';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
-import ActivityHistoryPage from './pages/ActivityHistoryPage';
+// import ActivityHistoryPage from './pages/ActivityHistoryPage'; // Removed import
 import './index.css';
 
 // Protected Route Component
@@ -77,16 +77,7 @@ const AppContent = () => {
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/history" 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <ActivityHistoryPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
-      />
+      {/* Removed /history route block */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
