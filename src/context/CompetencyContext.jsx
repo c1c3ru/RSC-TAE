@@ -75,6 +75,7 @@ export const CompetencyProvider = ({ children }) => {
 
   // Calculate total score and category scores whenever activities change
   useEffect(() => {
+    console.log('Recalculando scores...', activities, competencyItems); // Log at the beginning
     if (!activities.length) {
       setTotalScore(0);
       setCategoryScores([0, 0, 0, 0, 0, 0]);
@@ -84,29 +85,53 @@ export const CompetencyProvider = ({ children }) => {
     // Initialize category scores array (6 categories)
     const catScores = [0, 0, 0, 0, 0, 0];
 
+    // Define category name to index mapping
+    const categoryNameToIndex = {
+      'Administrativas': 0,
+      'Experiência': 1,
+      'Formação': 2,
+      'Produção': 3,
+      'Eventos': 4,
+      'Ensino': 5
+    };
+
     // Calculate total and category scores
     let total = 0;
     activities.forEach(activity => {
       total += activity.pontuacao || 0;
 
       // Get category from the activity or find the competence
-      let categoryIndex = 0;
+      let categoryName = '';
+      // A propriedade 'categoria' na atividade já deve ser a string do nome da categoria
+      // vinda do activityService (item.competences?.category)
       if (activity.categoria) {
-        categoryIndex = parseInt(activity.categoria) - 1;
+        categoryName = activity.categoria;
       } else {
-        const item = competencyItems.find(item => item.id === activity.itemCompetenciaId);
-        if (item) {
-          categoryIndex = parseInt(item.category) - 1;
+        // Fallback caso activity.categoria não esteja definida (pouco provável com a lógica atual do service)
+        const item = competencyItems.find(i => i.id === activity.itemCompetenciaId);
+        if (item && item.category) {
+          categoryName = item.category;
         }
       }
 
+      let categoryIndex = -1; // Default para inválido
+      if (categoryNameToIndex.hasOwnProperty(categoryName)) {
+        categoryIndex = categoryNameToIndex[categoryName];
+      }
+
+      console.log('Processando atividade:', activity.id, 'Nome Categoria:', categoryName, 'Índice Categoria:', categoryIndex, 'Pontuação:', activity.pontuacao); // Log activity processing
+
       if (categoryIndex >= 0 && categoryIndex < catScores.length) {
         catScores[categoryIndex] += activity.pontuacao || 0;
+      } else {
+        // Log warning for invalid category index
+        console.warn(`Atividade ID ${activity.id} (item ${activity.itemCompetenciaId}) tem categoria '${activity.categoria || (competencyItems.find(ci => ci.id === activity.itemCompetenciaId)?.category)}' que resultou em categoryIndex inválido: ${categoryIndex}`);
       }
     });
 
     setTotalScore(total);
     setCategoryScores(catScores);
+    console.log('Scores recalculados - Total:', total, 'Categorias:', catScores); // Log recalculated scores
   }, [activities, competencyItems]);
 
   // Register a new activity
