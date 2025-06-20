@@ -3,8 +3,8 @@ import { useCompetency } from '../../context/CompetencyContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const ActivityList = () => {
-  const { activities, competencyItems } = useCompetency();
+const ActivityList = ({ activities }) => { // Accept activities as a prop
+  const { competencyItems } = useCompetency(); // Remove activities from here
 
   // Function to get competency item details
   const getItemDetails = (itemId) => {

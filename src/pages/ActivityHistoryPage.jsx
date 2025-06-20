@@ -11,6 +11,15 @@ const ActivityHistoryPage = () => {
     search: '',
     sortBy: 'dateDesc'
   });
+
+  const categoryIdToNameMap = {
+    '1': 'Administrativas',
+    '2': 'Experiência',
+    '3': 'Formação',
+    '4': 'Produção',
+    '5': 'Eventos',
+    '6': 'Ensino'
+  };
   
   // Apply filters whenever activities or filter criteria change
   useEffect(() => {
@@ -18,15 +27,23 @@ const ActivityHistoryPage = () => {
     
     // Filter by category
     if (filters.category !== 'all') {
-      result = result.filter(activity => {
-        // First check if activity has direct category
-        if (activity.categoria) {
-          return activity.categoria === parseInt(filters.category);
-        }
-        // Fallback to competency item category
-        const item = competencyItems.find(item => item.id === activity.itemCompetenciaId);
-        return item && item.category === parseInt(filters.category);
-      });
+      const targetCategoryName = categoryIdToNameMap[filters.category];
+      if (targetCategoryName) {
+        result = result.filter(activity => {
+          let activityCategoryName = '';
+          if (activity.categoria) {
+            activityCategoryName = activity.categoria;
+          } else {
+            const item = competencyItems.find(i => i.id === activity.itemCompetenciaId);
+            if (item && item.category) {
+              activityCategoryName = item.category;
+            }
+          }
+          return activityCategoryName === targetCategoryName;
+        });
+      } else {
+        // If category from filter is not in map, do not filter by category
+      }
     }
     
     // Filter by status
@@ -38,25 +55,21 @@ const ActivityHistoryPage = () => {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(activity => {
-        // Get item details
-        const item = competencyItems.find(item => item.id === activity.itemCompetenciaId);
-        
-        // Search in item title and description
-        return (
-          (item && item.titulo.toLowerCase().includes(searchLower)) ||
-          (item && item.descricao.toLowerCase().includes(searchLower)) ||
-          (activity.descricao && activity.descricao.toLowerCase().includes(searchLower))
-        );
+        const item = competencyItems.find(i => i.id === activity.itemCompetenciaId);
+        // Search in competency title
+        const titleMatch = item && item.title && item.title.toLowerCase().includes(searchLower);
+        // Future: consider searching activity.observacoes if available
+        return titleMatch;
       });
     }
     
     // Sort results
     switch (filters.sortBy) {
       case 'dateAsc':
-        result.sort((a, b) => new Date(a.dataRegistro) - new Date(b.dataRegistro));
+        result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Changed to created_at
         break;
       case 'dateDesc':
-        result.sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
+        result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Changed to created_at
         break;
       case 'scoreAsc':
         result.sort((a, b) => a.pontuacao - b.pontuacao);

@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CompetencyProvider } from './context/CompetencyContext';
+import { LayoutProvider } from './context/LayoutContext'; // Import LayoutProvider
 import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 import LoginPage from './pages/LoginPage';
@@ -26,14 +27,19 @@ const ProtectedRoute = ({ children }) => {
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
+import { useLayout } from './context/LayoutContext'; // Import useLayout for MainLayout
+
 // Main Layout Component
 const MainLayout = ({ children }) => {
+  const { isSidebarCollapsed } = useLayout(); // Get sidebar state
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-64 pt-16 p-8">
+        {/* Adjust left margin based on sidebar state */}
+        <main className={`flex-1 pt-16 p-8 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
           {children}
         </main>
       </div>
@@ -91,7 +97,9 @@ function App() {
     <Router>
       <AuthProvider>
         <CompetencyProvider>
-          <AppContent />
+          <LayoutProvider> {/* Wrap AppContent with LayoutProvider */}
+            <AppContent />
+          </LayoutProvider>
         </CompetencyProvider>
       </AuthProvider>
     </Router>
