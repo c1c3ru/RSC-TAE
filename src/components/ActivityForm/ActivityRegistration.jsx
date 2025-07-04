@@ -77,18 +77,11 @@ const ActivityRegistration = ({ categoryFilter }) => {
     setDocumentError('');
   };
 
+  // Corrigir validação de documentos para o novo formato
   const validateDocuments = () => {
     if (!documents.length) {
       setDocumentError('É obrigatório anexar o documento comprobatório.');
       return false;
-    }
-    // Aceita apenas PDF, JPG, PNG
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    for (const doc of documents) {
-      if (!allowedTypes.includes(doc.file.type)) {
-        setDocumentError('Só são permitidos arquivos PDF, JPG ou PNG.');
-        return false;
-      }
     }
     setDocumentError('');
     return true;
@@ -145,8 +138,13 @@ const ActivityRegistration = ({ categoryFilter }) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarNovaAtividade}</h2>
 
       {success && (
-        <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+        <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md animate-fadeIn">
           Atividade registrada com sucesso!
+        </div>
+      )}
+      {documentError && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md animate-fadeIn">
+          {documentError}
         </div>
       )}
 
@@ -267,7 +265,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
         <button
           type="submit"
           disabled={loading || !selectedItem}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className={`w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${loading ? 'animate-pulse' : ''}`}
         >
           {loading ? 'Registrando...' : LABELS.registrarAtividade}
         </button>

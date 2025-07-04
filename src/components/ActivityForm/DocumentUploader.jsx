@@ -1,9 +1,15 @@
 
 import React, { useState } from 'react';
 import { LABELS } from '../../constants/texts';
+import supabase from '../../utils/supabaseClient';
+
+const BUCKET_NAME = 'rscstorage';
 
 const DocumentUploader = ({ documents, onDocumentsChange }) => {
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = React.useRef();
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -19,7 +25,6 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     const files = Array.from(e.dataTransfer.files);
     handleFiles(files);
   };
@@ -29,23 +34,46 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     handleFiles(files);
   };
 
-  const handleFiles = (files) => {
+  // Tornar toda a área de upload clicável
+  const handleAreaClick = () => {
+    if (!uploading && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Função para upload real para o Supabase Storage
+  const handleFiles = async (files) => {
+    setUploading(true);
+    setUploadError('');
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     const validFiles = files.filter(file => {
-      const isValidType = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'].includes(file.type);
+      const isValidType = allowedTypes.includes(file.type);
       const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
       return isValidType && isValidSize;
     });
-
-    const newDocuments = validFiles.map(file => ({
-      id: Date.now() + Math.random().toString(36).substring(2, 9),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      file: file,
-      url: URL.createObjectURL(file)
-    }));
-
-    onDocumentsChange([...documents, ...newDocuments]);
+    const uploadedDocs = [];
+    for (const file of validFiles) {
+      const filePath = `${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file, { upsert: false });
+      if (error) {
+        setUploadError(`Erro ao enviar ${file.name}: ${error.message}`);
+        continue;
+      }
+      // Gerar URL assinada temporária para download
+      const { data: urlData } = await supabase.storage.from(BUCKET_NAME).createSignedUrl(filePath, 60 * 60); // 1h
+      uploadedDocs.push({
+        id: Date.now() + Math.random().toString(36).substring(2, 9),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: urlData?.signedUrl || '',
+        filePath
+      });
+    }
+    setUploading(false);
+    if (uploadedDocs.length > 0) {
+      onDocumentsChange([...documents, ...uploadedDocs]);
+    }
   };
 
   const removeDocument = (docId) => {
@@ -74,6 +102,8 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        onClick={handleAreaClick}
+        style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
       >
         <div className="space-y-2">
           <div className="text-gray-500">
@@ -83,20 +113,24 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
           </div>
           <div className="text-sm text-gray-600">
             {LABELS.arrasteArquivosAquiOu}
-            <label className="text-blue-600 hover:text-blue-700 cursor-pointer">
+            <span className="text-blue-600 hover:text-blue-700 cursor-pointer">
               {LABELS.cliqueParaSelecionar}
-              <input
-                type="file"
-                multiple
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={handleFileInput}
-                className="hidden"
-              />
-            </label>
+            </span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg"
+              onChange={handleFileInput}
+              className="hidden"
+              disabled={uploading}
+            />
           </div>
           <p className="text-xs text-gray-500">
             {LABELS.tiposArquivosPermitidos}
           </p>
+          {uploading && <div className="text-blue-600 text-xs mt-2">Enviando arquivo(s)...</div>}
+          {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
         </div>
       </div>
 
@@ -121,12 +155,16 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
                   <p className="text-xs text-gray-500">
                     {formatFileSize(doc.size)}
                   </p>
+                  {doc.url && (
+                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">Ver documento</a>
+                  )}
                 </div>
               </div>
               <button
                 onClick={() => removeDocument(doc.id)}
                 className="text-red-500 hover:text-red-700 p-1"
                 title="Remover documento"
+                disabled={uploading}
               >
                 ✕
               </button>
