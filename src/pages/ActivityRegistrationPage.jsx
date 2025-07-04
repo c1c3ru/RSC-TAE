@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
+import { LABELS } from '../constants/texts';
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
@@ -68,7 +69,7 @@ const ActivityRegistrationPage = () => {
   
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Registrar Atividade</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
       
       {/* Category filter tabs */}
       {categoryFilter && (

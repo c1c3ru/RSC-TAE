@@ -8,8 +8,10 @@ import supabase from '../utils/supabaseClient';
 // Get all user RSC records (competency activities)
 export const getUserActivities = async () => {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Trocar getUser por getSession para maior compatibilidade
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (sessionError || !user) {
       console.warn('User not authenticated, returning empty activities');
       return [];
     }

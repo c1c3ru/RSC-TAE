@@ -82,17 +82,19 @@ export const CompetencyProvider = ({ children }) => {
       return;
     }
 
-    // Initialize category scores array (6 categories)
-    const catScores = [0, 0, 0, 0, 0, 0];
+    // Initialize category scores array (8 categories)
+    const catScores = [0, 0, 0, 0, 0, 0, 0, 0];
 
     // Define category name to index mapping
     const categoryNameToIndex = {
       'Administrativas': 0,
       'Experiência': 1,
       'Formação': 2,
-      'Produção': 3,
-      'Eventos': 4,
-      'Ensino': 5
+      'Formação Complementar': 3,
+      'Produção Científica': 4,
+      'Eventos': 5,
+      'Ensino': 6,
+      'Outras Atividades': 7
     };
 
     // Calculate total and category scores
@@ -102,30 +104,27 @@ export const CompetencyProvider = ({ children }) => {
 
       // Get category from the activity or find the competence
       let categoryName = '';
-      // A propriedade 'categoria' na atividade já deve ser a string do nome da categoria
-      // vinda do activityService (item.competences?.category)
       if (activity.categoria) {
         categoryName = activity.categoria;
       } else {
-        // Fallback caso activity.categoria não esteja definida (pouco provável com a lógica atual do service)
         const item = competencyItems.find(i => i.id === activity.itemCompetenciaId);
         if (item && item.category) {
           categoryName = item.category;
         }
       }
 
-      let categoryIndex = -1; // Default para inválido
+      // LOG: Mostrar categoria de cada atividade
+      console.log('Atividade', activity.id, 'categoria:', categoryName, 'type:', typeof categoryName);
+
+      let categoryIndex = -1;
       if (categoryNameToIndex.hasOwnProperty(categoryName)) {
         categoryIndex = categoryNameToIndex[categoryName];
       }
 
-      console.log('Processando atividade:', activity.id, 'Nome Categoria:', categoryName, 'Índice Categoria:', categoryIndex, 'Pontuação:', activity.pontuacao); // Log activity processing
+      console.log('Processando atividade:', activity.id, 'Nome Categoria:', categoryName, 'Índice Categoria:', categoryIndex, 'Pontuação:', activity.pontuacao);
 
       if (categoryIndex >= 0 && categoryIndex < catScores.length) {
         catScores[categoryIndex] += activity.pontuacao || 0;
-      } else {
-        // Log warning for invalid category index
-        console.warn(`Atividade ID ${activity.id} (item ${activity.itemCompetenciaId}) tem categoria '${activity.categoria || (competencyItems.find(ci => ci.id === activity.itemCompetenciaId)?.category)}' que resultou em categoryIndex inválido: ${categoryIndex}`);
       }
     });
 

@@ -7,14 +7,16 @@ const CategoryDistribution = () => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  // Category names and their corresponding colors
+  // Padronizar categorias conforme contexto/banco
   const categories = [
-    { name: 'Atividades Administrativas', color: 'rgba(54, 162, 235, 0.7)' },
-    { name: 'Experiência Profissional', color: 'rgba(255, 99, 132, 0.7)' },
-    { name: 'Formação e Capacitação', color: 'rgba(75, 192, 192, 0.7)' },
-    { name: 'Produção Científica', color: 'rgba(255, 206, 86, 0.7)' },
-    { name: 'Participação em Eventos', color: 'rgba(153, 102, 255, 0.7)' },
-    { name: 'Atividades de Ensino', color: 'rgba(255, 159, 64, 0.7)' }
+    { name: 'Administrativas', label: 'Atividades Administrativas', color: 'rgba(54, 162, 235, 0.7)' },
+    { name: 'Experiência', label: 'Experiência Profissional', color: 'rgba(255, 99, 132, 0.7)' },
+    { name: 'Formação', label: 'Formação Acadêmica', color: 'rgba(75, 192, 192, 0.7)' },
+    { name: 'Formação Complementar', label: 'Formação Complementar', color: 'rgba(255, 206, 86, 0.7)' },
+    { name: 'Produção Científica', label: 'Produção Científica', color: 'rgba(153, 102, 255, 0.7)' },
+    { name: 'Eventos', label: 'Participação em Eventos', color: 'rgba(255, 159, 64, 0.7)' },
+    { name: 'Ensino', label: 'Atividades de Ensino', color: 'rgba(100, 100, 255, 0.7)' },
+    { name: 'Outras Atividades', label: 'Outras Atividades', color: 'rgba(180, 180, 180, 0.7)' }
   ];
 
   useEffect(() => {
@@ -31,7 +33,7 @@ const CategoryDistribution = () => {
     chartInstance.current = new Chart(ctx, {
       type: 'radar',
       data: {
-        labels: categories.map(cat => cat.name),
+        labels: categories.map(cat => cat.label),
         datasets: [{
           label: 'Pontuação por Categoria',
           data: categories.map((_, index) => categoryScores[index] || 0),
@@ -86,7 +88,7 @@ const CategoryDistribution = () => {
         {categories.map((category, index) => (
           <div key={index} className="flex items-center">
             <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.color }}></div>
-            <span className="text-sm text-gray-700">{category.name}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
+            <span className="text-sm text-gray-700">{category.label}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
           </div>
         ))}
       </div>

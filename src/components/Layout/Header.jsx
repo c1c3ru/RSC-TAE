@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLayout } from '../../context/LayoutContext'; // Import useLayout
+import { LABELS } from '../../constants/texts';
 
 const Header = () => {
   const { currentUser, logout } = useAuth(); // Changed signOut to logout
@@ -34,7 +35,7 @@ const Header = () => {
             )}
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
-            Sistema de Competências
+            {LABELS.sistemaTitulo}
           </h1>
         </div>
 
@@ -47,7 +48,7 @@ const Header = () => {
             onClick={handleSignOut}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            Sair
+            {LABELS.sair}
           </button>
         </div>
       </div>

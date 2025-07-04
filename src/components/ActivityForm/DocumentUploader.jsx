@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { LABELS } from '../../constants/texts';
 
 const DocumentUploader = ({ documents, onDocumentsChange }) => {
   const [dragActive, setDragActive] = useState(false);
@@ -81,9 +82,9 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
             </svg>
           </div>
           <div className="text-sm text-gray-600">
-            Arraste arquivos aqui ou{' '}
+            {LABELS.arrasteArquivosAquiOu}
             <label className="text-blue-600 hover:text-blue-700 cursor-pointer">
-              clique para selecionar
+              {LABELS.cliqueParaSelecionar}
               <input
                 type="file"
                 multiple
@@ -94,7 +95,7 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
             </label>
           </div>
           <p className="text-xs text-gray-500">
-            PDF, PNG, JPG até 5MB cada
+            {LABELS.tiposArquivosPermitidos}
           </p>
         </div>
       </div>

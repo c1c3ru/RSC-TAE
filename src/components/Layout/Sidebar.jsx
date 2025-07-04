@@ -2,6 +2,7 @@ import React, { useState } from 'react'; // Import useState for selectedCategory
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCompetency } from '../../context/CompetencyContext';
 import { useLayout } from '../../context/LayoutContext'; // Import useLayout
+import { LABELS } from '../../constants/texts';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -10,18 +11,21 @@ const Sidebar = ({ isOpen, onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
 
+  // Usar nomes de categoria exatamente como no banco
   const categories = [
-    { id: 1, name: 'Atividades Administrativas', color: 'bg-blue-500' },
-    { id: 2, name: 'Experiência Profissional', color: 'bg-green-500' },
-    { id: 3, name: 'Formação Acadêmica', color: 'bg-purple-500' },
-    { id: 4, name: 'Formação Complementar', color: 'bg-yellow-500' },
-    { id: 5, name: 'Produção Científica', color: 'bg-red-500' },
-    { id: 6, name: 'Outras Atividades', color: 'bg-indigo-500' }
+    { id: 'Administrativas', name: 'Atividades Administrativas', color: 'bg-blue-500' },
+    { id: 'Experiência', name: 'Experiência Profissional', color: 'bg-green-500' },
+    { id: 'Formação', name: 'Formação Acadêmica', color: 'bg-purple-500' },
+    { id: 'Formação Complementar', name: 'Formação Complementar', color: 'bg-yellow-500' },
+    { id: 'Produção Científica', name: 'Produção Científica', color: 'bg-red-500' },
+    { id: 'Eventos', name: 'Participação em Eventos', color: 'bg-pink-500' },
+    { id: 'Ensino', name: 'Atividades de Ensino', color: 'bg-indigo-500' },
+    { id: 'Outras Atividades', name: 'Outras Atividades', color: 'bg-gray-500' }
   ];
 
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/register', label: 'Registrar Atividade', icon: '➕' }
+    { path: '/dashboard', label: LABELS.dashboard, icon: '📊' },
+    { path: '/register', label: LABELS.registrarAtividade, icon: '➕' }
     // Removed: { path: '/history', label: 'Histórico', icon: '📋' }
   ];
 
@@ -52,10 +56,8 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Main sidebar div with conditional width and flex layout */}
       <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         {/* Sidebar Header */}
-        <div className={`p-6 border-b border-gray-200 ${isSidebarCollapsed ? 'text-center' : ''}`}>
-          <h2 className={`text-lg font-semibold text-gray-800 ${isSidebarCollapsed ? 'text-xs' : ''}`}>
-            {!isSidebarCollapsed ? 'Menu' : 'M'}
-          </h2>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-lg font-bold text-gray-800">{LABELS.menu}</h2>
         </div>
 
         {/* Scrollable Navigation Area */}
@@ -86,8 +88,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {!isSidebarCollapsed && 'Categorias'}
               </h3>
               <div className="space-y-2">
-                {categories.map((category) => {
-                  const score = categoryScores[category.id] || 0; // Assuming category.id is 0-indexed or categoryScores handles 1-indexing
+                {categories.map((category, index) => {
+                  const score = categoryScores[index] || 0;
                   const isSelected = selectedCategory === category.id;
 
                   return (
