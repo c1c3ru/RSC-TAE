@@ -37,7 +37,11 @@ export const CompetencyProvider = ({ children }) => {
           getUserActivities()
         ]);
 
-        setCompetencyItems(competences || []);
+        // Mapear o campo title para titulo
+        setCompetencyItems((competences || []).map(item => ({
+          ...item,
+          titulo: item.title || item.titulo || ''
+        })));
         setActivities(userActivities || []);
       } catch (error) {
         console.error('Error loading data:', error);
