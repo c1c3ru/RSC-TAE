@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
+import { Player } from 'lottie-react';
+import editProfileAnimation from '../lottie/edit_profile_animation.json';
+import saveProfileAnimation from '../lottie/save_profile_animation.json';
 
 const ProfilePage = () => {
   const { currentUser, refreshUser } = useAuth();
@@ -44,7 +47,12 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Meu Perfil</h2>
+      <div className="flex flex-col items-center">
+        <div className="w-40 h-40 mb-4">
+          <Player autoplay loop src={editProfileAnimation} style={{ width: '100%', height: '100%' }} />
+        </div>
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">Meu Perfil</h2>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
@@ -100,7 +108,14 @@ const ProfilePage = () => {
         >
           {loading ? 'Salvando...' : 'Salvar Alterações'}
         </button>
-        {success && <div className="text-green-600 font-semibold mt-2">Perfil atualizado com sucesso!</div>}
+        {success && (
+          <div className="flex flex-col items-center mt-4 animate-fadeIn">
+            <div className="w-32 h-32 mb-2">
+              <Player autoplay src={saveProfileAnimation} style={{ width: '100%', height: '100%' }} />
+            </div>
+            <div className="text-green-600 font-semibold">Perfil atualizado com sucesso!</div>
+          </div>
+        )}
         {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}
       </form>
     </div>

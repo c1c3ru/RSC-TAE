@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import { LABELS } from '../constants/texts';
+import { Player } from 'lottie-react';
+import activitiesAnimation from '../lottie/activities_registration_animation.json';
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
@@ -81,7 +83,12 @@ const ActivityRegistrationPage = () => {
   
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
+      <div className="flex flex-col items-center">
+        <div className="w-40 h-40 mb-4">
+          <Player autoplay loop src={activitiesAnimation} style={{ width: '100%', height: '100%' }} />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
+      </div>
       
       {/* Category filter tabs */}
       {categoryFilter && (
