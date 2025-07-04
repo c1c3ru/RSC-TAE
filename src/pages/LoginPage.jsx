@@ -206,7 +206,7 @@ const LoginPage = () => {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-800 mb-2">
-                    📧 Verificação de E-mail Necessária
+                    📧 Verifique seu e-mail para continuar
                   </h3>
                   <div className="text-sm text-blue-700 space-y-2">
                     <p>• Verifique sua caixa de entrada (e spam)</p>
@@ -237,7 +237,7 @@ const LoginPage = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-yellow-700">
-                        <strong>Importante:</strong> Após o cadastro, você receberá um e-mail de confirmação. É necessário clicar no link para ativar sua conta.
+                        <strong>Importante:</strong> Após o cadastro, verifique seu e-mail para continuar.
                       </p>
                     </div>
                   </div>
