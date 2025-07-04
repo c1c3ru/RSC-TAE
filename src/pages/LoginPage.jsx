@@ -12,6 +12,7 @@ const LoginPage = () => {
   const [registerMode, setRegisterMode] = useState(false);
   const [message, setMessage] = useState('');
   const [fadeIn, setFadeIn] = useState(false);
+  const [showEmailValidation, setShowEmailValidation] = useState(false);
   
   // Registration form fields
   const [registerName, setRegisterName] = useState('');
@@ -73,7 +74,8 @@ const LoginPage = () => {
         const user = await register(userInfo);
         
         if (user) {
-          setMessage('Cadastro realizado com sucesso! Verifique seu login para confirmar e continuar.');
+          setMessage('Cadastro realizado com sucesso!');
+          setShowEmailValidation(true);
           setRegisterMode(false);
           setEmail(registerEmail);
           
@@ -194,9 +196,52 @@ const LoginPage = () => {
             </div>
           )}
           
+          {showEmailValidation && (
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-6 animate-pulse" role="alert">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">
+                    📧 Verificação de E-mail Necessária
+                  </h3>
+                  <div className="text-sm text-blue-700 space-y-2">
+                    <p>• Verifique sua caixa de entrada (e spam)</p>
+                    <p>• Clique no link de confirmação no e-mail</p>
+                    <p>• Após a confirmação, você poderá fazer login</p>
+                  </div>
+                  <button
+                    onClick={() => setShowEmailValidation(false)}
+                    className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Entendi, fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className={`transition-all duration-500 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
             {registerMode ? (
               <>
+                {/* Aviso sobre validação de email */}
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-yellow-700">
+                        <strong>Importante:</strong> Após o cadastro, você receberá um e-mail de confirmação. É necessário clicar no link para ativar sua conta.
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-name">
                     Nome Completo

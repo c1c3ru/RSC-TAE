@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import supabase from '../utils/supabaseClient';
+import { REDIRECT_URLS } from '../config/environment';
 
 const AuthContext = createContext();
 
@@ -94,10 +95,11 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       setLoading(true);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: REDIRECT_URLS.dashboard()
         }
       });
 
@@ -124,7 +126,7 @@ export const AuthProvider = ({ children }) => {
             matricula: userInfo.matricula,
             cargo: userInfo.cargo,
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: REDIRECT_URLS.dashboard()
         }
       });
 
@@ -177,7 +179,7 @@ export const AuthProvider = ({ children }) => {
   const forgotPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: REDIRECT_URLS.resetPassword()
       });
 
       if (error) throw error;
