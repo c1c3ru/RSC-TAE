@@ -2,6 +2,7 @@
 import React from 'react';
 import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
+import ScoreCard from '../components/Dashboard/ScoreCard';
 
 const DashboardPage = () => {
   const { 
@@ -34,29 +35,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Main Score Card */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-8 text-white transform transition-all duration-300 hover:scale-105">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Pontuação Total</h2>
-          <div className="text-6xl font-bold mb-4 animate-pulse">
-            {totalScore.toFixed(1)}
-          </div>
-          <div className="text-blue-100 mb-6">
-            de {nextProgressionScore} pontos
-          </div>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-blue-300 bg-opacity-30 rounded-full h-4 mb-4">
-            <div 
-              className="bg-white h-4 rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-            ></div>
-          </div>
-          
-          <div className="text-blue-100">
-            {progressPercentage.toFixed(1)}% do objetivo
-          </div>
-        </div>
-      </div>
+      <ScoreCard />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

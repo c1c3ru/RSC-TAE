@@ -81,12 +81,12 @@ const CategoryDistribution = () => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4">Distribuição por Categoria</h3>
-      <div className="w-full h-64">
-        <canvas ref={chartRef}></canvas>
+      <div className="w-full flex justify-center items-center" style={{ minHeight: '300px', maxWidth: '500px', margin: '0 auto' }}>
+        <canvas ref={chartRef} style={{ width: '100%', height: '300px', maxWidth: '500px' }}></canvas>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 overflow-x-auto">
         {categories.map((category, index) => (
-          <div key={index} className="flex items-center min-w-0">
+          <div key={index} className="flex items-center min-w-0" style={{wordBreak: 'break-word'}}>
             <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: category.color }}></div>
             <span className="text-sm text-gray-700 break-words">{category.label}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
           </div>
