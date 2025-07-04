@@ -9,6 +9,7 @@ import Sidebar from './components/Layout/Sidebar';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
+import ProfilePage from './pages/ProfilePage';
 // import ActivityHistoryPage from './pages/ActivityHistoryPage'; // Removed import
 import './index.css';
 
@@ -77,6 +78,7 @@ const AppContent = () => {
           </ProtectedRoute>
         } 
       />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       {/* Removed /history route block */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>

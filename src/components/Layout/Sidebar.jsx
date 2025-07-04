@@ -25,8 +25,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   const menuItems = [
     { path: '/dashboard', label: LABELS.dashboard, icon: '📊' },
-    { path: '/register', label: LABELS.registrarAtividade, icon: '➕' }
-    // Removed: { path: '/history', label: 'Histórico', icon: '📋' }
+    { path: '/register', label: LABELS.registrarAtividade, icon: '➕' },
+    { path: '/profile', label: 'Meu Perfil', icon: '👤' }
   ];
 
   const isActive = (path) => location.pathname === path;

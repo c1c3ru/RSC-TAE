@@ -18,6 +18,7 @@ const LoginPage = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerMatricula, setRegisterMatricula] = useState('');
   const [registerCargo, setRegisterCargo] = useState('');
+  const [registerEscolaridade, setRegisterEscolaridade] = useState('');
   
   const { login, loginWithGoogle, register, forgotPassword } = useAuth();
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const LoginPage = () => {
     }
     
     if (registerMode) {
-      if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo) {
+      if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo || !registerEscolaridade) {
         setError('Preencha todos os campos para realizar o cadastro.');
         return;
       }
@@ -64,7 +65,8 @@ const LoginPage = () => {
           email: registerEmail,
           password: registerPassword,
           matricula: registerMatricula,
-          cargo: registerCargo
+          cargo: registerCargo,
+          escolaridade: registerEscolaridade
         };
         
         const user = await register(userInfo);
@@ -80,6 +82,7 @@ const LoginPage = () => {
           setRegisterPassword('');
           setRegisterMatricula('');
           setRegisterCargo('');
+          setRegisterEscolaridade('');
         } else {
           setError('Não foi possível concluir o cadastro. Verifique seus dados e tente novamente.');
         }
@@ -327,6 +330,27 @@ const LoginPage = () => {
                       </optgroup>
                     </select>
                   </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-escolaridade">
+                    Escolaridade
+                  </label>
+                  <select
+                    id="register-escolaridade"
+                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    value={registerEscolaridade}
+                    onChange={(e) => setRegisterEscolaridade(e.target.value)}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="Ensino fundamental incompleto">Ensino fundamental incompleto</option>
+                    <option value="Ensino fundamental completo">Ensino fundamental completo</option>
+                    <option value="Ensino médio">Ensino médio</option>
+                    <option value="Curso técnico">Curso técnico</option>
+                    <option value="Graduação">Graduação</option>
+                    <option value="Pós-graduação lato sensu (especialização)">Pós-graduação lato sensu (especialização)</option>
+                    <option value="Mestrado">Mestrado</option>
+                    <option value="Doutorado">Doutorado</option>
+                  </select>
                 </div>
               </>
             ) : (
