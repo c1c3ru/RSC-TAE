@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../utils/supabaseClient';
+import { CARGOS } from '../constants/cargos';
 
 const ProfilePage = () => {
   const { currentUser, refreshUser } = useAuth();
@@ -57,13 +58,21 @@ const ProfilePage = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
-          <input
-            type="text"
+          <select
             value={cargo}
             onChange={e => setCargo(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
-          />
+          >
+            <option value="">Selecione...</option>
+            {CARGOS.map(group => (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Escolaridade</label>

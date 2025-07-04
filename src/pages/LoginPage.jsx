@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { CARGOS } from '../constants/cargos';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -263,71 +264,13 @@ const LoginPage = () => {
                       onChange={(e) => setRegisterCargo(e.target.value)}
                     >
                       <option value="">Selecione...</option>
-                      <optgroup label="Nível de Classificação E (Nível Superior)">
-                        <option value="Administrador">Administrador</option>
-                        <option value="Analista de Tecnologia da Informação">Analista de Tecnologia da Informação</option>
-                        <option value="Arquiteto e Urbanista">Arquiteto e Urbanista</option>
-                        <option value="Arquivista">Arquivista</option>
-                        <option value="Assistente Social">Assistente Social</option>
-                        <option value="Auditor">Auditor</option>
-                        <option value="Bibliotecário-Documentalista">Bibliotecário-Documentalista</option>
-                        <option value="Contador">Contador</option>
-                        <option value="Enfermeiro">Enfermeiro</option>
-                        <option value="Engenheiro (Agrônomo)">Engenheiro (Agrônomo)</option>
-                        <option value="Engenheiro (Civil)">Engenheiro (Civil)</option>
-                        <option value="Engenheiro (Elétrica)">Engenheiro (Elétrica)</option>
-                        <option value="Engenheiro (Mecânica)">Engenheiro (Mecânica)</option>
-                        <option value="Engenheiro (Segurança do Trabalho)">Engenheiro (Segurança do Trabalho)</option>
-                        <option value="Fisioterapeuta">Fisioterapeuta</option>
-                        <option value="Jornalista">Jornalista</option>
-                        <option value="Médico (Clínica Geral)">Médico (Clínica Geral)</option>
-                        <option value="Médico (Psiquiatria)">Médico (Psiquiatria)</option>
-                        <option value="Médico-Veterinário">Médico-Veterinário</option>
-                        <option value="Nutricionista">Nutricionista</option>
-                        <option value="Odontólogo">Odontólogo</option>
-                        <option value="Pedagogo">Pedagogo</option>
-                        <option value="Programador Visual">Programador Visual</option>
-                        <option value="Psicólogo">Psicólogo</option>
-                        <option value="Relações Públicas">Relações Públicas</option>
-                        <option value="Secretário Executivo">Secretário Executivo</option>
-                        <option value="Técnico em Assuntos Educacionais">Técnico em Assuntos Educacionais</option>
-                        <option value="Tecnólogo (Áreas diversas)">Tecnólogo (Áreas diversas)</option>
-                        <option value="Zootecnista">Zootecnista</option>
-                      </optgroup>
-                      <optgroup label="Nível de Classificação D (Nível Médio/Técnico)">
-                        <option value="Assistente em Administração">Assistente em Administração</option>
-                        <option value="Mestre de Edificações e Infraestrutura">Mestre de Edificações e Infraestrutura</option>
-                        <option value="Técnico de Laboratório (Agroindústria)">Técnico de Laboratório (Agroindústria)</option>
-                        <option value="Técnico de Laboratório (Agropecuária)">Técnico de Laboratório (Agropecuária)</option>
-                        <option value="Técnico de Laboratório (Aquicultura)">Técnico de Laboratório (Aquicultura)</option>
-                        <option value="Técnico de Laboratório (Biologia)">Técnico de Laboratório (Biologia)</option>
-                        <option value="Técnico de Laboratório (Construção Naval)">Técnico de Laboratório (Construção Naval)</option>
-                        <option value="Técnico de Laboratório (Edificações)">Técnico de Laboratório (Edificações)</option>
-                        <option value="Técnico de Laboratório (Eletrotécnica)">Técnico de Laboratório (Eletrotécnica)</option>
-                        <option value="Técnico de Laboratório (Física)">Técnico de Laboratório (Física)</option>
-                        <option value="Técnico de Laboratório (Informática)">Técnico de Laboratório (Informática)</option>
-                        <option value="Técnico de Laboratório (Mecânica)">Técnico de Laboratório (Mecânica)</option>
-                        <option value="Técnico de Laboratório (Química)">Técnico de Laboratório (Química)</option>
-                        <option value="Técnico de Laboratório (Saneamento)">Técnico de Laboratório (Saneamento)</option>
-                        <option value="Técnico de Laboratório (Outras Áreas)">Técnico de Laboratório (Outras Áreas)</option>
-                        <option value="Técnico de Tecnologia da Informação">Técnico de Tecnologia da Informação</option>
-                        <option value="Técnico em Agropecuária">Técnico em Agropecuária</option>
-                        <option value="Técnico em Alimentos e Laticínios">Técnico em Alimentos e Laticínios</option>
-                        <option value="Técnico em Arquivo">Técnico em Arquivo</option>
-                        <option value="Técnico em Audiovisual">Técnico em Audiovisual</option>
-                        <option value="Técnico em Contabilidade">Técnico em Contabilidade</option>
-                        <option value="Técnico em Edificações">Técnico em Edificações</option>
-                        <option value="Técnico em Eletrotécnica">Técnico em Eletrotécnica</option>
-                        <option value="Técnico em Enfermagem">Técnico em Enfermagem</option>
-                        <option value="Técnico em Mecânica">Técnico em Mecânica</option>
-                        <option value="Técnico em Secretariado">Técnico em Secretariado</option>
-                        <option value="Tradutor e Intérprete de Linguagem de Sinais (LIBRAS)">Tradutor e Intérprete de Linguagem de Sinais (LIBRAS)</option>
-                      </optgroup>
-                      <optgroup label="Nível de Classificação C (Nível Médio)">
-                        <option value="Assistente de Aluno">Assistente de Aluno</option>
-                        <option value="Auxiliar de Biblioteca">Auxiliar de Biblioteca</option>
-                        <option value="Auxiliar em Administração">Auxiliar em Administração</option>
-                      </optgroup>
+                      {CARGOS.map(group => (
+                        <optgroup key={group.label} label={group.label}>
+                          {group.options.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </optgroup>
+                      ))}
                     </select>
                   </div>
                 </div>
