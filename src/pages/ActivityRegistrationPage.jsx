@@ -16,19 +16,21 @@ const ActivityRegistrationPage = () => {
     }
   }, [location]);
   
-  // Define the categories
+  // Padronizar categorias para usar os mesmos ids do banco/contexto
   const categories = [
-    { id: 1, name: 'Atividades Administrativas', color: 'blue' },
-    { id: 2, name: 'Experiência Profissional', color: 'red' },
-    { id: 3, name: 'Formação e Capacitação', color: 'green' },
-    { id: 4, name: 'Produção Científica', color: 'yellow' },
-    { id: 5, name: 'Participação em Eventos', color: 'purple' },
-    { id: 6, name: 'Atividades de Ensino', color: 'orange' }
+    { id: 'Administrativas', name: 'Atividades Administrativas', color: 'blue' },
+    { id: 'Experiência', name: 'Experiência Profissional', color: 'red' },
+    { id: 'Formação', name: 'Formação Acadêmica', color: 'green' },
+    { id: 'Formação Complementar', name: 'Formação Complementar', color: 'yellow' },
+    { id: 'Produção Científica', name: 'Produção Científica', color: 'purple' },
+    { id: 'Eventos', name: 'Participação em Eventos', color: 'orange' },
+    { id: 'Ensino', name: 'Atividades de Ensino', color: 'gray' },
+    { id: 'Outras Atividades', name: 'Outras Atividades', color: 'pink' }
   ];
   
   // Function to generate appropriate color classes based on category
   const getCategoryColorClasses = (categoryId, type) => {
-    const category = categories.find(cat => cat.id === parseInt(categoryId));
+    const category = categories.find(cat => cat.id === categoryId);
     if (!category) return '';
     
     const colorMap = {
@@ -61,6 +63,16 @@ const ActivityRegistrationPage = () => {
         bg: 'bg-orange-50',
         border: 'border-orange-200',
         button: 'bg-orange-600 hover:bg-orange-700'
+      },
+      gray: {
+        bg: 'bg-gray-50',
+        border: 'border-gray-200',
+        button: 'bg-gray-600 hover:bg-gray-700'
+      },
+      pink: {
+        bg: 'bg-pink-50',
+        border: 'border-pink-200',
+        button: 'bg-pink-600 hover:bg-pink-700'
       }
     };
     
@@ -78,15 +90,17 @@ const ActivityRegistrationPage = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-semibold">
-                  Categoria: {categories.find(cat => cat.id === parseInt(categoryFilter))?.name}
+                  Categoria: {categories.find(cat => cat.id === categoryFilter)?.name}
                 </h3>
                 <p className="text-sm text-gray-600">
-                  {categoryFilter === '1' && 'Inclui fiscalização de contratos, participação em comissões e atividades de gestão.'}
-                  {categoryFilter === '2' && 'Inclui tempo de serviço, cargos e funções ocupadas.'}
-                  {categoryFilter === '3' && 'Inclui cursos, titulação acadêmica e certificações.'}
-                  {categoryFilter === '4' && 'Inclui publicações, patentes e desenvolvimento de sistemas.'}
-                  {categoryFilter === '5' && 'Inclui organização de eventos e participação em projetos.'}
-                  {categoryFilter === '6' && 'Inclui orientações, tutorias e atividades de ensino.'}
+                  {categoryFilter === 'Administrativas' && 'Inclui fiscalização de contratos, participação em comissões e atividades de gestão.'}
+                  {categoryFilter === 'Experiência' && 'Inclui tempo de serviço, cargos e funções ocupadas.'}
+                  {categoryFilter === 'Formação' && 'Inclui cursos, titulação acadêmica e certificações.'}
+                  {categoryFilter === 'Formação Complementar' && 'Inclui cursos complementares, workshops, etc.'}
+                  {categoryFilter === 'Produção Científica' && 'Inclui publicações, patentes e desenvolvimento de sistemas.'}
+                  {categoryFilter === 'Eventos' && 'Inclui organização de eventos e participação em projetos.'}
+                  {categoryFilter === 'Ensino' && 'Inclui orientações, tutorias e atividades de ensino.'}
+                  {categoryFilter === 'Outras Atividades' && 'Inclui outras atividades não classificadas nas categorias anteriores.'}
                 </p>
               </div>
               <button
@@ -107,16 +121,18 @@ const ActivityRegistrationPage = () => {
             <button
               key={category.id}
               className={`p-4 rounded-lg border ${getCategoryColorClasses(category.id, 'bg')} ${getCategoryColorClasses(category.id, 'border')} text-left transition-colors`}
-              onClick={() => setCategoryFilter(category.id.toString())}
+              onClick={() => setCategoryFilter(category.id)}
             >
               <h3 className="font-semibold">{category.name}</h3>
               <p className="text-sm text-gray-600 mt-1">
-                {category.id === 1 && 'Fiscalização, comissões e gestão'}
-                {category.id === 2 && 'Tempo de serviço e funções'}
-                {category.id === 3 && 'Cursos e titulação acadêmica'}
-                {category.id === 4 && 'Publicações e patentes'}
-                {category.id === 5 && 'Eventos e projetos'}
-                {category.id === 6 && 'Orientações e ensino'}
+                {category.id === 'Administrativas' && 'Fiscalização, comissões e gestão'}
+                {category.id === 'Experiência' && 'Tempo de serviço e funções'}
+                {category.id === 'Formação' && 'Cursos e titulação acadêmica'}
+                {category.id === 'Formação Complementar' && 'Cursos complementares, workshops, etc.'}
+                {category.id === 'Produção Científica' && 'Publicações e patentes'}
+                {category.id === 'Eventos' && 'Eventos e projetos'}
+                {category.id === 'Ensino' && 'Orientações e ensino'}
+                {category.id === 'Outras Atividades' && 'Outras atividades'}
               </p>
             </button>
           ))}
