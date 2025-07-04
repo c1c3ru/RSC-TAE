@@ -37,10 +37,14 @@ export const CompetencyProvider = ({ children }) => {
           getUserActivities()
         ]);
 
-        // Mapear o campo title para titulo
+        // Mapear campos do banco para os nomes esperados no front
         setCompetencyItems((competences || []).map(item => ({
           ...item,
-          titulo: item.title || item.titulo || ''
+          titulo: item.title || item.titulo || '',
+          criterio: item.criteria || item.criterio || '',
+          pontuacaoMaxima: item.max_points ?? item.pontuacaoMaxima,
+          documentosComprobatorios: item.document_required || item.documentosComprobatorios || '',
+          unit: item.unit || 'unidades'
         })));
         setActivities(userActivities || []);
       } catch (error) {
