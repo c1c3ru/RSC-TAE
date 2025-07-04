@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
 import { useLottie } from 'lottie-react';
@@ -8,12 +9,14 @@ import saveProfileAnimation from '../lottie/save_profile_animation.json';
 
 const ProfilePage = () => {
   const { currentUser, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [cargo, setCargo] = useState('');
   const [escolaridade, setEscolaridade] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showSaveAnimation, setShowSaveAnimation] = useState(false);
 
   const { View: EditView } = useLottie({
     animationData: editProfileAnimation,
@@ -24,7 +27,7 @@ const ProfilePage = () => {
   const { View: SaveView } = useLottie({
     animationData: saveProfileAnimation,
     loop: false,
-    autoplay: true
+    autoplay: showSaveAnimation
   });
 
   useEffect(() => {
@@ -48,19 +51,38 @@ const ProfilePage = () => {
         .eq('id', currentUser.id);
       if (updateError) throw updateError;
       setSuccess(true);
+      setShowSaveAnimation(true);
       refreshUser?.();
+      
+      // Reset animation after 3 seconds
+      setTimeout(() => {
+        setShowSaveAnimation(false);
+      }, 3000);
     } catch (err) {
       setError('Erro ao atualizar perfil.');
     } finally {
       setLoading(false);
-      setTimeout(() => setSuccess(false), 3000);
+      // Removido o timeout automático - agora o usuário precisa clicar em OK
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8">
+      {/* Botão Voltar */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Voltar
+        </button>
+      </div>
+      
       <div className="flex flex-col items-center">
-        <div className="w-40 h-40 mb-4">
+        <div className="w-32 h-32 mb-4 flex items-center justify-center">
           {EditView}
         </div>
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Meu Perfil</h2>
@@ -121,11 +143,24 @@ const ProfilePage = () => {
           {loading ? 'Salvando...' : 'Salvar Alterações'}
         </button>
         {success && (
-          <div className="flex flex-col items-center mt-4 animate-fadeIn">
-            <div className="w-32 h-32 mb-2">
-              {SaveView}
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center animate-fadeIn">
+              <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-full h-full">
+                  {SaveView}
+                </div>
+              </div>
+              <div className="text-green-600 font-semibold text-lg mb-4">Perfil atualizado com sucesso!</div>
+              <button
+                onClick={() => {
+                  setSuccess(false);
+                  setShowSaveAnimation(false);
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                OK
+              </button>
             </div>
-            <div className="text-green-600 font-semibold">Perfil atualizado com sucesso!</div>
           </div>
         )}
         {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import { LABELS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
@@ -7,6 +7,7 @@ import activitiesAnimation from '../lottie/activities_registration_animation.jso
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [categoryFilter, setCategoryFilter] = useState(null);
   const { View } = useLottie({
     animationData: activitiesAnimation,
@@ -87,9 +88,9 @@ const ActivityRegistrationPage = () => {
   };
   
   return (
-    <div className="container mx-auto">
-      <div className="flex flex-col items-center">
-        <div className="w-40 h-40 mb-4">
+    <div className="container mx-auto px-4 pt-24">
+      <div className="flex flex-col items-center mb-8">
+        <div className="w-32 h-32 mb-4 flex items-center justify-center">
           {View}
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
