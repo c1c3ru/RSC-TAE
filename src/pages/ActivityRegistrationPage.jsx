@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import { LABELS } from '../constants/texts';
-import Lottie from 'lottie-react';
+import { useLottie } from 'lottie-react';
 import activitiesAnimation from '../lottie/activities_registration_animation.json';
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
   const [categoryFilter, setCategoryFilter] = useState(null);
+  const { View } = useLottie({
+    animationData: activitiesAnimation,
+    loop: true,
+    autoplay: true
+  });
   
   // Extract category filter from URL if present
   useEffect(() => {
@@ -85,7 +90,7 @@ const ActivityRegistrationPage = () => {
     <div className="container mx-auto">
       <div className="flex flex-col items-center">
         <div className="w-40 h-40 mb-4">
-          <Lottie autoplay loop src={activitiesAnimation} style={{ width: '100%', height: '100%' }} />
+          {View}
         </div>
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
       </div>

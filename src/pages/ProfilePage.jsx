@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
-import Lottie from 'lottie-react';
+import { useLottie } from 'lottie-react';
 import editProfileAnimation from '../lottie/edit_profile_animation.json';
 import saveProfileAnimation from '../lottie/save_profile_animation.json';
 
@@ -14,6 +14,18 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  const { View: EditView } = useLottie({
+    animationData: editProfileAnimation,
+    loop: true,
+    autoplay: true
+  });
+
+  const { View: SaveView } = useLottie({
+    animationData: saveProfileAnimation,
+    loop: false,
+    autoplay: true
+  });
 
   useEffect(() => {
     if (currentUser) {
@@ -49,7 +61,7 @@ const ProfilePage = () => {
     <div className="max-w-xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8">
       <div className="flex flex-col items-center">
         <div className="w-40 h-40 mb-4">
-          <Lottie autoplay loop src={editProfileAnimation} style={{ width: '100%', height: '100%' }} />
+          {EditView}
         </div>
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Meu Perfil</h2>
       </div>
@@ -111,7 +123,7 @@ const ProfilePage = () => {
         {success && (
           <div className="flex flex-col items-center mt-4 animate-fadeIn">
             <div className="w-32 h-32 mb-2">
-              <Lottie autoplay src={saveProfileAnimation} style={{ width: '100%', height: '100%' }} />
+              {SaveView}
             </div>
             <div className="text-green-600 font-semibold">Perfil atualizado com sucesso!</div>
           </div>
