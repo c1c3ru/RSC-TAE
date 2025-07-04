@@ -3,6 +3,7 @@ import React from 'react';
 import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import ScoreCard from '../components/Dashboard/ScoreCard';
+import ActivityList from '../components/ActivityForm/ActivityList';
 
 const DashboardPage = () => {
   const { 
@@ -111,6 +112,9 @@ const DashboardPage = () => {
       ) : (
         <CategoryDistribution categoryScores={categoryScores} />
       )}
+
+      {/* Lista de atividades */}
+      <ActivityList />
     </div>
   );
 };
