@@ -84,11 +84,11 @@ const CategoryDistribution = () => {
       <div className="w-full h-64">
         <canvas ref={chartRef}></canvas>
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6">
         {categories.map((category, index) => (
-          <div key={index} className="flex items-center">
-            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.color }}></div>
-            <span className="text-sm text-gray-700">{category.label}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
+          <div key={index} className="flex items-center min-w-0">
+            <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: category.color }}></div>
+            <span className="text-sm text-gray-700 break-words">{category.label}: <b>{(categoryScores[index] || 0).toFixed(1)}</b></span>
           </div>
         ))}
       </div>

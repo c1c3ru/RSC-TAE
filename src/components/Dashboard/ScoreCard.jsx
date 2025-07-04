@@ -25,6 +25,22 @@ const ScoreCard = () => {
         <div className="text-sm text-gray-500">
           de {nextProgressionScore} pontos
         </div>
+        {/* Níveis de RSC */}
+        <div className="mt-4 flex flex-wrap justify-center items-center gap-2 text-xs">
+          {[
+            { nivel: 'I', pontos: 0 },
+            { nivel: 'II', pontos: 100 },
+            { nivel: 'III', pontos: 200 },
+            { nivel: 'IV', pontos: 300 },
+            { nivel: 'V', pontos: 400 },
+            { nivel: 'VI', pontos: 500 }
+          ].map((rsc, idx, arr) => (
+            <React.Fragment key={rsc.nivel}>
+              <span className={`px-2 py-1 rounded font-semibold ${totalScore >= rsc.pontos && (idx === arr.length-1 || totalScore < arr[idx+1].pontos) ? 'bg-blue-100 text-blue-800 border border-blue-400' : 'bg-gray-100 text-gray-600'}`}>RSC {rsc.nivel} <span className="font-normal">({rsc.pontos})</span></span>
+              {idx < arr.length-1 && <span className="text-gray-400">→</span>}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {/* Progress Bar */}
