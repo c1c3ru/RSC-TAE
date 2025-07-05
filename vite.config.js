@@ -16,6 +16,20 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
+
+  define: {
+    global: 'globalThis'
   }
 })
