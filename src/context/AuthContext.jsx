@@ -96,14 +96,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       
+      const redirectUrl = REDIRECT_URLS.dashboard();
+      console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
+      console.log('🔍 Debug - Ambiente:', import.meta.env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
+      console.log('🔍 Debug - URL atual:', window.location.origin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: REDIRECT_URLS.dashboard()
+          redirectTo: redirectUrl
         }
       });
 
       if (error) throw error;
+      console.log('🔍 Debug - Resposta do Supabase:', data);
       return data;
     } catch (error) {
       console.error('Error signing in with Google:', error);

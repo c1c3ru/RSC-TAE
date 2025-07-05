@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_PRODUCTION_URL": "https://rsc-tae.vercel.app",
+    "VITE_DEVELOPMENT_URL": "http://localhost:5173"
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+} 
