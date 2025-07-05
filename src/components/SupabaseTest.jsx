@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import supabase from '../utils/supabaseClient';
+import ServerStatus from './ServerStatus';
 
 const SupabaseTest = () => {
   const [testResults, setTestResults] = useState([]);
@@ -57,42 +58,51 @@ const SupabaseTest = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">🔧 Teste de Configuração do Supabase</h2>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <h2 className="text-2xl font-bold mb-6">🔧 Teste de Configuração do Supabase</h2>
       
-      <button
-        onClick={runTests}
-        disabled={loading}
-        className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? 'Testando...' : 'Executar Testes'}
-      </button>
+      {/* Status do Servidor */}
+      <ServerStatus />
+      
+      {/* Testes de Configuração */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-xl font-bold mb-4">🧪 Testes de Configuração</h3>
+        
+        <button
+          onClick={runTests}
+          disabled={loading}
+          className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? 'Testando...' : 'Executar Testes'}
+        </button>
 
-      <div className="space-y-2">
-        {testResults.map((result, index) => (
-          <div
-            key={index}
-            className={`p-2 rounded text-sm ${
-              result.type === 'error' ? 'bg-red-100 text-red-800' :
-              result.type === 'success' ? 'bg-green-100 text-green-800' :
-              'bg-gray-100 text-gray-800'
-            }`}
-          >
-            <span className="font-mono text-xs">{result.timestamp}</span> {result.message}
-          </div>
-        ))}
-      </div>
-
-      {testResults.length > 0 && (
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-          <h3 className="font-bold text-yellow-800 mb-2">📋 Instruções:</h3>
-          <ul className="text-sm text-yellow-700 space-y-1">
-            <li>• Se houver erros, configure as URLs no Supabase Dashboard</li>
-            <li>• Verifique se o Google OAuth está ativado</li>
-            <li>• Confirme se o Client ID e Secret estão corretos</li>
-          </ul>
+        <div className="space-y-2">
+          {testResults.map((result, index) => (
+            <div
+              key={index}
+              className={`p-2 rounded text-sm ${
+                result.type === 'error' ? 'bg-red-100 text-red-800' :
+                result.type === 'success' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-800'
+              }`}
+            >
+              <span className="font-mono text-xs">{result.timestamp}</span> {result.message}
+            </div>
+          ))}
         </div>
-      )}
+
+        {testResults.length > 0 && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+            <h3 className="font-bold text-yellow-800 mb-2">📋 Instruções:</h3>
+            <ul className="text-sm text-yellow-700 space-y-1">
+              <li>• Se houver erros, configure as URLs no Supabase Dashboard</li>
+              <li>• Verifique se o Google OAuth está ativado</li>
+              <li>• Confirme se o Client ID e Secret estão corretos</li>
+              <li>• Se o erro 500 persistir, pode ser um problema temporário do servidor</li>
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -102,7 +102,8 @@ export const AuthProvider = ({ children }) => {
       console.log('🔍 Debug - URL atual:', window.location.origin);
       console.log('🔍 Debug - Supabase URL:', supabase.supabaseUrl);
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      // Primeira tentativa com configuração padrão
+      let { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -114,16 +115,43 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (error) {
-        console.error('❌ Erro no Supabase OAuth:', error);
-        throw error;
+        console.error('❌ Erro na primeira tentativa:', error);
+        
+        // Segunda tentativa sem queryParams extras
+        console.log('🔄 Tentando segunda vez sem queryParams extras...');
+        const { data: data2, error: error2 } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl
+          }
+        });
+        
+        if (error2) {
+          console.error('❌ Erro na segunda tentativa:', error2);
+          throw error2;
+        }
+        
+        data = data2;
       }
       
       console.log('✅ Resposta do Supabase:', data);
       console.log('🔗 URL de redirecionamento do Supabase:', data?.url);
       
+      // Se chegou até aqui, redirecionar manualmente se necessário
+      if (data?.url) {
+        console.log('🚀 Redirecionando para:', data.url);
+        window.location.href = data.url;
+      }
+      
       return data;
     } catch (error) {
       console.error('❌ Erro completo no login com Google:', error);
+      
+      // Mostrar erro amigável para o usuário
+      if (error.message?.includes('500') || error.message?.includes('unexpected_failure')) {
+        throw new Error('Erro temporário no servidor. Tente novamente em alguns minutos ou entre em contato com o suporte.');
+      }
+      
       throw error;
     } finally {
       setLoading(false);
