@@ -97,7 +97,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       
       const redirectUrl = REDIRECT_URLS.dashboard();
+      
+      // Validação adicional da URL
+      if (!redirectUrl || redirectUrl.includes(' ')) {
+        console.error('❌ URL de redirecionamento inválida:', redirectUrl);
+        throw new Error('URL de redirecionamento inválida');
+      }
+      
       console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
+      console.log('🔍 Debug - URL length:', redirectUrl.length);
+      console.log('🔍 Debug - URL contains spaces:', redirectUrl.includes(' '));
       console.log('🔍 Debug - Ambiente:', import.meta.env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
       console.log('🔍 Debug - URL atual:', window.location.origin);
       console.log('🔍 Debug - Supabase URL:', supabase.supabaseUrl);

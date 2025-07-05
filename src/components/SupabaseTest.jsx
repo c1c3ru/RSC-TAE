@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import supabase from '../utils/supabaseClient';
 import ServerStatus from './ServerStatus';
+import UrlValidator from './UrlValidator';
 
 const SupabaseTest = () => {
   const [testResults, setTestResults] = useState([]);
@@ -64,6 +65,9 @@ const SupabaseTest = () => {
       {/* Status do Servidor */}
       <ServerStatus />
       
+      {/* Validador de URLs */}
+      <UrlValidator />
+      
       {/* Testes de Configuração */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-xl font-bold mb-4">🧪 Testes de Configuração</h3>
@@ -99,6 +103,7 @@ const SupabaseTest = () => {
               <li>• Verifique se o Google OAuth está ativado</li>
               <li>• Confirme se o Client ID e Secret estão corretos</li>
               <li>• Se o erro 500 persistir, pode ser um problema temporário do servidor</li>
+              <li>• Use o validador de URLs acima para verificar se há espaços extras</li>
             </ul>
           </div>
         )}
