@@ -100,19 +100,30 @@ export const AuthProvider = ({ children }) => {
       console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
       console.log('🔍 Debug - Ambiente:', import.meta.env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
       console.log('🔍 Debug - URL atual:', window.location.origin);
+      console.log('🔍 Debug - Supabase URL:', supabase.supabaseUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       });
 
-      if (error) throw error;
-      console.log('🔍 Debug - Resposta do Supabase:', data);
+      if (error) {
+        console.error('❌ Erro no Supabase OAuth:', error);
+        throw error;
+      }
+      
+      console.log('✅ Resposta do Supabase:', data);
+      console.log('🔗 URL de redirecionamento do Supabase:', data?.url);
+      
       return data;
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('❌ Erro completo no login com Google:', error);
       throw error;
     } finally {
       setLoading(false);

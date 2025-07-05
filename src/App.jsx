@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
+import SupabaseTest from './components/SupabaseTest';
 // import ActivityHistoryPage from './pages/ActivityHistoryPage'; // Removed import
 import './index.css';
 
@@ -123,6 +124,7 @@ const AppContent = () => {
         } 
       />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/supabase-test" element={<SupabaseTest />} />
       {/* Removed /history route block */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
