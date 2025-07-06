@@ -15,5 +15,13 @@ export const LABELS = {
   sistemaTitulo: 'Sistema de Competências',
   login: 'Login',
   sair: 'Sair',
+  selecioneUmaAtividade: 'Selecione uma atividade',
+  criterio: 'Critério de Pontuação',
+  limiteMaximo: 'Limite Máximo',
+  documentoObrigatorio: 'Documento Obrigatório',
+  documentoComprobatorio: 'Documento Comprobatório',
+  pontuacaoEstimada: 'Pontuação Estimada',
+  pontos: 'pontos',
+  informacoesAdicionaisSobreAtividade: 'Informações adicionais sobre a atividade (opcional)',
   // Adicione outros textos conforme necessário
 }; 

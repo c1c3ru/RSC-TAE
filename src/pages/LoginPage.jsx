@@ -21,6 +21,7 @@ const LoginPage = () => {
   const [registerMatricula, setRegisterMatricula] = useState('');
   const [registerCargo, setRegisterCargo] = useState('');
   const [registerEscolaridade, setRegisterEscolaridade] = useState('');
+  const [emailError, setEmailError] = useState('');
   
   const { login, loginWithGoogle, register, forgotPassword } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +30,35 @@ const LoginPage = () => {
   useEffect(() => {
     setFadeIn(true);
   }, []);
+  
+  const validateEmail = (email) => {
+    if (!email) {
+      setEmailError('');
+      return true;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Formato de email inválido');
+      return false;
+    }
+
+    // Verificar se é um domínio .edu
+    const domain = email.split('@')[1];
+    if (!domain || !domain.includes('.edu')) {
+      setEmailError('Apenas emails com domínio .edu são aceitos');
+      return false;
+    }
+
+    setEmailError('');
+    return true;
+  };
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setRegisterEmail(newEmail);
+    validateEmail(newEmail);
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,6 +90,12 @@ const LoginPage = () => {
         return;
       }
       
+      // Validar email antes de prosseguir
+      if (!validateEmail(registerEmail)) {
+        setError('Por favor, corrija o email antes de continuar.');
+        return;
+      }
+
       try {
         setLoading(true);
         const userInfo = {
@@ -86,6 +122,7 @@ const LoginPage = () => {
           setRegisterMatricula('');
           setRegisterCargo('');
           setRegisterEscolaridade('');
+          setEmailError('');
         } else {
           setError('Não foi possível concluir o cadastro. Verifique seus dados e tente novamente.');
         }
@@ -258,16 +295,29 @@ const LoginPage = () => {
                 
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-email">
-                    E-mail
+                    E-mail Institucional <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="register-email"
                     type="email"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="seu.email@exemplo.com"
+                    className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                      emailError ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="seu.email@instituicao.edu.br"
                     value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    onChange={handleEmailChange}
                   />
+                  {emailError && (
+                    <div className="text-red-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {emailError}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Apenas emails com domínio .edu são aceitos para validação institucional.
+                  </p>
                 </div>
                 
                 <div className="mb-4">
@@ -379,7 +429,7 @@ const LoginPage = () => {
               <button
                 type="submit"
                 className={`bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 w-full transform transition-all hover:scale-[1.02] shadow-md ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={loading}
+                disabled={loading || (registerMode && !!emailError)}
               >
                 {loading ? (
                   <span className="flex items-center justify-center">

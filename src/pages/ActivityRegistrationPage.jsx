@@ -89,11 +89,76 @@ const ActivityRegistrationPage = () => {
   
   return (
     <div className="container mx-auto px-4 pt-24">
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-32 h-32 mb-4 flex items-center justify-center">
+      {/* Header com título e animação lado a lado */}
+      <div className="flex flex-col lg:flex-row items-center justify-between mb-8">
+        <div className="flex-1 text-center lg:text-left">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">{LABELS.registrarAtividade}</h1>
+          <p className="text-gray-600 max-w-2xl">
+            Registre suas atividades acadêmicas e profissionais para acumular pontos no sistema de competências. 
+            Cada atividade possui critérios específicos de pontuação baseados em sua relevância e impacto.
+          </p>
+        </div>
+        <div className="w-32 h-32 mt-4 lg:mt-0 flex-shrink-0">
           {View}
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">{LABELS.registrarAtividade}</h1>
+      </div>
+
+      {/* Seção informativa sobre o sistema de pontuação */}
+      <div className="mb-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 border border-indigo-200">
+        <h2 className="text-xl font-semibold text-indigo-800 mb-4 flex items-center">
+          <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          Como funciona o sistema de pontuação?
+        </h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                <span className="text-indigo-600 text-sm font-semibold">1</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-indigo-800">Critérios de Pontuação</h3>
+                <p className="text-sm text-indigo-700">Cada atividade possui um valor específico por unidade (hora, mês, documento, etc.)</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                <span className="text-indigo-600 text-sm font-semibold">2</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-indigo-800">Limites Máximos</h3>
+                <p className="text-sm text-indigo-700">Muitas atividades possuem um limite máximo de pontos para evitar acúmulo excessivo</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                <span className="text-indigo-600 text-sm font-semibold">3</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-indigo-800">Cálculo Automático</h3>
+                <p className="text-sm text-indigo-700">O sistema calcula automaticamente: Quantidade × Pontos por unidade</p>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                <span className="text-indigo-600 text-sm font-semibold">4</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-indigo-800">Aprovação Necessária</h3>
+                <p className="text-sm text-indigo-700">Todas as atividades passam por análise antes de serem contabilizadas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-indigo-100 rounded-md">
+          <p className="text-sm text-indigo-800">
+            <strong>Exemplo:</strong> Se uma atividade vale 0.5 pontos por mês e você trabalhou 6 meses, 
+            você receberá 3 pontos (6 × 0.5). Se o limite máximo for 10 pontos, você não poderá acumular mais que isso.
+          </p>
+        </div>
       </div>
       
       {/* Category filter tabs */}
