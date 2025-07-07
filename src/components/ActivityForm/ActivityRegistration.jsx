@@ -6,7 +6,7 @@ import { LABELS } from '../../constants/texts';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { useLottie } from 'lottie-react';
-import saveAnimation from '../../../public/assets/lottie/save_profile_animation.json';
+import saveAnimation from '../../assets/lottie/save_profile_animation.json';
 
 const ActivityRegistration = ({ categoryFilter }) => {
   const { competencyItems, registerActivity } = useCompetency();

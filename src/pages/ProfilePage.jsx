@@ -5,8 +5,8 @@ import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
 import { PROFILE_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
-import editProfileAnimation from '../../public/assets/lottie/edit_profile_animation.json';
-import saveProfileAnimation from '../../public/assets/lottie/save_profile_animation.json';
+import editProfileAnimation from '../assets/lottie/edit_profile_animation.json';
+import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 
 const ProfilePage = () => {
   const { currentUser, refreshUser } = useAuth();
