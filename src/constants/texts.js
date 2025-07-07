@@ -104,7 +104,7 @@ export const LOGIN_TEXTS = {
   jáTenhoUmaConta: 'Já tenho uma conta',
   criarNovaConta: 'Criar nova conta',
   copyright2025SistemaDeCalculoDePontuacaoParaProgressãoFuncional: '© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional',
-  versão10Teste: 'Versão 1.0 (teste)'
+  versão10Teste: 'Versão 1.0'
 };
 
 // Textos da página de Dashboard
