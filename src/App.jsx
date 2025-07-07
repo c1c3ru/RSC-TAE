@@ -12,6 +12,8 @@ import ProfilePage from './pages/ProfilePage';
 import SupabaseTest from './components/SupabaseTest';
 // import ActivityHistoryPage from './pages/ActivityHistoryPage'; // Removed import
 import './index.css';
+import notFoundAnimation from './assets/lottie/404_not_found.json';
+import { useLottie } from 'lottie-react';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -41,14 +43,7 @@ class ErrorBoundary extends React.Component {
             >
               Recarregar Página
             </button>
-            {process.env.NODE_ENV === 'development' && (
-              <details className="mt-4 text-left">
-                <summary className="cursor-pointer text-sm text-gray-500">Detalhes do erro</summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
-                  {this.state.error?.toString()}
-                </pre>
-              </details>
-            )}
+            {/* Detalhes do erro removidos para evitar uso de process.env */}
           </div>
         </div>
       );
@@ -93,6 +88,23 @@ const MainLayout = ({ children }) => {
   );
 };
 
+// Página 404 customizada
+const NotFoundPage = () => {
+  const { View } = useLottie({
+    animationData: notFoundAnimation,
+    loop: true,
+    autoplay: true
+  });
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
+      <div className="w-64 h-64 mb-6">{View}</div>
+      <h1 className="text-3xl font-bold text-blue-700 mb-2">404 - Página não encontrada</h1>
+      <p className="text-gray-600 mb-4">A página que você procura não existe ou foi movida.</p>
+      <a href="/dashboard" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Voltar ao Dashboard</a>
+    </div>
+  );
+};
+
 // App Content Component
 const AppContent = () => {
   const { currentUser } = useAuth();
@@ -124,9 +136,10 @@ const AppContent = () => {
         } 
       />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/supabase-test" element={<SupabaseTest />} />
-      {/* Removed /history route block */}
+      <Route path="/supabase-test" element={<SupabaseTest />} />      
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Rota 404 catch-all */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

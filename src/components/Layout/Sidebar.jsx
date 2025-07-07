@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCompetency } from '../../context/CompetencyContext';
 import { useLayout } from '../../context/LayoutContext'; // Import useLayout
 import { LABELS } from '../../constants/texts';
+import supabase from './utils/supabaseClient';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -10,6 +11,10 @@ const Sidebar = ({ isOpen, onClose }) => {
   const { categoryScores } = useCompetency();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
+
+  useEffect(() => {
+    supabase.auth.getSession().then(console.log);
+  }, []);
 
   // Remover o useEffect que força o menu expandido em telas menores
 
