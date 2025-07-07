@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
   - '@sentry/cli'
+  - core-js
   - esbuild
   - unrs-resolver
