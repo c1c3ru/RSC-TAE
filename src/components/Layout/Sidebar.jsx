@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // Import useState for selectedCategory
+import React, { useState, useEffect } from 'react'; // Import useState for selectedCategory
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCompetency } from '../../context/CompetencyContext';
 import { useLayout } from '../../context/LayoutContext'; // Import useLayout
@@ -10,6 +10,8 @@ const Sidebar = ({ isOpen, onClose }) => {
   const { categoryScores } = useCompetency();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
+
+  // Remover o useEffect que força o menu expandido em telas menores
 
   // Usar nomes de categoria exatamente como no banco
   const categories = [
