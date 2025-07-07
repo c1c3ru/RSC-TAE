@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { id: 'Produção Científica', name: 'Produção Científica', color: 'bg-red-500' },
     { id: 'Eventos', name: 'Participação em Eventos', color: 'bg-pink-500' },
     { id: 'Ensino', name: 'Atividades de Ensino', color: 'bg-indigo-500' },
-    { id: 'Outras Atividades', name: 'Outras Atividades', color: 'bg-gray-500' }
+
   ];
 
   const menuItems = [

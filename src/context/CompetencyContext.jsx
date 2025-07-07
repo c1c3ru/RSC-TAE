@@ -19,7 +19,7 @@ export const CompetencyProvider = ({ children }) => {
   const [competencyItems, setCompetencyItems] = useState([]);
   const [activities, setActivities] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
-  const [categoryScores, setCategoryScores] = useState([0, 0, 0, 0, 0, 0]);
+  const [categoryScores, setCategoryScores] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [loading, setLoading] = useState(true);
 
   // Set next progression score goal
@@ -90,12 +90,12 @@ export const CompetencyProvider = ({ children }) => {
     console.log('Recalculando scores...', activities, competencyItems); // Log at the beginning
     if (!activities.length) {
       setTotalScore(0);
-      setCategoryScores([0, 0, 0, 0, 0, 0]);
+      setCategoryScores([0, 0, 0, 0, 0, 0, 0]);
       return;
     }
 
-    // Initialize category scores array (8 categories)
-    const catScores = [0, 0, 0, 0, 0, 0, 0, 0];
+    // Initialize category scores array (7 categories)
+    const catScores = [0, 0, 0, 0, 0, 0, 0];
 
     // Define category name to index mapping
     const categoryNameToIndex = {
@@ -106,7 +106,7 @@ export const CompetencyProvider = ({ children }) => {
       'Produção Científica': 4,
       'Eventos': 5,
       'Ensino': 6,
-      'Outras Atividades': 7
+  
     };
 
     // Calculate total and category scores

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
+import { PROFILE_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
 import editProfileAnimation from '/assets/lottie/edit_profile_animation.json';
 import saveProfileAnimation from '/assets/lottie/save_profile_animation.json';
@@ -59,7 +60,7 @@ const ProfilePage = () => {
         setShowSaveAnimation(false);
       }, 3000);
     } catch (err) {
-      setError('Erro ao atualizar perfil.');
+      setError(PROFILE_TEXTS.erro);
     } finally {
       setLoading(false);
       // Removido o timeout automático - agora o usuário precisa clicar em OK
@@ -77,7 +78,7 @@ const ProfilePage = () => {
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Voltar
+          {PROFILE_TEXTS.voltar}
         </button>
       </div>
       
@@ -85,11 +86,11 @@ const ProfilePage = () => {
         <div className="w-32 h-32 mb-4 flex items-center justify-center">
           {EditView}
         </div>
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Meu Perfil</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">{PROFILE_TEXTS.titulo}</h2>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.nome}</label>
           <input
             type="text"
             value={name}
@@ -99,14 +100,14 @@ const ProfilePage = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.cargo}</label>
           <select
             value={cargo}
             onChange={e => setCargo(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           >
-            <option value="">Selecione...</option>
+            <option value="">{PROFILE_TEXTS.selecione}</option>
             {CARGOS.map(group => (
               <optgroup key={group.label} label={group.label}>
                 {group.options.map(opt => (
@@ -117,14 +118,14 @@ const ProfilePage = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Escolaridade</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.escolaridade}</label>
           <select
             value={escolaridade}
             onChange={e => setEscolaridade(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           >
-            <option value="">Selecione...</option>
+            <option value="">{PROFILE_TEXTS.selecione}</option>
             <option value="Ensino fundamental incompleto">Ensino fundamental incompleto</option>
             <option value="Ensino fundamental completo">Ensino fundamental completo</option>
             <option value="Ensino médio">Ensino médio</option>
@@ -140,7 +141,7 @@ const ProfilePage = () => {
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           disabled={loading}
         >
-          {loading ? 'Salvando...' : 'Salvar Alterações'}
+          {loading ? PROFILE_TEXTS.salvando : PROFILE_TEXTS.salvar}
         </button>
         {success && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -150,7 +151,7 @@ const ProfilePage = () => {
                   {SaveView}
                 </div>
               </div>
-              <div className="text-green-600 font-semibold text-lg mb-4">Perfil atualizado com sucesso!</div>
+              <div className="text-green-600 font-semibold text-lg mb-4">{PROFILE_TEXTS.sucesso}</div>
               <button
                 onClick={() => {
                   setSuccess(false);
@@ -158,7 +159,7 @@ const ProfilePage = () => {
                 }}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
               >
-                OK
+                {PROFILE_TEXTS.ok}
               </button>
             </div>
           </div>

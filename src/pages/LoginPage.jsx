@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS } from '../constants/cargos';
+import { LOGIN_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
 import saveAnimation from '/assets/lottie/save_profile_animation.json';
 import editAnimation from '/assets/lottie/edit_profile_animation.json';
@@ -56,14 +57,14 @@ const LoginPage = () => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError('Formato de email inválido');
+      setEmailError(LOGIN_TEXTS.emailInvalido);
       return false;
     }
 
     // Verificar se é um domínio .edu
     const domain = email.split('@')[1];
     if (!domain || !domain.includes('.edu')) {
-      setEmailError('Apenas emails com domínio .edu são aceitos');
+      setEmailError(LOGIN_TEXTS.emailNaoEdu);
       return false;
     }
 
@@ -84,7 +85,7 @@ const LoginPage = () => {
     
     if (forgotPasswordMode) {
       if (!email) {
-        setError('Digite seu e-mail para recuperar a senha.');
+        setError(LOGIN_TEXTS.recuperarSenhaInstrucao);
         return;
       }
       
@@ -95,7 +96,7 @@ const LoginPage = () => {
         setMessage(result.message);
       } catch (err) {
         console.error("Password recovery error:", err);
-        setError('Erro ao processar a solicitação. Tente novamente.');
+        setError(LOGIN_TEXTS.erroRecuperarSenha);
       } finally {
         setLoading(false);
         setTimeout(() => setShowAnimation(false), 2000);
@@ -105,13 +106,13 @@ const LoginPage = () => {
     
     if (registerMode) {
       if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo || !registerEscolaridade) {
-        setError('Preencha todos os campos para realizar o cadastro.');
+        setError(LOGIN_TEXTS.preenchaTodosCampos);
         return;
       }
       
       // Validar email antes de prosseguir
       if (!validateEmail(registerEmail)) {
-        setError('Por favor, corrija o email antes de continuar.');
+        setError(LOGIN_TEXTS.corrijaEmail);
         return;
       }
 
@@ -130,7 +131,7 @@ const LoginPage = () => {
         const user = await register(userInfo);
         
         if (user) {
-          setMessage('Cadastro realizado com sucesso!');
+          setMessage(LOGIN_TEXTS.cadastroSucesso);
           setShowEmailValidation(true);
           setRegisterMode(false);
           setEmail(registerEmail);
@@ -144,12 +145,12 @@ const LoginPage = () => {
           setRegisterEscolaridade('');
           setEmailError('');
         } else {
-          setError('Não foi possível concluir o cadastro. Verifique seus dados e tente novamente.');
+          setError(LOGIN_TEXTS.erroCadastro);
         }
       } catch (err) {
         console.error("Registration error in component:", err);
         // Show more specific error message if available
-        setError(err.message || 'Erro ao realizar cadastro. Por favor, tente novamente.');
+        setError(err.message || LOGIN_TEXTS.erroCadastro);
       } finally {
         setLoading(false);
         setTimeout(() => setShowAnimation(false), 2000);
@@ -158,7 +159,7 @@ const LoginPage = () => {
     }
     
     if (!email || !password) {
-      setError('Preencha todos os campos.');
+      setError(LOGIN_TEXTS.preenchaTodosCampos);
       return;
     }
     
@@ -168,7 +169,7 @@ const LoginPage = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error("Login error in component:", err);
-      setError('Credenciais inválidas. Tente novamente.');
+      setError(LOGIN_TEXTS.erroLogin);
       setLoading(false);
     }
   };
@@ -199,13 +200,10 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      setError('');
       await loginWithGoogle();
-      // No need to navigate, redirect is handled by Supabase
+      navigate('/dashboard');
     } catch (err) {
-      console.error("Google login error:", err);
-      setError('Erro ao realizar login com Google. Por favor, tente novamente.');
-    } finally {
+      setError(LOGIN_TEXTS.erroLogin);
       setLoading(false);
     }
   };
@@ -220,10 +218,10 @@ const LoginPage = () => {
               <SaveAnimationView />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {registerMode ? 'Cadastrando...' : forgotPasswordMode ? 'Enviando email...' : 'Processando...'}
+              {registerMode ? LOGIN_TEXTS.cadastrando : forgotPasswordMode ? LOGIN_TEXTS.enviandoEmail : LOGIN_TEXTS.processando}
             </h3>
             <p className="text-sm text-gray-600 text-center">
-              {registerMode ? 'Seu cadastro está sendo processado' : forgotPasswordMode ? 'Email de recuperação sendo enviado' : 'Aguarde um momento'}
+              {registerMode ? LOGIN_TEXTS.seuCadastroEstaCriando : forgotPasswordMode ? LOGIN_TEXTS.emailDeRecuperacaoSendoEnviado : LOGIN_TEXTS.aguardeUmMomento}
             </p>
           </div>
         </div>
@@ -242,10 +240,10 @@ const LoginPage = () => {
             </div>
             <div>
               <h1 className="text-white text-center text-3xl font-bold">
-                Sistema de Cálculo de Pontuação
+                {LOGIN_TEXTS.sistemaCalculoPontuacao}
               </h1>
               <p className="text-blue-100 text-center mt-2">
-                Progressão Funcional
+                {LOGIN_TEXTS.progressaoFuncional}
               </p>
             </div>
           </div>
@@ -253,7 +251,7 @@ const LoginPage = () => {
         
         <div className="p-8">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-            {forgotPasswordMode ? 'Recuperar Senha' : registerMode ? 'Cadastre-se' : 'Login'}
+            {forgotPasswordMode ? LOGIN_TEXTS.recuperarSenha : registerMode ? LOGIN_TEXTS.cadastreSe : LOGIN_TEXTS.login}
           </h2>
           
           {error && (
@@ -288,18 +286,18 @@ const LoginPage = () => {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-800 mb-2">
-                    📧 Verifique seu e-mail para continuar
+                    {LOGIN_TEXTS.verifiqueSeuEmailParaContinuar}
                   </h3>
                   <div className="text-sm text-blue-700 space-y-2">
-                    <p>• Verifique sua caixa de entrada (e spam)</p>
-                    <p>• Clique no link de confirmação no e-mail</p>
-                    <p>• Após a confirmação, você poderá fazer login</p>
+                    <p>• {LOGIN_TEXTS.verifiqueSuaCaixaDeEntradaESpam}</p>
+                    <p>• {LOGIN_TEXTS.cliqueNoLinkDeConfirmacaoNoEmail}</p>
+                    <p>• {LOGIN_TEXTS.aposAConfirmacaoVocEPoderFazerLogin}</p>
                   </div>
                   <button
                     onClick={() => setShowEmailValidation(false)}
                     className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
                   >
-                    Entendi, fechar
+                    {LOGIN_TEXTS.entendiFechar}
                   </button>
                 </div>
               </div>
@@ -319,20 +317,20 @@ const LoginPage = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-yellow-700">
-                        <strong>Importante:</strong> Após o cadastro, verifique seu e-mail para continuar.
+                        <strong>{LOGIN_TEXTS.importante}</strong> {LOGIN_TEXTS.aposCadastroVerifiqueSeuEmailParaContinuar}
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-name">
-                    Nome Completo
+                    {LOGIN_TEXTS.nomeCompleto}
                   </label>
                   <input
                     id="register-name"
                     type="text"
                     className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="João Silva"
+                    placeholder={LOGIN_TEXTS.joaoSilva}
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
                   />
@@ -340,7 +338,7 @@ const LoginPage = () => {
                 
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-email">
-                    E-mail Institucional <span className="text-red-500">*</span>
+                    {LOGIN_TEXTS.emailInstitucional} <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="register-email"
@@ -348,7 +346,7 @@ const LoginPage = () => {
                     className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       emailError ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="seu.email@instituicao.edu.br"
+                    placeholder={LOGIN_TEXTS.seuEmailInstituicaoEduBr}
                     value={registerEmail}
                     onChange={handleEmailChange}
                   />
@@ -361,13 +359,13 @@ const LoginPage = () => {
                     </div>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    Apenas emails com domínio .edu são aceitos para validação institucional.
+                    {LOGIN_TEXTS.apenasEmailsComDominioEduSaoAceitosParaValidaçãoInstitucional}
                   </p>
                 </div>
                 
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-password">
-                    Senha
+                    {LOGIN_TEXTS.senha}
                   </label>
                   <input
                     id="register-password"
@@ -382,7 +380,7 @@ const LoginPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-matricula">
-                      Matrícula
+                      {LOGIN_TEXTS.matricula}
                     </label>
                     <input
                       id="register-matricula"
@@ -395,7 +393,7 @@ const LoginPage = () => {
                   </div>
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-cargo">
-                      Cargo
+                      {LOGIN_TEXTS.cargo}
                     </label>
                     <select
                       id="register-cargo"
@@ -403,7 +401,7 @@ const LoginPage = () => {
                       value={registerCargo}
                       onChange={(e) => setRegisterCargo(e.target.value)}
                     >
-                      <option value="">Selecione...</option>
+                      <option value="">{LOGIN_TEXTS.selecione}</option>
                       {CARGOS.map(group => (
                         <optgroup key={group.label} label={group.label}>
                           {group.options.map(opt => (
@@ -416,7 +414,7 @@ const LoginPage = () => {
                 </div>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-escolaridade">
-                    Escolaridade
+                    {LOGIN_TEXTS.escolaridade}
                   </label>
                   <select
                     id="register-escolaridade"
@@ -424,15 +422,15 @@ const LoginPage = () => {
                     value={registerEscolaridade}
                     onChange={(e) => setRegisterEscolaridade(e.target.value)}
                   >
-                    <option value="">Selecione...</option>
-                    <option value="Ensino fundamental incompleto">Ensino fundamental incompleto</option>
-                    <option value="Ensino fundamental completo">Ensino fundamental completo</option>
-                    <option value="Ensino médio">Ensino médio</option>
-                    <option value="Curso técnico">Curso técnico</option>
-                    <option value="Graduação">Graduação</option>
-                    <option value="Pós-graduação lato sensu (especialização)">Pós-graduação lato sensu (especialização)</option>
-                    <option value="Mestrado">Mestrado</option>
-                    <option value="Doutorado">Doutorado</option>
+                    <option value="">{LOGIN_TEXTS.selecione}</option>
+                    <option value="Ensino fundamental incompleto">{LOGIN_TEXTS.ensinoFundamentalIncompleto}</option>
+                    <option value="Ensino fundamental completo">{LOGIN_TEXTS.ensinoFundamentalCompleto}</option>
+                    <option value="Ensino médio">{LOGIN_TEXTS.ensinoMedio}</option>
+                    <option value="Curso técnico">{LOGIN_TEXTS.cursoTecnico}</option>
+                    <option value="Graduação">{LOGIN_TEXTS.graduacao}</option>
+                    <option value="Pós-graduação lato sensu (especialização)">{LOGIN_TEXTS.posGraduacaoLatoSensuEspecializacao}</option>
+                    <option value="Mestrado">{LOGIN_TEXTS.mestrado}</option>
+                    <option value="Doutorado">{LOGIN_TEXTS.doutorado}</option>
                   </select>
                 </div>
               </>
@@ -440,13 +438,13 @@ const LoginPage = () => {
               <>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                    E-mail
+                    {LOGIN_TEXTS.email}
                   </label>
                   <input
                     id="email"
                     type="email"
                     className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="seu.email@exemplo.com"
+                    placeholder={LOGIN_TEXTS.seuEmailExemploCom}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -455,7 +453,7 @@ const LoginPage = () => {
                 {!forgotPasswordMode && (
                   <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                      Senha
+                      {LOGIN_TEXTS.senha}
                     </label>
                     <input
                       id="password"
@@ -482,12 +480,12 @@ const LoginPage = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Processando...
+                    {LOGIN_TEXTS.processando}
                   </span>
                 ) : (
                   <span>
-                    {forgotPasswordMode ? 'Enviar E-mail de Recuperação' : 
-                     registerMode ? 'Criar Conta' : 'Entrar'}
+                    {forgotPasswordMode ? LOGIN_TEXTS.enviarEmailDeRecuperacao : 
+                     registerMode ? LOGIN_TEXTS.criarConta : LOGIN_TEXTS.entrar}
                   </span>
                 )}
               </button>
@@ -497,7 +495,7 @@ const LoginPage = () => {
               <>
                 <div className="flex items-center my-4">
                   <div className="flex-1 border-t border-gray-300"></div>
-                  <div className="px-3 text-sm text-gray-500">ou</div>
+                  <div className="px-3 text-sm text-gray-500">{LOGIN_TEXTS.ou}</div>
                   <div className="flex-1 border-t border-gray-300"></div>
                 </div>
                 
@@ -515,7 +513,7 @@ const LoginPage = () => {
                       <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
                     </g>
                   </svg>
-                  Continuar com Google
+                  {LOGIN_TEXTS.continuarComGoogle}
                 </button>
               </>
             )}
@@ -526,7 +524,7 @@ const LoginPage = () => {
                 onClick={toggleForgotPassword}
                 className="text-blue-700 hover:text-blue-800 hover:underline focus:outline-none"
               >
-                {forgotPasswordMode ? 'Voltar para o Login' : 'Esqueceu sua senha?'}
+                {forgotPasswordMode ? LOGIN_TEXTS.voltarParaOLogin : LOGIN_TEXTS.esqueceuSuaSenha}
               </button>
               
               <span className="text-gray-400">|</span>
@@ -536,14 +534,14 @@ const LoginPage = () => {
                 onClick={toggleRegisterMode}
                 className="text-blue-700 hover:text-blue-800 hover:underline focus:outline-none"
               >
-                {registerMode ? 'Já tenho uma conta' : 'Criar nova conta'}
+                {registerMode ? LOGIN_TEXTS.jáTenhoUmaConta : LOGIN_TEXTS.criarNovaConta}
               </button>
             </div>
           </form>
           
           <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
-            <p>© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
-            <p className="mt-1">Versão 1.0 Teste</p>
+            <p>{LOGIN_TEXTS.copyright2025SistemaDeCalculoDePontuacaoParaProgressãoFuncional}</p>
+            <p className="mt-1">{LOGIN_TEXTS.versão10Teste}</p>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ const CategoryDistribution = () => {
     { name: 'Produção Científica', label: 'Produção Científica', color: 'rgba(153, 102, 255, 0.7)' },
     { name: 'Eventos', label: 'Participação em Eventos', color: 'rgba(255, 159, 64, 0.7)' },
     { name: 'Ensino', label: 'Atividades de Ensino', color: 'rgba(100, 100, 255, 0.7)' },
-    { name: 'Outras Atividades', label: 'Outras Atividades', color: 'rgba(180, 180, 180, 0.7)' }
+
   ];
 
   useEffect(() => {

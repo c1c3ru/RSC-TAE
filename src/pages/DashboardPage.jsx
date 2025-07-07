@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
@@ -7,6 +6,7 @@ import ActivityList from '../components/ActivityForm/ActivityList';
 import { getUserDocuments } from '../services/activityService';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
+import { DASHBOARD_TEXTS, LABELS } from '../constants/texts';
 
 const DashboardPage = () => {
   const { 
@@ -26,7 +26,7 @@ const DashboardPage = () => {
       const userDocuments = await getUserDocuments();
       
       if (!userDocuments.length) {
-        alert('Nenhum documento encontrado para download.');
+        alert(DASHBOARD_TEXTS.nenhumDocumento);
         return;
       }
 
@@ -44,8 +44,8 @@ const DashboardPage = () => {
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Total de Atividades: ${userDocuments.length}`, 20, 50);
-      pdf.text(`Pontuação Total: ${totalScore.toFixed(2)} pontos`, 20, 60);
+      pdf.text(`${DASHBOARD_TEXTS.totalAtividades}: ${userDocuments.length}`, 20, 50);
+      pdf.text(`${LABELS.pontuacaoEstimada}: ${totalScore.toFixed(2)} ${LABELS.pontos}`, 20, 60);
       
       // Lista de atividades
       pdf.setFontSize(12);
@@ -62,18 +62,18 @@ const DashboardPage = () => {
           yPosition = 20;
         }
         
-        pdf.text(`${index + 1}. ${doc.competences?.title || 'Atividade'}`, 20, yPosition);
+        pdf.text(`${index + 1}. ${doc.competences?.title || LABELS.atividade}`, 20, yPosition);
         yPosition += 10;
-        pdf.text(`   Quantidade: ${doc.quantity} ${doc.competences?.unit || 'unidades'}`, 25, yPosition);
+        pdf.text(`   ${LABELS.quantidade}: ${doc.quantity} ${doc.competences?.unit || 'unidades'}`, 25, yPosition);
         yPosition += 10;
-        pdf.text(`   Pontuação: ${doc.value} pontos`, 25, yPosition);
+        pdf.text(`   ${LABELS.pontuacaoEstimada}: ${doc.value} ${LABELS.pontos}`, 25, yPosition);
         yPosition += 10;
         if (doc.data_inicio) {
-          pdf.text(`   Data Início: ${doc.data_inicio}`, 25, yPosition);
+          pdf.text(`   ${LABELS.dataInicio}: ${doc.data_inicio}`, 25, yPosition);
           yPosition += 10;
         }
         if (doc.data_fim) {
-          pdf.text(`   Data Fim: ${doc.data_fim}`, 25, yPosition);
+          pdf.text(`   ${LABELS.dataFim}: ${doc.data_fim}`, 25, yPosition);
           yPosition += 10;
         }
         yPosition += 5;
@@ -82,18 +82,17 @@ const DashboardPage = () => {
       // Informações sobre o processo
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Processo de Avaliação:', 20, yPosition + 10);
+      pdf.text(DASHBOARD_TEXTS.processoAvaliacao, 20, yPosition + 10);
       
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       const processText = [
-        'Esta documentação será avaliada pela Gestão de Pessoas da sua unidade',
-        'após abertura de processo, anexando todos os documentos disponíveis.',
+        DASHBOARD_TEXTS.processoAvaliacaoTexto[0],
+        DASHBOARD_TEXTS.processoAvaliacaoTexto[1],
         '',
-        'Data de geração: ' + new Date().toLocaleDateString('pt-BR'),
-        'Hora: ' + new Date().toLocaleTimeString('pt-BR')
+        DASHBOARD_TEXTS.processoAvaliacaoTexto[3] + new Date().toLocaleDateString('pt-BR'),
+        DASHBOARD_TEXTS.processoAvaliacaoTexto[4] + new Date().toLocaleTimeString('pt-BR')
       ];
-      
       processText.forEach((line, index) => {
         const lineY = yPosition + 20 + (index * 10);
         if (lineY < 280) {
@@ -107,7 +106,7 @@ const DashboardPage = () => {
       
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
-      alert('Erro ao gerar o PDF. Tente novamente.');
+      alert(DASHBOARD_TEXTS.erroPDF);
     } finally {
       setDownloadingPDF(false);
     }
@@ -147,16 +146,16 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <h1 className="text-3xl font-bold text-gray-900">{DASHBOARD_TEXTS.titulo}</h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="text-sm text-gray-500">
-            Acompanhe seu progresso de competências
+            {DASHBOARD_TEXTS.progresso}
           </div>
           <button
             onClick={handleDownloadAllDocuments}
             disabled={downloadingPDF || stats.total === 0}
-            className={`px-4 py-2 rounded-md font-medium transition-all duration-200 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-4 py-2 rounded-md font-medium transition-all duration-200 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${
               downloadingPDF 
                 ? 'bg-gray-400 text-white' 
                 : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
@@ -168,14 +167,14 @@ const DashboardPage = () => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Gerando PDF...
+                {DASHBOARD_TEXTS.gerandoPDF}
               </div>
             ) : (
               <div className="flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
-                Baixar Documentação Completa
+                {DASHBOARD_TEXTS.baixarDocumentacao}
               </div>
             )}
           </button>
@@ -195,7 +194,7 @@ const DashboardPage = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Total de Atividades</p>
+              <p className="text-sm font-medium text-gray-600">{DASHBOARD_TEXTS.totalAtividades}</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
@@ -209,7 +208,7 @@ const DashboardPage = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Progresso</p>
+              <p className="text-sm font-medium text-gray-600">{DASHBOARD_TEXTS.progressoLabel}</p>
               <p className="text-2xl font-bold text-gray-900">{progressPercentage.toFixed(1)}%</p>
             </div>
           </div>
@@ -223,7 +222,7 @@ const DashboardPage = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Pontos por Atividade</p>
+              <p className="text-sm font-medium text-gray-600">{DASHBOARD_TEXTS.pontosPorAtividade}</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total > 0 ? (totalScore / stats.total).toFixed(1) : '0.0'}</p>
             </div>
           </div>
@@ -233,7 +232,7 @@ const DashboardPage = () => {
       {/* Category Distribution */}
       {stats.total === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-          Nenhuma atividade registrada ainda. Comece adicionando uma!
+          {DASHBOARD_TEXTS.nenhumaAtividade}
         </div>
       ) : (
         <CategoryDistribution categoryScores={categoryScores} />
