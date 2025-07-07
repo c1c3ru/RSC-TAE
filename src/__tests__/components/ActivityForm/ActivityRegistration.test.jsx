@@ -2,14 +2,14 @@
 import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import ActivityRegistration from './ActivityRegistration';
+import ActivityRegistration from '../../../components/ActivityForm/ActivityRegistration';
 import { CompetencyProvider } from '../../context/CompetencyContext';
-import { AuthProvider } from '../../context/AuthContext';
+import { AuthProvider } from '../../context/AuthContext.jsx';
 import { LayoutProvider } from '../../context/LayoutContext';
 
 // Mock do hook useAuth para simular usuário autenticado
-jest.mock('../../context/AuthContext', () => {
-  const originalModule = jest.requireActual('../../context/AuthContext');
+jest.mock('../../../context/AuthContext.jsx', () => {
+  const originalModule = jest.requireActual('../../../context/AuthContext.jsx');
   return {
     ...originalModule,
     useAuth: () => ({
@@ -20,7 +20,7 @@ jest.mock('../../context/AuthContext', () => {
 });
 
 // Mock do activityService para garantir dados no contexto e mockar addActivity
-jest.mock('../../services/activityService', () => {
+jest.mock('../../../services/activityService', () => {
   return {
     __esModule: true,
     getCompetences: jest.fn().mockResolvedValue([
@@ -46,7 +46,7 @@ jest.mock('../../services/activityService', () => {
 });
 
 // Mock do DocumentUploader para não exigir upload real
-jest.mock('./DocumentUploader', () => {
+jest.mock('../../../components/ActivityForm/DocumentUploader', () => {
   const React = require('react');
   function MockUploader({ onDocumentsChange }) {
     React.useEffect(() => {
@@ -99,7 +99,7 @@ describe('ActivityRegistration', () => {
 
     // Verificar se a função de adicionar atividade foi chamada
     await waitFor(() => {
-      const { addActivity } = require('../../services/activityService');
+      const { addActivity } = require('../../../services/activityService');
       expect(addActivity).toHaveBeenCalled();
     });
   });

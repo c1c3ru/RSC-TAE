@@ -3,15 +3,15 @@
 import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Sidebar from './Sidebar';
-import { AuthProvider } from '../../context/AuthContext';
+import Sidebar from '../../../components/Layout/Sidebar';
+import { AuthProvider } from '../../context/AuthContext.jsx';
 import { LayoutProvider } from '../../context/LayoutContext';
 import { CompetencyProvider } from '../../context/CompetencyContext';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mock do hook useAuth para simular usuário autenticado
-jest.mock('../../context/AuthContext', () => {
-  const originalModule = jest.requireActual('../../context/AuthContext');
+jest.mock('../../../context/AuthContext.jsx', () => {
+  const originalModule = jest.requireActual('../../../context/AuthContext.jsx');
   return {
     ...originalModule,
     useAuth: () => ({
@@ -22,7 +22,7 @@ jest.mock('../../context/AuthContext', () => {
 });
 
 // Mock do activityService para garantir dados no contexto
-jest.mock('../../services/activityService', () => ({
+jest.mock('../../../services/activityService', () => ({
   getCompetences: jest.fn().mockResolvedValue([
     {
       id: 'COMP1',

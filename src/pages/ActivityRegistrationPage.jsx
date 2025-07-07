@@ -14,6 +14,11 @@ const ActivityRegistrationPage = () => {
     loop: true,
     autoplay: true
   });
+
+  // Garantir que View é um elemento React
+  const renderLottieView = () => {
+    return React.isValidElement(View) ? View : null;
+  };
   
   // Extract category filter from URL if present
   useEffect(() => {
@@ -96,7 +101,7 @@ const ActivityRegistrationPage = () => {
           </p>
         </div>
         <div className="w-32 h-32 mt-4 lg:mt-0 flex-shrink-0">
-          <View />
+          {renderLottieView()}
         </div>
       </div>
 

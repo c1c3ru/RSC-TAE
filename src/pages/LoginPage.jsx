@@ -44,6 +44,14 @@ const LoginPage = () => {
     loop: true,
     autoplay: true
   });
+
+  // Garantir que View é um elemento React
+  const renderSaveAnimation = () => {
+    return React.isValidElement(SaveAnimationView) ? SaveAnimationView : null;
+  };
+  const renderEditAnimation = () => {
+    return React.isValidElement(EditAnimationView) ? EditAnimationView : null;
+  };
   
   // Animate component on mount
   useEffect(() => {
@@ -216,7 +224,7 @@ const LoginPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 flex flex-col items-center">
             <div className="w-32 h-32 mb-4">
-              <SaveAnimationView />
+              {renderSaveAnimation()}
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               {registerMode ? LOGIN_TEXTS.cadastrando : forgotPasswordMode ? LOGIN_TEXTS.enviandoEmail : LOGIN_TEXTS.processando}
@@ -237,7 +245,7 @@ const LoginPage = () => {
           
           <div className="flex items-center justify-center relative z-10">
             <div className="w-16 h-16 mr-4">
-              <EditAnimationView />
+              {renderEditAnimation()}
             </div>
             <div>
               <h1 className="text-white text-center text-3xl font-bold">
