@@ -17,11 +17,15 @@ export const LABELS = {
   sair: 'Sair',
   selecioneUmaAtividade: 'Selecione uma atividade',
   criterio: 'Critério de Pontuação',
-  limiteMaximo: 'Limite Máximo',
   documentoObrigatorio: 'Documento Obrigatório',
   documentoComprobatorio: 'Documento Comprobatório',
   pontuacaoEstimada: 'Pontuação Estimada',
   pontos: 'pontos',
   informacoesAdicionaisSobreAtividade: 'Informações adicionais sobre a atividade (opcional)',
+  descricao: 'Descrição',
+  tipoCalculo: 'Tipo de Cálculo',
+  unidadeMedida: 'Unidade de Medida',
+  valorPonto: 'Valor por Unidade',
+  documentosComprobatorios: 'Documentos Comprobatórios',
   // Adicione outros textos conforme necessário
 }; 

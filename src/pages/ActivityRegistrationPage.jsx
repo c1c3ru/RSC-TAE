@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import { LABELS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
-import activitiesAnimation from '../lottie/activities_registration_animation.json';
+import activitiesAnimation from '/assets/lottie/activities_registration_animation.json';
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
@@ -127,8 +127,8 @@ const ActivityRegistrationPage = () => {
                 <span className="text-indigo-600 text-sm font-semibold">2</span>
               </div>
               <div>
-                <h3 className="font-medium text-indigo-800">Limites Máximos</h3>
-                <p className="text-sm text-indigo-700">Muitas atividades possuem um limite máximo de pontos para evitar acúmulo excessivo</p>
+                <h3 className="font-medium text-indigo-800">Requisitos Mínimos por Nível</h3>
+                <p className="text-sm text-indigo-700">Cada nível de classificação possui requisitos mínimos específicos</p>
               </div>
             </div>
           </div>
@@ -156,7 +156,69 @@ const ActivityRegistrationPage = () => {
         <div className="mt-4 p-3 bg-indigo-100 rounded-md">
           <p className="text-sm text-indigo-800">
             <strong>Exemplo:</strong> Se uma atividade vale 0.5 pontos por mês e você trabalhou 6 meses, 
-            você receberá 3 pontos (6 × 0.5). Se o limite máximo for 10 pontos, você não poderá acumular mais que isso.
+            você receberá 3 pontos (6 × 0.5).
+          </p>
+        </div>
+      </div>
+
+      {/* Seção informativa sobre requisitos mínimos por nível */}
+      <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+        <h2 className="text-xl font-semibold text-green-800 mb-4 flex items-center">
+          <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          Requisitos Mínimos por Nível de Classificação
+        </h2>
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Nível E - Superior */}
+          <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
+            <h3 className="font-semibold text-green-800 mb-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Nível E (Superior)
+            </h3>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Mínimo de 3 atividades em diferentes categorias</li>
+              <li>• Pelo menos 1 atividade de Produção Científica</li>
+              <li>• Pelo menos 1 atividade de Formação Acadêmica</li>
+              <li>• Total mínimo de 15 pontos</li>
+            </ul>
+          </div>
+
+          {/* Nível D - Médio/Técnico */}
+          <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
+            <h3 className="font-semibold text-green-800 mb-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Nível D (Médio/Técnico)
+            </h3>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Mínimo de 2 atividades em diferentes categorias</li>
+              <li>• Pelo menos 1 atividade de Formação Acadêmica ou Complementar</li>
+              <li>• Total mínimo de 10 pontos</li>
+            </ul>
+          </div>
+
+          {/* Nível C - Médio */}
+          <div className="bg-white p-4 rounded-lg border border-green-200 shadow-sm">
+            <h3 className="font-semibold text-green-800 mb-2 flex items-center">
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Nível C (Médio)
+            </h3>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Mínimo de 1 atividade em qualquer categoria</li>
+              <li>• Total mínimo de 5 pontos</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-green-100 rounded-md">
+          <p className="text-sm text-green-800">
+            <strong>Importante:</strong> Estes são os requisitos mínimos para cada nível. Você pode registrar mais atividades 
+            para aumentar sua pontuação total e melhorar sua classificação.
           </p>
         </div>
       </div>

@@ -201,6 +201,36 @@ export const getTotalScore = async () => {
   }
 };
 
+// Get user documents for download
+export const getUserDocuments = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('user_rsc')
+      .select(`
+        *,
+        competences (
+          id,
+          title,
+          category,
+          points_per_unit,
+          unit
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('date_awarded', { ascending: false });
+
+    if (error) throw error;
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user documents:', error);
+    throw error;
+  }
+};
+
 // Get competences (for form options)
 export const getCompetences = async () => {
   try {

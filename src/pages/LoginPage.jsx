@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS } from '../constants/cargos';
+import { useLottie } from 'lottie-react';
+import saveAnimation from '/assets/lottie/save_profile_animation.json';
+import editAnimation from '/assets/lottie/edit_profile_animation.json';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +16,7 @@ const LoginPage = () => {
   const [message, setMessage] = useState('');
   const [fadeIn, setFadeIn] = useState(false);
   const [showEmailValidation, setShowEmailValidation] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
   
   // Registration form fields
   const [registerName, setRegisterName] = useState('');
@@ -25,6 +29,19 @@ const LoginPage = () => {
   
   const { login, loginWithGoogle, register, forgotPassword } = useAuth();
   const navigate = useNavigate();
+  
+  // Configuração das animações
+  const { View: SaveAnimationView } = useLottie({
+    animationData: saveAnimation,
+    loop: false,
+    autoplay: false
+  });
+
+  const { View: EditAnimationView } = useLottie({
+    animationData: editAnimation,
+    loop: true,
+    autoplay: true
+  });
   
   // Animate component on mount
   useEffect(() => {
@@ -73,6 +90,7 @@ const LoginPage = () => {
       
       try {
         setLoading(true);
+        setShowAnimation(true);
         const result = await forgotPassword(email);
         setMessage(result.message);
       } catch (err) {
@@ -80,6 +98,7 @@ const LoginPage = () => {
         setError('Erro ao processar a solicitação. Tente novamente.');
       } finally {
         setLoading(false);
+        setTimeout(() => setShowAnimation(false), 2000);
       }
       return;
     }
@@ -98,6 +117,7 @@ const LoginPage = () => {
 
       try {
         setLoading(true);
+        setShowAnimation(true);
         const userInfo = {
           nome: registerName,
           email: registerEmail,
@@ -132,6 +152,7 @@ const LoginPage = () => {
         setError(err.message || 'Erro ao realizar cadastro. Por favor, tente novamente.');
       } finally {
         setLoading(false);
+        setTimeout(() => setShowAnimation(false), 2000);
       }
       return;
     }
@@ -191,6 +212,23 @@ const LoginPage = () => {
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
+      {/* Animação de salvamento */}
+      {showAnimation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 flex flex-col items-center">
+            <div className="w-32 h-32 mb-4">
+              <SaveAnimationView />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              {registerMode ? 'Cadastrando...' : forgotPasswordMode ? 'Enviando email...' : 'Processando...'}
+            </h3>
+            <p className="text-sm text-gray-600 text-center">
+              {registerMode ? 'Seu cadastro está sendo processado' : forgotPasswordMode ? 'Email de recuperação sendo enviado' : 'Aguarde um momento'}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div 
         className={`max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
       >
@@ -198,12 +236,19 @@ const LoginPage = () => {
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
           <div className="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
           
-          <h1 className="text-white text-center text-3xl font-bold relative z-10">
-            Sistema de Cálculo de Pontuação
-          </h1>
-          <p className="text-blue-100 text-center mt-2 relative z-10">
-            Progressão Funcional
-          </p>
+          <div className="flex items-center justify-center relative z-10">
+            <div className="w-16 h-16 mr-4">
+              <EditAnimationView />
+            </div>
+            <div>
+              <h1 className="text-white text-center text-3xl font-bold">
+                Sistema de Cálculo de Pontuação
+              </h1>
+              <p className="text-blue-100 text-center mt-2">
+                Progressão Funcional
+              </p>
+            </div>
+          </div>
         </div>
         
         <div className="p-8">

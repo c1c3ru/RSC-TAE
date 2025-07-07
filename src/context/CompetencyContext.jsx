@@ -41,10 +41,14 @@ export const CompetencyProvider = ({ children }) => {
         setCompetencyItems((competences || []).map(item => ({
           ...item,
           titulo: item.title || item.titulo || '',
+          descricao: item.description || item.descricao || '',
           criterio: item.criteria || item.criterio || '',
           pontuacaoMaxima: item.max_points ?? item.pontuacaoMaxima,
           documentosComprobatorios: item.document_required || item.documentosComprobatorios || '',
-          unit: item.unit || 'unidades'
+          unidadeMedida: item.unit || item.unidadeMedida || 'unidades',
+          valorPonto: item.points_per_unit || item.valorPonto || 0,
+          tipoCalculo: item.calculation_type || item.tipoCalculo || 'quantidade',
+          unit: item.unit || item.unidadeMedida || 'unidades'
         })));
         setActivities(userActivities || []);
       } catch (error) {

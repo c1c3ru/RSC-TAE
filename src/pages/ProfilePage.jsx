@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
 import { CARGOS } from '../constants/cargos';
 import { useLottie } from 'lottie-react';
-import editProfileAnimation from '../lottie/edit_profile_animation.json';
-import saveProfileAnimation from '../lottie/save_profile_animation.json';
+import editProfileAnimation from '/assets/lottie/edit_profile_animation.json';
+import saveProfileAnimation from '/assets/lottie/save_profile_animation.json';
 
 const ProfilePage = () => {
   const { currentUser, refreshUser } = useAuth();
