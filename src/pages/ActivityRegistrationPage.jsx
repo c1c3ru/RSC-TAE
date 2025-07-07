@@ -96,7 +96,7 @@ const ActivityRegistrationPage = () => {
           </p>
         </div>
         <div className="w-32 h-32 mt-4 lg:mt-0 flex-shrink-0">
-          {View}
+          <View />
         </div>
       </div>
 

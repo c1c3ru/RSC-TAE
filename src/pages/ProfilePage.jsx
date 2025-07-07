@@ -84,7 +84,7 @@ const ProfilePage = () => {
       
       <div className="flex flex-col items-center">
         <div className="w-32 h-32 mb-4 flex items-center justify-center">
-          {EditView}
+          <EditView />
         </div>
         <h2 className="text-2xl font-bold mb-6 text-gray-800">{PROFILE_TEXTS.titulo}</h2>
       </div>
@@ -148,7 +148,7 @@ const ProfilePage = () => {
             <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center animate-fadeIn">
               <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-full h-full">
-                  {SaveView}
+                  <SaveView />
                 </div>
               </div>
               <div className="text-green-600 font-semibold text-lg mb-4">{PROFILE_TEXTS.sucesso}</div>
