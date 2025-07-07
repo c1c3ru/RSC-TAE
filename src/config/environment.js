@@ -8,10 +8,13 @@ const cleanUrl = (url) => {
   return url.trim().replace(/\s+/g, '');
 };
 
+// Substituir uso direto de import.meta.env por uma variável segura
+let env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+
 // Função para detectar automaticamente a URL base
 const getBaseUrl = () => {
   // Se estamos em produção (Vercel, Netlify, etc.)
-  if (import.meta.env.PROD) {
+  if (env.PROD) {
     // Verificar se estamos no Vercel
     const isVercel = window.location.hostname.includes('vercel.app');
     const isLocalhost = window.location.hostname.includes('localhost');
@@ -35,7 +38,7 @@ const getBaseUrl = () => {
   }
   
   // Em desenvolvimento
-  return cleanUrl(import.meta.env.VITE_DEVELOPMENT_URL || 'http://localhost:5173');
+  return cleanUrl(env.VITE_DEVELOPMENT_URL || 'http://localhost:5173');
 };
 
 export const getRedirectUrl = (path) => {

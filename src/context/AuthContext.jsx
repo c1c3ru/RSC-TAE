@@ -107,8 +107,10 @@ export const AuthProvider = ({ children }) => {
       console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
       console.log('🔍 Debug - URL length:', redirectUrl.length);
       console.log('🔍 Debug - URL contains spaces:', redirectUrl.includes(' '));
-      if (typeof import.meta !== 'undefined' && import.meta.env) {
-        console.log('🔍 Debug - Ambiente:', import.meta.env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
+      // Substituir uso direto de import.meta.env por uma variável segura
+      let env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+      if (env) {
+        console.log('🔍 Debug - Ambiente:', env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
       }
       console.log('🔍 Debug - URL atual:', window.location.origin);
       console.log('🔍 Debug - Supabase URL:', supabase.supabaseUrl);

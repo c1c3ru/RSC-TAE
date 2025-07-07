@@ -90,7 +90,7 @@ export const ACTIVITY_REGISTRATION_TEXTS = {
   comoFunciona: [
     {
       titulo: 'Critérios de Pontuação',
-      texto: 'Cada atividade possui um valor específico por unidade (hora, mês, documento, etc.)'
+      texto: 'Cada atividade possui um valor específico por unidade (hora, mês, documentos comprobatórios, etc.)'
     },
     {
       titulo: 'Documentos Obrigatórios',
@@ -101,12 +101,8 @@ export const ACTIVITY_REGISTRATION_TEXTS = {
       texto: 'O sistema calcula automaticamente: Quantidade × Pontos por unidade'
     },
     {
-      titulo: 'Limites Máximos',
-      texto: 'Muitas atividades possuem um limite máximo de pontos para evitar acúmulo excessivo'
-    },
-    {
       titulo: 'Aprovação Necessária',
-      texto: 'Todas as atividades passam por análise antes de serem contabilizadas'
+      texto: 'Todas as atividades devem passar por análise pela coordenação de pessoas(ou equivalente) na sua unidade antes de serem contabilizadas'
     },
     {
       titulo: 'Requisitos Mínimos por Nível',

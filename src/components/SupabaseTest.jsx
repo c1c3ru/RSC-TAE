@@ -49,7 +49,9 @@ const SupabaseTest = () => {
       addResult('🔍 Verificando URLs configuradas...', 'info');
       addResult(`📍 Supabase URL: ${supabase.supabaseUrl}`, 'info');
       addResult(`📍 URL atual: ${window.location.origin}`, 'info');
-      addResult(`📍 Ambiente: ${import.meta.env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO'}`, 'info');
+      // Substituir uso direto de import.meta.env por uma variável segura
+      let env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
+      addResult(`📍 Ambiente: ${env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO'}`, 'info');
 
     } catch (error) {
       addResult(`❌ Erro geral: ${error.message}`, 'error');
