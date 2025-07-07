@@ -114,30 +114,60 @@ export const ACTIVITY_REGISTRATION_TEXTS = {
     },
   ],
   exemplo: 'Exemplo: Se uma atividade vale 0.5 pontos por mês e você trabalhou 6 meses, você receberá 3 pontos (6 × 0.5).',
-  requisitosTitulo: 'Requisitos Mínimos por Nível de Classificação',
+  requisitosTitulo: 'Requisitos Mínimos por Nível de Classificação RSC',
   requisitos: [
     {
-      nivel: 'Nível E (Superior)',
+      nivel: 'RSC I (Nível Superior)',
       itens: [
-        'Mínimo de 3 atividades em diferentes categorias',
-        'Pelo menos 1 atividade de Produção Científica',
-        'Pelo menos 1 atividade de Formação Acadêmica',
-        'Total mínimo de 15 pontos'
+        'Mínimo de 10 pontos',
+        'Mínimo de 2 itens distintos',
+        'Escolaridade: Ensino fundamental incompleto',
+        'Atividades em diferentes categorias'
       ]
     },
     {
-      nivel: 'Nível D (Médio/Técnico)',
+      nivel: 'RSC II (Nível Superior)',
       itens: [
-        'Mínimo de 2 atividades em diferentes categorias',
-        'Pelo menos 1 atividade de Formação Acadêmica ou Complementar',
-        'Total mínimo de 10 pontos'
+        'Mínimo de 20 pontos',
+        'Mínimo de 3 itens distintos',
+        'Escolaridade: Ensino fundamental completo',
+        'Atividades em diferentes categorias'
       ]
     },
     {
-      nivel: 'Nível C (Médio)',
+      nivel: 'RSC III (Nível Superior)',
       itens: [
-        'Mínimo de 1 atividade em qualquer categoria',
-        'Total mínimo de 5 pontos'
+        'Mínimo de 25 pontos',
+        'Mínimo de 4 itens distintos',
+        'Escolaridade: Ensino médio ou técnico',
+        'Atividades em diferentes categorias'
+      ]
+    },
+    {
+      nivel: 'RSC IV (Nível Superior)',
+      itens: [
+        'Mínimo de 30 pontos',
+        'Mínimo de 5 itens distintos',
+        'Escolaridade: Graduação',
+        'Atividades em diferentes categorias'
+      ]
+    },
+    {
+      nivel: 'RSC V (Nível Superior)',
+      itens: [
+        'Mínimo de 52 pontos',
+        'Mínimo de 8 itens distintos',
+        'Escolaridade: Pós-graduação lato sensu (especialização)',
+        'Atividades em diferentes categorias'
+      ]
+    },
+    {
+      nivel: 'RSC VI (Nível Superior)',
+      itens: [
+        'Mínimo de 75 pontos',
+        'Mínimo de 12 itens distintos',
+        'Escolaridade: Mestrado',
+        'Atividades em diferentes categorias'
       ]
     }
   ],

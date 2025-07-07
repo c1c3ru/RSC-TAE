@@ -87,7 +87,6 @@ export const CompetencyProvider = ({ children }) => {
 
   // Calculate total score and category scores whenever activities change
   useEffect(() => {
-    console.log('Recalculando scores...', activities, competencyItems); // Log at the beginning
     if (!activities.length) {
       setTotalScore(0);
       setCategoryScores([0, 0, 0, 0, 0, 0, 0]);
@@ -106,7 +105,6 @@ export const CompetencyProvider = ({ children }) => {
       'Produção Científica': 4,
       'Eventos': 5,
       'Ensino': 6,
-  
     };
 
     // Calculate total and category scores
@@ -125,15 +123,10 @@ export const CompetencyProvider = ({ children }) => {
         }
       }
 
-      // LOG: Mostrar categoria de cada atividade
-      console.log('Atividade', activity.id, 'categoria:', categoryName, 'type:', typeof categoryName);
-
       let categoryIndex = -1;
       if (categoryNameToIndex.hasOwnProperty(categoryName)) {
         categoryIndex = categoryNameToIndex[categoryName];
       }
-
-      console.log('Processando atividade:', activity.id, 'Nome Categoria:', categoryName, 'Índice Categoria:', categoryIndex, 'Pontuação:', activity.pontuacao);
 
       if (categoryIndex >= 0 && categoryIndex < catScores.length) {
         catScores[categoryIndex] += activity.pontuacao || 0;
@@ -142,7 +135,6 @@ export const CompetencyProvider = ({ children }) => {
 
     setTotalScore(total);
     setCategoryScores(catScores);
-    console.log('Scores recalculados - Total:', total, 'Categorias:', catScores); // Log recalculated scores
   }, [activities, competencyItems]);
 
   // Register a new activity

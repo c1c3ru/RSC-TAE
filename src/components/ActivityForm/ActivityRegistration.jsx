@@ -53,20 +53,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
 
   };
 
-  // LOG: Mostrar competencyItems e seus campos category
-  useEffect(() => {
-    if (competencyItems && competencyItems.length) {
-      console.log('competencyItems:', competencyItems);
-      competencyItems.forEach(item => {
-        console.log('Competência:', item.id, 'category:', item.category, 'type:', typeof item.category);
-      });
-    }
-  }, [competencyItems]);
 
-  // LOG: Mostrar groupedItems
-  useEffect(() => {
-    console.log('groupedItems:', groupedItems);
-  }, [groupedItems]);
 
   useEffect(() => {
     if (formData.itemCompetenciaId) {
