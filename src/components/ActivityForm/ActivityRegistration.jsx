@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useCompetency } from '../../context/CompetencyContext';
+import { useAuth } from '../../context/AuthContext';
 import DocumentUploader from './DocumentUploader';
 import { LABELS } from '../../constants/texts';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { useLottie } from 'lottie-react';
-import saveAnimation from '/assets/lottie/save_profile_animation.json';
+import saveAnimation from '../../../public/assets/lottie/save_profile_animation.json';
 
 const ActivityRegistration = ({ categoryFilter }) => {
   const { competencyItems, registerActivity } = useCompetency();
