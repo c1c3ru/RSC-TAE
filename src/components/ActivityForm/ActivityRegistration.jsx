@@ -470,7 +470,8 @@ const ActivityRegistration = ({ categoryFilter }) => {
         {/* Quantity */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {LABELS.quantidade} ({selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''})
+            {LABELS.quantidade}
+            {selectedItem?.unidadeMedida ? ` (${typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)})` : ''}
           </label>
           <input
             type="number"
