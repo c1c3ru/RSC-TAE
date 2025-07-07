@@ -29,6 +29,9 @@ const LoginPage = () => {
   const [registerEscolaridade, setRegisterEscolaridade] = useState('');
   const [emailError, setEmailError] = useState('');
   
+  // Novo estado para loading do Google
+  const [googleLoading, setGoogleLoading] = useState(false);
+  
   const { login, loginWithGoogle, register, forgotPassword } = useAuth();
   const navigate = useNavigate();
   
@@ -205,33 +208,53 @@ const LoginPage = () => {
     }, 300);
   };
   
-  // Safe Google login handler separated from button
+  // Safe Google login handler separada do botão
   const handleGoogleLogin = async () => {
     try {
+      setGoogleLoading(true);
       setLoading(true);
       await loginWithGoogle();
       navigate('/dashboard');
     } catch (err) {
       setError(LOGIN_TEXTS.erroLogin);
       setLoading(false);
+      setGoogleLoading(false);
     }
   };
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
       {/* Animação de salvamento */}
-      {showAnimation && (
+      {(showAnimation || googleLoading) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 flex flex-col items-center">
-            <div className="w-32 h-32 mb-4">
-              {renderSaveAnimation()}
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {registerMode ? LOGIN_TEXTS.cadastrando : forgotPasswordMode ? LOGIN_TEXTS.enviandoEmail : LOGIN_TEXTS.processando}
-            </h3>
-            <p className="text-sm text-gray-600 text-center">
-              {registerMode ? LOGIN_TEXTS.seuCadastroEstaCriando : forgotPasswordMode ? LOGIN_TEXTS.emailDeRecuperacaoSendoEnviado : LOGIN_TEXTS.aguardeUmMomento}
-            </p>
+            {googleLoading ? (
+              <>
+                <div className="flex flex-col items-center mb-4">
+                  <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mb-4"></div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Redirecionando para o Google...</h3>
+                  <p className="text-sm text-gray-600 text-center">Aguarde, você será direcionado para a autenticação do Google.</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-32 h-32 mb-4">{renderSaveAnimation()}</div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {registerMode
+                    ? LOGIN_TEXTS.cadastrando
+                    : forgotPasswordMode
+                      ? LOGIN_TEXTS.enviandoEmail
+                      : LOGIN_TEXTS.processando}
+                </h3>
+                <p className="text-sm text-gray-600 text-center">
+                  {registerMode
+                    ? LOGIN_TEXTS.seuCadastroEstaCriando
+                    : forgotPasswordMode
+                      ? LOGIN_TEXTS.emailDeRecuperacaoSendoEnviado
+                      : LOGIN_TEXTS.aguardeUmMomento}
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -533,7 +556,7 @@ const LoginPage = () => {
                 type="button"
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 shadow-sm mb-4 transform transition-all hover:scale-[1.02]"
-                disabled={loading}
+                disabled={loading || googleLoading}
               >
                 <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
