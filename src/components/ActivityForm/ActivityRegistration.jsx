@@ -356,7 +356,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
                   </svg>
                   <div>
                     <h4 className="font-medium text-blue-800">Critério de Pontuação:</h4>
-                    <p className="text-sm text-blue-700">{typeof selectedItem.criterio === 'string' ? selectedItem.criterio : String(selectedItem.criterio)}</p>
+                    <p className="text-sm text-blue-700">{selectedItem?.criterio ? (typeof selectedItem.criterio === 'string' ? selectedItem.criterio : String(selectedItem.criterio)) : ''}</p>
                   </div>
                 </div>
 
@@ -381,7 +381,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
                   <div>
                     <h4 className="font-medium text-blue-800">Unidade de Medida:</h4>
                     <p className="text-sm text-blue-700">
-                      {typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)}
+                      {selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}
                     </p>
                   </div>
                 </div>
@@ -396,7 +396,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
                   <div>
                     <h4 className="font-medium text-blue-800">Documentos Obrigatórios:</h4>
                     <p className="text-sm text-blue-700">
-                      {typeof selectedItem.documentosComprobatorios === 'string' ? selectedItem.documentosComprobatorios : String(selectedItem.documentosComprobatorios)}
+                      {selectedItem?.documentosComprobatorios ? (typeof selectedItem.documentosComprobatorios === 'string' ? selectedItem.documentosComprobatorios : String(selectedItem.documentosComprobatorios)) : ''}
                     </p>
                   </div>
                 </div>
@@ -408,7 +408,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
                   </svg>
                   <div>
                     <h4 className="font-medium text-blue-800">Valor por Unidade:</h4>
-                    <p className="text-sm text-blue-700">{typeof selectedItem.valorPonto === 'number' || typeof selectedItem.valorPonto === 'string' ? selectedItem.valorPonto : String(selectedItem.valorPonto)} pontos</p>
+                    <p className="text-sm text-blue-700">{selectedItem?.valorPonto !== undefined ? (typeof selectedItem.valorPonto === 'number' || typeof selectedItem.valorPonto === 'string' ? selectedItem.valorPonto : String(selectedItem.valorPonto)) : ''} pontos</p>
                   </div>
                 </div>
 
@@ -448,7 +448,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
                     <div>
                       <h4 className="font-medium text-blue-800">Informação:</h4>
                       <p className="text-sm text-blue-700">
-                        Esta atividade é calculada por quantidade. Informe o número total de {typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)}.
+                        Esta atividade é calculada por quantidade. Informe o número total de {selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}.
                       </p>
                     </div>
                   </div>
@@ -470,7 +470,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
         {/* Quantity */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {LABELS.quantidade} ({typeof selectedItem?.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)})
+            {LABELS.quantidade} ({selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''})
           </label>
           <input
             type="number"
@@ -483,15 +483,15 @@ const ActivityRegistration = ({ categoryFilter }) => {
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder={
               selectedItem?.tipoCalculo === 'tempo' 
-                ? `Ex: 6 (para ${typeof selectedItem?.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)})`
-                : `Ex: 3 (para ${typeof selectedItem?.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)})`
+                ? `Ex: 6 (para ${selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''})`
+                : `Ex: 3 (para ${selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''})`
             }
           />
           {selectedItem && (
             <p className="text-xs text-gray-500 mt-1">
               {selectedItem.tipoCalculo === 'tempo' 
-                ? `Informe o período total em ${typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)}`
-                : `Informe o número total de ${typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)}`
+                ? `Informe o período total em ${selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}`
+                : `Informe o número total de ${selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}`
               }
             </p>
           )}
@@ -553,7 +553,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
               {calculatePoints().toFixed(2)} {LABELS.pontos}
             </div>
             <div className="text-sm text-blue-700 space-y-1">
-              <p><b>Cálculo:</b> {formData.quantidade} × {typeof selectedItem.valorPonto === 'number' || typeof selectedItem.valorPonto === 'string' ? selectedItem.valorPonto : String(selectedItem.valorPonto)} pontos por {typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)}</p>
+              <p><b>Cálculo:</b> {formData.quantidade} × {selectedItem?.valorPonto !== undefined ? (typeof selectedItem.valorPonto === 'number' || typeof selectedItem.valorPonto === 'string' ? selectedItem.valorPonto : String(selectedItem.valorPonto)) : ''} pontos por {selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}</p>
               <p className="text-xs mt-2">
                 A pontuação final será avaliada pela Gestão de Pessoas da sua unidade após abertura de processo, 
                 anexando todos os documentos disponíveis.
