@@ -11,6 +11,10 @@
     "preview": "vite preview",
     "test": "jest"
   },
+  "vercel": {
+    "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run build",
+    "installCommand": "pnpm install --no-frozen-lockfile"
+  },
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
