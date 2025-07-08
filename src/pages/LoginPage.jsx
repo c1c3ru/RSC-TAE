@@ -131,12 +131,12 @@ const LoginPage = () => {
         setLoading(true);
         setShowAnimation(true);
         const userInfo = {
-          nome: registerName,
+          name: registerName,
           email: registerEmail,
           password: registerPassword,
-          matricula: registerMatricula,
-          cargo: registerCargo,
-          escolaridade: registerEscolaridade
+          employee_number: registerMatricula,
+          functional_category: registerCargo,
+          education: registerEscolaridade
         };
         const user = await register(userInfo);
         if (user) {
