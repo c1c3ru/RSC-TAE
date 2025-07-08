@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import { LABELS, ACTIVITY_REGISTRATION_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
-
-const activitiesAnimation = '/assets/lottie/activities_registration_animation.json';
+import activitiesAnimation from '../assets/lottie/activities_registration_animation.json';
 
 const ActivityRegistrationPage = () => {
   const location = useLocation();
@@ -13,8 +12,7 @@ const ActivityRegistrationPage = () => {
   const { View } = useLottie({
     animationData: activitiesAnimation,
     loop: true,
-    autoplay: true,
-    path: activitiesAnimation
+    autoplay: true
   });
 
   // Garantir que View é um elemento React
