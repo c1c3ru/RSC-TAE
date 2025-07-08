@@ -75,15 +75,15 @@ const Sidebar = ({ isOpen, onClose }) => {
               <button
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
-                title={isSidebarCollapsed ? item.label : ''}
+                title={item.label} // Tooltip sempre disponível
                 className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 transform hover:scale-105 ${
                   isActive(item.path)
                     ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500'
                     : 'text-gray-700 hover:bg-gray-100'
                 } ${isSidebarCollapsed ? 'justify-center' : ''}`}
               >
-                <span className={`text-lg ${!isSidebarCollapsed ? 'mr-3' : ''}`}>{item.icon}</span>
-                {!isSidebarCollapsed && <span className="font-medium">{item.label}</span>}
+                <span className="text-lg">{item.icon}</span>
+                {!isSidebarCollapsed && <span className="font-medium ml-3">{item.label}</span>}
               </button>
             ))}
           </div>
