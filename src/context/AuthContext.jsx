@@ -59,11 +59,17 @@ export const AuthProvider = ({ children }) => {
             .single();
           if (!profile && !profileError) {
             // Cria perfil se não existir
+            const userMeta = session.user.user_metadata || {};
             const { error: insertError } = await supabase.from('user_profile').insert([
               {
                 id: session.user.id,
-                nome: session.user.user_metadata?.nome || session.user.user_metadata?.name || session.user.email,
-                email: session.user.email
+                nome: userMeta.nome || userMeta.name || session.user.email,
+                email: session.user.email,
+                matricula: userMeta.matricula || '',
+                cargo: userMeta.cargo || '',
+                escolaridade: userMeta.escolaridade || '',
+                idjob: userMeta.matricula || '',
+                profile: getProfileFromCargo(userMeta.cargo || '')
               }
             ]);
             if (insertError) {
@@ -155,11 +161,17 @@ export const AuthProvider = ({ children }) => {
             .single();
           if (!profile && !profileError) {
             // Cria perfil se não existir
+            const userMeta = user.user_metadata || {};
             await supabase.from('user_profile').insert([
               {
                 id: user.id,
-                nome: user.user_metadata?.name || user.email,
-                email: user.email
+                nome: userMeta.nome || userMeta.name || user.email,
+                email: user.email,
+                matricula: userMeta.matricula || '',
+                cargo: userMeta.cargo || '',
+                escolaridade: userMeta.escolaridade || '',
+                idjob: userMeta.matricula || '',
+                profile: getProfileFromCargo(userMeta.cargo || '')
               }
             ]);
           }
@@ -206,10 +218,12 @@ export const AuthProvider = ({ children }) => {
               nome: userInfo.nome,
               matricula: userInfo.matricula,
               cargo: userInfo.cargo,
-              email: userInfo.email
+              escolaridade: userInfo.escolaridade,
+              email: userInfo.email,
+              idjob: userInfo.matricula,
+              profile: getProfileFromCargo(userInfo.cargo)
             }
           ]);
-
         if (profileError) {
           console.error('Error creating profile:', profileError);
         }
@@ -273,3 +287,15 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Função utilitária para mapear cargo para profile
+function getProfileFromCargo(cargo) {
+  if (!cargo) return null;
+  const cargoLower = cargo.toLowerCase();
+  if (cargoLower.includes('assistente')) return 'assistente';
+  if (cargoLower.includes('auxiliar')) return 'auxiliar';
+  if (cargoLower.includes('técnico') || cargoLower.includes('tecnico')) return 'tecnico';
+  if (cargoLower.includes('analista')) return 'analista';
+  // Adicione outros conforme necessário
+  return null;
+}
