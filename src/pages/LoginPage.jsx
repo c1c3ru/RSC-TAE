@@ -213,7 +213,9 @@ const LoginPage = () => {
     try {
       setGoogleLoading(true);
       setLoading(true);
-      await loginWithGoogle();
+      // Garante pelo menos 1 segundo de spinner
+      const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
+      await Promise.all([loginWithGoogle(), minDelay]);
       navigate('/dashboard');
     } catch (err) {
       setError(LOGIN_TEXTS.erroLogin);
