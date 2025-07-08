@@ -42,7 +42,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.user_metadata?.nome || currentUser.name || '');
-      setCargo(currentUser.user_metadata?.cargo || currentUser.job || '');
+      setCargo(currentUser.profile || currentUser.user_metadata?.cargo || '');
       setEscolaridade(currentUser.user_metadata?.escolaridade || currentUser.escolaridade || '');
     }
   }, [currentUser]);
@@ -56,7 +56,7 @@ const ProfilePage = () => {
       // Atualiza na tabela user_profile
       const { error: updateError } = await supabase
         .from('user_profile')
-        .update({ name, job: cargo, escolaridade })
+        .update({ name, profile: cargo, escolaridade })
         .eq('id', currentUser.id);
       if (updateError) throw updateError;
       setSuccess(true);

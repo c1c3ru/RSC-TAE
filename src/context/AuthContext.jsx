@@ -66,10 +66,9 @@ export const AuthProvider = ({ children }) => {
                 nome: userMeta.nome || userMeta.name || session.user.email,
                 email: session.user.email,
                 matricula: userMeta.matricula || '',
-                cargo: userMeta.cargo || '',
                 escolaridade: userMeta.escolaridade || '',
                 idjob: userMeta.matricula || '',
-                profile: getProfileFromCargo(userMeta.cargo || '')
+                profile: userMeta.cargo || getProfileFromCargo(userMeta.cargo || '')
               }
             ]);
             if (insertError) {
@@ -168,10 +167,9 @@ export const AuthProvider = ({ children }) => {
                 nome: userMeta.nome || userMeta.name || user.email,
                 email: user.email,
                 matricula: userMeta.matricula || '',
-                cargo: userMeta.cargo || '',
                 escolaridade: userMeta.escolaridade || '',
                 idjob: userMeta.matricula || '',
-                profile: getProfileFromCargo(userMeta.cargo || '')
+                profile: userMeta.cargo || getProfileFromCargo(userMeta.cargo || '')
               }
             ]);
           }
@@ -200,7 +198,7 @@ export const AuthProvider = ({ children }) => {
           data: {
             nome: userInfo.nome,
             matricula: userInfo.matricula,
-            cargo: userInfo.cargo,
+            profile: userInfo.cargo || getProfileFromCargo(userInfo.cargo)
           },
           emailRedirectTo: REDIRECT_URLS.dashboard()
         }
@@ -217,11 +215,10 @@ export const AuthProvider = ({ children }) => {
               id: data.user.id,
               nome: userInfo.nome,
               matricula: userInfo.matricula,
-              cargo: userInfo.cargo,
               escolaridade: userInfo.escolaridade,
               email: userInfo.email,
               idjob: userInfo.matricula,
-              profile: getProfileFromCargo(userInfo.cargo)
+              profile: userInfo.cargo || getProfileFromCargo(userInfo.cargo)
             }
           ]);
         if (profileError) {
