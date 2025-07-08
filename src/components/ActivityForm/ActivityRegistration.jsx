@@ -471,8 +471,9 @@ const ActivityRegistration = ({ categoryFilter }) => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {LABELS.documentoComprobatorio} <span className="text-red-500">*</span>
           </label>
-          <DocumentUploader documents={documents} onDocumentsChange={handleDocumentsChange} />
-          {documentError && <div className="text-red-600 text-sm mt-1">{documentError}</div>}
+          <div className="p-4 bg-yellow-50 border border-yellow-300 rounded text-yellow-800 text-sm">
+            Upload de documentos será implementado em breve. Não é necessário anexar arquivos neste momento.
+          </div>
         </div>
 
         {/* Quantity */}
@@ -564,29 +565,12 @@ const ActivityRegistration = ({ categoryFilter }) => {
             <div className="text-sm text-blue-700 space-y-1">
               <p><b>Cálculo:</b> {formData.quantidade} × {selectedItem?.valorPonto !== undefined ? (typeof selectedItem.valorPonto === 'number' || typeof selectedItem.valorPonto === 'string' ? selectedItem.valorPonto : String(selectedItem.valorPonto)) : ''} pontos por {selectedItem?.unidadeMedida ? (typeof selectedItem.unidadeMedida === 'string' ? selectedItem.unidadeMedida : String(selectedItem.unidadeMedida)) : ''}</p>
               <p className="text-xs mt-2">
-                A pontuação final será avaliada pela Gestão de Pessoas da sua unidade após abertura de processo, 
-                anexando todos os documentos disponíveis.
+                A pontuação final será avaliada pela Gestão de Pessoas da sua unidade após abertura de processo.
               </p>
-            </div>
-            
-            {/* Botão para download dos documentos */}
-            {documents.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-blue-200">
-                <button
-                  type="button"
-                  onClick={handleDownloadDocuments}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex items-center justify-center"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  Baixar Documentos em PDF
-                </button>
-                <p className="text-xs text-blue-600 mt-1 text-center">
-                  Gera um PDF com todos os documentos anexados para envio à Gestão de Pessoas
-                </p>
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-yellow-800 text-xs">
+                O download de documentos será implementado futuramente.
               </div>
-            )}
+            </div>
           </div>
         )}
 
