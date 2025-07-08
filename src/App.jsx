@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CompetencyProvider } from './context/CompetencyContext';
-import { LayoutProvider } from './context/LayoutContext'; // Import LayoutProvider
+import { LayoutProvider } from './context/LayoutContext'; 
 import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 import LoginPage from './pages/LoginPage';
@@ -10,9 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
 import SupabaseTest from './components/SupabaseTest';
-// import ActivityHistoryPage from './pages/ActivityHistoryPage'; // Removed import
 import './index.css';
-import notFoundAnimation from './assets/lottie/404_not_found.json';
 import { useLottie } from 'lottie-react';
 
 // Error Boundary Component
@@ -90,14 +88,14 @@ const MainLayout = ({ children }) => {
 
 // Página 404 customizada
 const NotFoundPage = () => {
-  const { View } = useLottie({
-    animationData: notFoundAnimation,
-    loop: true,
-    autoplay: true
-  });
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
-      <div className="w-64 h-64 mb-6">{View}</div>
+      <div className="w-32 h-32 mb-6 flex items-center justify-center">
+        <svg className="w-24 h-24 text-blue-300" fill="none" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="30" stroke="currentColor" strokeWidth="4" />
+          <text x="32" y="44" textAnchor="middle" fontSize="32" fill="#3b82f6" fontFamily="Arial, sans-serif">404</text>
+        </svg>
+      </div>
       <h1 className="text-3xl font-bold text-blue-700 mb-2">404 - Página não encontrada</h1>
       <p className="text-gray-600 mb-4">A página que você procura não existe ou foi movida.</p>
       <a href="/dashboard" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Voltar ao Dashboard</a>

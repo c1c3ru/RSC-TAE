@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { CARGOS } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
-import saveAnimation from '../assets/lottie/save_profile_animation.json';
-import editAnimation from '../assets/lottie/edit_profile_animation.json';
-import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
+
+const saveAnimation = '/assets/lottie/save_profile_animation.json';
+const editAnimation = '/assets/lottie/edit_profile_animation.json';
+const dashboardAnimation = '/assets/lottie/dashboard_animation.json';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
