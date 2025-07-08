@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
             const { error: insertError } = await supabase.from('user_profile').insert([
               {
                 id: session.user.id,
-                nome: userMeta.nome || userMeta.name || session.user.email,
+                name: userMeta.nome || userMeta.name || session.user.email,
                 email: session.user.email,
                 employee_number: userMeta.matricula || '',
                 education: userMeta.escolaridade || '',
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }) => {
             await supabase.from('user_profile').insert([
               {
                 id: user.id,
-                nome: userMeta.nome || userMeta.name || user.email,
+                name: userMeta.nome || userMeta.name || user.email,
                 email: user.email,
                 employee_number: userMeta.matricula || '',
                 education: userMeta.escolaridade || '',
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }) => {
         password: userInfo.password,
         options: {
           data: {
-            nome: userInfo.nome,
+            name: userInfo.nome,
             employee_number: userInfo.matricula,
             functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
           },
@@ -211,7 +211,7 @@ export const AuthProvider = ({ children }) => {
           .insert([
             {
               id: data.user.id,
-              nome: userInfo.nome,
+              name: userInfo.nome,
               employee_number: userInfo.matricula,
               education: userInfo.escolaridade,
               email: userInfo.email,
