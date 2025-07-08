@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
                 nome: userMeta.nome || userMeta.name || session.user.email,
                 email: session.user.email,
                 employee_number: userMeta.matricula || '',
-                escolaridade: userMeta.escolaridade || '',
+                education: userMeta.escolaridade || '',
                 functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }) => {
                 nome: userMeta.nome || userMeta.name || user.email,
                 email: user.email,
                 employee_number: userMeta.matricula || '',
-                escolaridade: userMeta.escolaridade || '',
+                education: userMeta.escolaridade || '',
                 functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
@@ -213,7 +213,7 @@ export const AuthProvider = ({ children }) => {
               id: data.user.id,
               nome: userInfo.nome,
               employee_number: userInfo.matricula,
-              escolaridade: userInfo.escolaridade,
+              education: userInfo.escolaridade,
               email: userInfo.email,
               functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
             }

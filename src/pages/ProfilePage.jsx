@@ -43,7 +43,7 @@ const ProfilePage = () => {
     if (currentUser) {
       setName(currentUser.user_metadata?.nome || currentUser.name || '');
       setCargo(currentUser.functional_category || currentUser.user_metadata?.cargo || '');
-      setEscolaridade(currentUser.user_metadata?.escolaridade || currentUser.escolaridade || '');
+      setEscolaridade(currentUser.user_metadata?.escolaridade || currentUser.education || '');
     }
   }, [currentUser]);
 
@@ -56,7 +56,7 @@ const ProfilePage = () => {
       // Atualiza na tabela user_profile
       const { error: updateError } = await supabase
         .from('user_profile')
-        .update({ name, functional_category: cargo, escolaridade })
+        .update({ name, functional_category: cargo, education: escolaridade })
         .eq('id', currentUser.id);
       if (updateError) throw updateError;
       setSuccess(true);
