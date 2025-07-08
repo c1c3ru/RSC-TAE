@@ -118,7 +118,11 @@ const LoginPage = () => {
     }
 
     if (registerMode) {
+      // Validação obrigatória dos campos
       if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo || !registerEscolaridade) {
+        console.error('[REGISTER] Falha na validação: campos obrigatórios não preenchidos', {
+          registerName, registerEmail, registerPassword, registerMatricula, registerCargo, registerEscolaridade
+        });
         setError(LOGIN_TEXTS.preenchaTodosCampos);
         return;
       }
@@ -131,13 +135,14 @@ const LoginPage = () => {
         setLoading(true);
         setShowAnimation(true);
         const userInfo = {
-          name: registerName,
+          nome: registerName,
           email: registerEmail,
           password: registerPassword,
-          employee_number: registerMatricula,
-          functional_category: registerCargo,
-          education: registerEscolaridade
+          matricula: registerMatricula,
+          profile: registerCargo,
+          escolaridade: registerEscolaridade
         };
+        console.log('[REGISTER] Enviando dados para register:', userInfo);
         const user = await register(userInfo);
         if (user) {
           setMessage(LOGIN_TEXTS.cadastroSucesso);
@@ -156,7 +161,7 @@ const LoginPage = () => {
           setError(LOGIN_TEXTS.erroCadastro);
         }
       } catch (err) {
-        console.error("Registration error in component:", err);
+        console.error('[REGISTER] Registration error in component:', err);
         setError(err.message || LOGIN_TEXTS.erroCadastro);
       } finally {
         setTimeout(() => {

@@ -189,6 +189,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userInfo) => {
     try {
       setLoading(true);
+      console.log('[REGISTER] Dados recebidos para cadastro:', userInfo);
       const { data, error } = await supabase.auth.signUp({
         email: userInfo.email,
         password: userInfo.password,
@@ -202,10 +203,14 @@ export const AuthProvider = ({ children }) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[REGISTER] Erro ao criar usuário no Auth:', error);
+        throw error;
+      }
 
-      // Create user profile in database
+      // Cria o perfil do usuário no banco
       if (data.user) {
+        console.log('[REGISTER] Usuário criado no Auth, id:', data.user.id);
         const { error: profileError } = await supabase
           .from('user_profile')
           .insert([
@@ -219,13 +224,22 @@ export const AuthProvider = ({ children }) => {
             }
           ]);
         if (profileError) {
-          console.error('Error creating profile:', profileError);
+          console.error('[REGISTER] Erro ao criar perfil no user_profile:', profileError, 'Dados enviados:', {
+            id: data.user.id,
+            name: userInfo.nome,
+            employee_number: userInfo.matricula,
+            education: userInfo.escolaridade,
+            email: userInfo.email,
+            functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
+          });
+        } else {
+          console.log('[REGISTER] Perfil criado com sucesso no user_profile para o usuário:', data.user.id);
         }
       }
 
       return data.user;
     } catch (error) {
-      console.error('Error registering:', error);
+      console.error('[REGISTER] Erro geral no cadastro:', error);
       throw error;
     } finally {
       setLoading(false);
