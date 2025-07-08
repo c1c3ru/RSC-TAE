@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCompetency } from '../../context/CompetencyContext';
 import { useLayout } from '../../context/LayoutContext'; // Import useLayout
 import { LABELS } from '../../constants/texts';
-import supabase from './utils/supabaseClient';
+import supabase from '../../utils/supabaseClient';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
