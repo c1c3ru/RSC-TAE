@@ -65,10 +65,9 @@ export const AuthProvider = ({ children }) => {
                 id: session.user.id,
                 nome: userMeta.nome || userMeta.name || session.user.email,
                 email: session.user.email,
-                matricula: userMeta.matricula || '',
+                employee_number: userMeta.matricula || '',
                 escolaridade: userMeta.escolaridade || '',
-                idjob: userMeta.matricula || '',
-                profile: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
+                functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
             if (insertError) {
@@ -166,10 +165,9 @@ export const AuthProvider = ({ children }) => {
                 id: user.id,
                 nome: userMeta.nome || userMeta.name || user.email,
                 email: user.email,
-                matricula: userMeta.matricula || '',
+                employee_number: userMeta.matricula || '',
                 escolaridade: userMeta.escolaridade || '',
-                idjob: userMeta.matricula || '',
-                profile: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
+                functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
           }
@@ -197,8 +195,8 @@ export const AuthProvider = ({ children }) => {
         options: {
           data: {
             nome: userInfo.nome,
-            matricula: userInfo.matricula,
-            profile: userInfo.profile || getProfileFromCargo(userInfo.profile)
+            employee_number: userInfo.matricula,
+            functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
           },
           emailRedirectTo: REDIRECT_URLS.dashboard()
         }
@@ -214,11 +212,10 @@ export const AuthProvider = ({ children }) => {
             {
               id: data.user.id,
               nome: userInfo.nome,
-              matricula: userInfo.matricula,
+              employee_number: userInfo.matricula,
               escolaridade: userInfo.escolaridade,
               email: userInfo.email,
-              idjob: userInfo.matricula,
-              profile: userInfo.profile || getProfileFromCargo(userInfo.profile)
+              functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
             }
           ]);
         if (profileError) {
