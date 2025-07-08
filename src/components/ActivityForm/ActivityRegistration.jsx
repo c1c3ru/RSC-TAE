@@ -86,12 +86,8 @@ const ActivityRegistration = ({ categoryFilter }) => {
     setDocumentError('');
   };
 
-  // Corrigir validação de documentos para o novo formato
+  // Não exigir mais documentos para registro
   const validateDocuments = () => {
-    if (!documents.length) {
-      setDocumentError('É obrigatório anexar o documento comprobatório.');
-      return false;
-    }
     setDocumentError('');
     return true;
   };
@@ -466,13 +462,13 @@ const ActivityRegistration = ({ categoryFilter }) => {
           </div>
         )}
 
-        {/* Upload de documento obrigatório */}
+        {/* Upload de documento (opcional) */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {LABELS.documentoComprobatorio} <span className="text-red-500">*</span>
+            {LABELS.documentoComprobatorio} <span className="text-gray-400">(opcional)</span>
           </label>
           <div className="p-4 bg-yellow-50 border border-yellow-300 rounded text-yellow-800 text-sm">
-            Upload de documentos será implementado em breve. Não é necessário anexar arquivos neste momento.
+            Upload de documentos será implementado em breve. Não é necessário anexar arquivos para registrar a atividade.
           </div>
         </div>
 
