@@ -163,7 +163,7 @@ const ActivityRegistration = ({ categoryFilter }) => {
       setTimeout(() => setShowSaveAnimation(false), 3000);
     } catch (error) {
       console.error('Error registering activity:', error);
-      alert('Erro ao registrar atividade. Tente novamente.');
+      alert('Erro ao registrar atividade. Tente novamente.\n' + (error?.message || error));
     } finally {
       setLoading(false);
     }

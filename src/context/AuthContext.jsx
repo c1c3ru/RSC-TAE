@@ -51,13 +51,31 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          // Get user profile data
-          const { data: profile } = await supabase
+          // Verifica se já existe perfil
+          let { data: profile, error: profileError } = await supabase
             .from('user_profile')
             .select('*')
             .eq('id', session.user.id)
             .single();
-
+          if (!profile && !profileError) {
+            // Cria perfil se não existir
+            const { error: insertError } = await supabase.from('user_profile').insert([
+              {
+                id: session.user.id,
+                nome: session.user.user_metadata?.nome || session.user.user_metadata?.name || session.user.email,
+                email: session.user.email
+              }
+            ]);
+            if (insertError) {
+              console.error('Erro ao criar perfil após login:', insertError);
+            }
+            // Buscar novamente o perfil após criar
+            ({ data: profile } = await supabase
+              .from('user_profile')
+              .select('*')
+              .eq('id', session.user.id)
+              .single());
+          }
           setCurrentUser({
             ...session.user,
             ...profile
@@ -95,27 +113,12 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       setLoading(true);
-      
       const redirectUrl = REDIRECT_URLS.dashboard();
-      
-      // Validação adicional da URL
       if (!redirectUrl || redirectUrl.includes(' ')) {
         console.error('❌ URL de redirecionamento inválida:', redirectUrl);
         throw new Error('URL de redirecionamento inválida');
       }
-      
-      console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
-      console.log('🔍 Debug - URL length:', redirectUrl.length);
-      console.log('🔍 Debug - URL contains spaces:', redirectUrl.includes(' '));
-      // Substituir uso direto de import.meta.env por uma variável segura
-      let env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : {};
-      if (env) {
-        console.log('🔍 Debug - Ambiente:', env.PROD ? 'PRODUÇÃO' : 'DESENVOLVIMENTO');
-      }
-      console.log('🔍 Debug - URL atual:', window.location.origin);
-      console.log('🔍 Debug - Supabase URL:', supabase.supabaseUrl);
-      
-      // Primeira tentativa com configuração padrão
+      // Inicia o login OAuth
       let { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -126,45 +129,48 @@ export const AuthProvider = ({ children }) => {
           }
         }
       });
-
       if (error) {
-        console.error('❌ Erro na primeira tentativa:', error);
-        
         // Segunda tentativa sem queryParams extras
-        console.log('🔄 Tentando segunda vez sem queryParams extras...');
         const { data: data2, error: error2 } = await supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: {
-            redirectTo: redirectUrl
-          }
+          options: { redirectTo: redirectUrl }
         });
-        
-        if (error2) {
-          console.error('❌ Erro na segunda tentativa:', error2);
-          throw error2;
-        }
-        
+        if (error2) throw error2;
         data = data2;
       }
-      
-      console.log('✅ Resposta do Supabase:', data);
-      console.log('🔗 URL de redirecionamento do Supabase:', data?.url);
-      
-      // Se chegou até aqui, redirecionar manualmente se necessário
+      // Redireciona para o Google
       if (data?.url) {
-        console.log('🚀 Redirecionando para:', data.url);
         window.location.href = data.url;
       }
-      
+      // Após o redirecionamento e retorno, garantir que o perfil existe
+      setTimeout(async () => {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const user = sessionData?.session?.user;
+        if (user) {
+          // Verifica se já existe perfil
+          const { data: profile, error: profileError } = await supabase
+            .from('user_profile')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+          if (!profile && !profileError) {
+            // Cria perfil se não existir
+            await supabase.from('user_profile').insert([
+              {
+                id: user.id,
+                nome: user.user_metadata?.name || user.email,
+                email: user.email
+              }
+            ]);
+          }
+        }
+      }, 3000); // Aguarda 3s para garantir que o usuário está autenticado
       return data;
     } catch (error) {
       console.error('❌ Erro completo no login com Google:', error);
-      
-      // Mostrar erro amigável para o usuário
       if (error.message?.includes('500') || error.message?.includes('unexpected_failure')) {
         throw new Error('Erro temporário no servidor. Tente novamente em alguns minutos ou entre em contato com o suporte.');
       }
-      
       throw error;
     } finally {
       setLoading(false);

@@ -100,7 +100,6 @@ const LoginPage = () => {
         setError(LOGIN_TEXTS.recuperarSenhaInstrucao);
         return;
       }
-      
       try {
         setLoading(true);
         setShowAnimation(true);
@@ -110,24 +109,24 @@ const LoginPage = () => {
         console.error("Password recovery error:", err);
         setError(LOGIN_TEXTS.erroRecuperarSenha);
       } finally {
-        setLoading(false);
-        setTimeout(() => setShowAnimation(false), 2000);
+        setTimeout(() => {
+          setShowAnimation(false);
+          setLoading(false);
+        }, 1000); // Garante pelo menos 1s de spinner
       }
       return;
     }
-    
+
     if (registerMode) {
       if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo || !registerEscolaridade) {
         setError(LOGIN_TEXTS.preenchaTodosCampos);
         return;
       }
-      
       // Validar email antes de prosseguir
       if (!validateEmail(registerEmail)) {
         setError(LOGIN_TEXTS.corrijaEmail);
         return;
       }
-
       try {
         setLoading(true);
         setShowAnimation(true);
@@ -139,15 +138,12 @@ const LoginPage = () => {
           cargo: registerCargo,
           escolaridade: registerEscolaridade
         };
-        
         const user = await register(userInfo);
-        
         if (user) {
           setMessage(LOGIN_TEXTS.cadastroSucesso);
           setShowEmailValidation(true);
           setRegisterMode(false);
           setEmail(registerEmail);
-          
           // Reset registration fields
           setRegisterName('');
           setRegisterEmail('');
@@ -161,11 +157,12 @@ const LoginPage = () => {
         }
       } catch (err) {
         console.error("Registration error in component:", err);
-        // Show more specific error message if available
         setError(err.message || LOGIN_TEXTS.erroCadastro);
       } finally {
-        setLoading(false);
-        setTimeout(() => setShowAnimation(false), 2000);
+        setTimeout(() => {
+          setShowAnimation(false);
+          setLoading(false);
+        }, 1000); // Garante pelo menos 1s de spinner
       }
       return;
     }
