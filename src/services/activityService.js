@@ -65,6 +65,31 @@ export const createActivity = async (activityData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Verifica se o perfil do usuário existe
+    let { data: profile, error: profileError } = await supabase
+      .from('user_profile')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    if (!profile && !profileError) {
+      // Cria perfil se não existir
+      const userMeta = user.user_metadata || {};
+      const { error: insertError } = await supabase.from('user_profile').insert([
+        {
+          id: user.id,
+          name: userMeta.nome || userMeta.name || user.email,
+          email: user.email,
+          employee_number: userMeta.matricula || '',
+          education: userMeta.escolaridade || '',
+          functional_category: userMeta.profile || ''
+        }
+      ]);
+      if (insertError) {
+        console.error('Erro ao criar perfil automaticamente:', insertError);
+        throw insertError;
+      }
+    }
+
     // Get competence details to calculate points
     const { data: competence, error: compError } = await supabase
       .from('competences')
