@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
                 matricula: userMeta.matricula || '',
                 escolaridade: userMeta.escolaridade || '',
                 idjob: userMeta.matricula || '',
-                profile: userMeta.cargo || getProfileFromCargo(userMeta.cargo || '')
+                profile: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
             if (insertError) {
@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }) => {
                 matricula: userMeta.matricula || '',
                 escolaridade: userMeta.escolaridade || '',
                 idjob: userMeta.matricula || '',
-                profile: userMeta.cargo || getProfileFromCargo(userMeta.cargo || '')
+                profile: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
               }
             ]);
           }
@@ -198,7 +198,7 @@ export const AuthProvider = ({ children }) => {
           data: {
             nome: userInfo.nome,
             matricula: userInfo.matricula,
-            profile: userInfo.cargo || getProfileFromCargo(userInfo.cargo)
+            profile: userInfo.profile || getProfileFromCargo(userInfo.profile)
           },
           emailRedirectTo: REDIRECT_URLS.dashboard()
         }
@@ -218,7 +218,7 @@ export const AuthProvider = ({ children }) => {
               escolaridade: userInfo.escolaridade,
               email: userInfo.email,
               idjob: userInfo.matricula,
-              profile: userInfo.cargo || getProfileFromCargo(userInfo.cargo)
+              profile: userInfo.profile || getProfileFromCargo(userInfo.profile)
             }
           ]);
         if (profileError) {
