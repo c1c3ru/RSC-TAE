@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import ScoreCard from '../components/Dashboard/ScoreCard';
@@ -7,8 +7,15 @@ import { getUserDocuments } from '../services/activityService';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { DASHBOARD_TEXTS, LABELS } from '../constants/texts';
+import supabase from '../utils/supabaseClient';
 
 const DashboardPage = () => {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      console.log('JWT do usuário:', data.session?.access_token);
+    });
+  }, []);
+  
   const { 
     totalScore, 
     categoryScores, 
