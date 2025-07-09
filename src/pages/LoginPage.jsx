@@ -142,7 +142,6 @@ const LoginPage = () => {
           profile: registerCargo,
           escolaridade: registerEscolaridade
         };
-        console.log('[REGISTER] Enviando dados para register:', userInfo);
         const user = await register(userInfo);
         if (user) {
           setMessage(LOGIN_TEXTS.cadastroSucesso);

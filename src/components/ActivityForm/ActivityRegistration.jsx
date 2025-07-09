@@ -58,10 +58,10 @@ const ActivityRegistration = ({ categoryFilter }) => {
   // LOGS DE DEPURAÇÃO PARA CAMPOS DINÂMICOS
   useEffect(() => {
     if (selectedItem) {
-      console.log('selectedItem:', selectedItem);
+      // console.log('selectedItem:', selectedItem);
     }
     if (documents && documents.length) {
-      console.log('documents:', documents);
+      // console.log('documents:', documents);
     }
   }, [selectedItem, documents]);
 

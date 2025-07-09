@@ -6,9 +6,9 @@ import UrlValidator from './UrlValidator';
 const SupabaseTest = () => {
   const [testResults, setTestResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [jwt, setJwt] = useState('');
-  const [showJwt, setShowJwt] = useState(false);
-  const [copied, setCopied] = useState(false);
+  // Removido: const [jwt, setJwt] = useState('');
+  // Removido: const [showJwt, setShowJwt] = useState(false);
+  // Removido: const [copied, setCopied] = useState(false);
 
   const addResult = (message, type = 'info') => {
     setTestResults(prev => [...prev, { message, type, timestamp: new Date().toLocaleTimeString() }]);
@@ -63,20 +63,7 @@ const SupabaseTest = () => {
     }
   };
 
-  const handleShowJwt = async () => {
-    const { data } = await supabase.auth.getSession();
-    setJwt(data.session?.access_token || '');
-    setShowJwt(true);
-    setCopied(false);
-  };
-
-  const handleCopyJwt = () => {
-    if (jwt) {
-      navigator.clipboard.writeText(jwt);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  };
+  // Removido: handleShowJwt e handleCopyJwt
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -122,38 +109,7 @@ const SupabaseTest = () => {
           </div>
         )}
       </div>
-      <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-start space-y-4">
-        <h3 className="text-xl font-bold mb-2">🔑 JWT do Usuário Autenticado</h3>
-        <button
-          onClick={handleShowJwt}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          Mostrar JWT do usuário
-        </button>
-        {showJwt && (
-          <div className="w-full">
-            {jwt ? (
-              <>
-                <textarea
-                  value={jwt}
-                  readOnly
-                  rows={4}
-                  className="w-full p-2 border border-gray-300 rounded font-mono text-xs bg-gray-50 mb-2"
-                  style={{resize: 'vertical'}}
-                />
-                <button
-                  onClick={handleCopyJwt}
-                  className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                  {copied ? 'Copiado!' : 'Copiar JWT'}
-                </button>
-              </>
-            ) : (
-              <div className="text-red-600 font-semibold mt-2">Nenhum JWT encontrado. Faça login para gerar um token.</div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Removido: Bloco de exibição do JWT do usuário */}
     </div>
   );
 };

@@ -19,10 +19,6 @@ const getBaseUrl = () => {
     const isVercel = window.location.hostname.includes('vercel.app');
     const isLocalhost = window.location.hostname.includes('localhost');
     
-    console.log('🔍 Debug - Hostname:', window.location.hostname);
-    console.log('🔍 Debug - É Vercel:', isVercel);
-    console.log('🔍 Debug - É Localhost:', isLocalhost);
-    
     // Se estamos no Vercel, usar a URL de produção
     if (isVercel) {
       return cleanUrl('https://rsc-tae.vercel.app');
@@ -45,10 +41,6 @@ export const getRedirectUrl = (path) => {
   const baseUrl = getBaseUrl();
   const cleanPath = cleanUrl(path);
   const fullUrl = `${baseUrl}${cleanPath}`;
-  
-  console.log('🔗 URL de redirecionamento (limpa):', fullUrl);
-  console.log('🔍 Debug - Base URL:', baseUrl);
-  console.log('🔍 Debug - Path:', cleanPath);
   
   return fullUrl;
 };

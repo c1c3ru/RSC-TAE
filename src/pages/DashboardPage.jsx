@@ -12,7 +12,7 @@ import supabase from '../utils/supabaseClient';
 const DashboardPage = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      console.log('JWT do usuário:', data.session?.access_token);
+      // Removido: console.log('JWT do usuário:', data.session?.access_token);
     });
   }, []);
   

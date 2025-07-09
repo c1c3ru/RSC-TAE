@@ -13,7 +13,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
 
   useEffect(() => {
-    supabase.auth.getSession().then(console.log);
+    // Removido: supabase.auth.getSession().then(console.log);
   }, []);
 
   // Remover o useEffect que força o menu expandido em telas menores
