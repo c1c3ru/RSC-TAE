@@ -69,16 +69,28 @@ export const AuthProvider = ({ children }) => {
             };
             const result = await tryCreateUserProfile(profileData);
             if (result !== true) {
-              alert('Erro ao criar seu perfil. Tente novamente ou contate o suporte.');
+              console.error('[PERFIL] Falha ao criar perfil automaticamente:', result, profileData);
+              alert('Erro ao criar seu perfil no banco de dados. O acesso será bloqueado. Tente novamente ou contate o suporte.');
               setCurrentUser(null);
               setLoading(false);
+              // Opcional: Redirecionar para tela de login ou página de erro
+              window.location.href = '/login';
               return;
             }
+            // Após criar, buscar novamente
             ({ data: profile } = await supabase
               .from('user_profile')
               .select('*')
               .eq('id', session.user.id)
               .single());
+            if (!profile) {
+              console.error('[PERFIL] Perfil ainda não encontrado após criação:', profileData);
+              alert('Seu perfil não foi encontrado após a criação. O acesso será bloqueado.');
+              setCurrentUser(null);
+              setLoading(false);
+              window.location.href = '/login';
+              return;
+            }
           }
           setCurrentUser({
             ...session.user,
