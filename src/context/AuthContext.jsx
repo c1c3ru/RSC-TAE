@@ -212,35 +212,8 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
 
-      // Cria o perfil do usuário no banco
-      if (data.user) {
-        console.log('[REGISTER] Usuário criado no Auth, id:', data.user.id);
-        const { error: profileError } = await supabase
-          .from('user_profile')
-          .insert([
-            {
-              id: data.user.id,
-              name: userInfo.nome,
-              employee_number: userInfo.matricula,
-              education: userInfo.escolaridade,
-              email: userInfo.email,
-              functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
-            }
-          ]);
-        if (profileError) {
-          console.error('[REGISTER] Erro ao criar perfil no user_profile:', profileError, 'Dados enviados:', {
-            id: data.user.id,
-            name: userInfo.nome,
-            employee_number: userInfo.matricula,
-            education: userInfo.escolaridade,
-            email: userInfo.email,
-            functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
-          });
-        } else {
-          console.log('[REGISTER] Perfil criado com sucesso no user_profile para o usuário:', data.user.id);
-        }
-      }
-
+      // Não cria mais o perfil aqui! O perfil será criado após o login/autenticação.
+      // Apenas retorna o usuário criado no Auth.
       return data.user;
     } catch (error) {
       console.error('[REGISTER] Erro geral no cadastro:', error);
