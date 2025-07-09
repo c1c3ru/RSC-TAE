@@ -193,7 +193,6 @@ export const AuthProvider = ({ children }) => {
   const register = async (userInfo) => {
     try {
       setLoading(true);
-      console.log('[REGISTER] Dados recebidos para cadastro:', userInfo);
       const { data, error } = await supabase.auth.signUp({
         email: userInfo.email,
         password: userInfo.password,
@@ -203,7 +202,7 @@ export const AuthProvider = ({ children }) => {
             employee_number: userInfo.matricula,
             functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
           },
-          emailRedirectTo: REDIRECT_URLS.dashboard()
+          emailRedirectTo: REDIRECT_URLS.login()
         }
       });
 
