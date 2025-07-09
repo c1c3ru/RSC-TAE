@@ -58,22 +58,22 @@ export const AuthProvider = ({ children }) => {
             .eq('id', session.user.id)
             .single();
           if (!profile && !profileError) {
-            // Cria perfil se não existir
             const userMeta = session.user.user_metadata || {};
-            const { error: insertError } = await supabase.from('user_profile').insert([
-              {
-                id: session.user.id,
-                name: userMeta.nome || userMeta.name || session.user.email,
-                email: session.user.email,
-                employee_number: userMeta.matricula || '',
-                education: userMeta.escolaridade || '',
-                functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
-              }
-            ]);
-            if (insertError) {
-              console.error('Erro ao criar perfil após login:', insertError);
+            const profileData = {
+              id: session.user.id,
+              name: userMeta.nome || userMeta.name || session.user.email,
+              email: session.user.email,
+              employee_number: userMeta.matricula || '',
+              education: userMeta.escolaridade || '',
+              functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
+            };
+            const result = await tryCreateUserProfile(profileData);
+            if (result !== true) {
+              alert('Erro ao criar seu perfil. Tente novamente ou contate o suporte.');
+              setCurrentUser(null);
+              setLoading(false);
+              return;
             }
-            // Buscar novamente o perfil após criar
             ({ data: profile } = await supabase
               .from('user_profile')
               .select('*')
@@ -158,18 +158,22 @@ export const AuthProvider = ({ children }) => {
             .eq('id', user.id)
             .single();
           if (!profile && !profileError) {
-            // Cria perfil se não existir
             const userMeta = user.user_metadata || {};
-            await supabase.from('user_profile').insert([
-              {
-                id: user.id,
-                name: userMeta.nome || userMeta.name || user.email,
-                email: user.email,
-                employee_number: userMeta.matricula || '',
-                education: userMeta.escolaridade || '',
-                functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
-              }
-            ]);
+            const profileData = {
+              id: user.id,
+              name: userMeta.nome || userMeta.name || user.email,
+              email: user.email,
+              employee_number: userMeta.matricula || '',
+              education: userMeta.escolaridade || '',
+              functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
+            };
+            const result = await tryCreateUserProfile(profileData);
+            if (result !== true) {
+              alert('Erro ao criar seu perfil. Tente novamente ou contate o suporte.');
+              setCurrentUser(null);
+              setLoading(false);
+              return;
+            }
           }
         }
       }, 3000); // Aguarda 3s para garantir que o usuário está autenticado
@@ -306,4 +310,31 @@ function getProfileFromCargo(cargo) {
   if (cargoLower.includes('analista')) return 'analista';
   // Adicione outros conforme necessário
   return null;
+}
+
+// Função auxiliar para tentativas automáticas
+async function tryCreateUserProfile(profileData, maxAttempts = 3) {
+  let attempt = 0;
+  let lastError = null;
+  while (attempt < maxAttempts) {
+    try {
+      const { error } = await supabase.from('user_profile').insert([profileData]);
+      if (!error) return true;
+      lastError = error;
+      // Simula log centralizado (ex: Sentry)
+      console.error('[SENTRY] Erro ao criar perfil (tentativa ' + (attempt+1) + '):', error, profileData);
+      // Se for erro de rede ou temporário, tenta novamente
+      if (error.message && error.message.match(/timeout|network|temporário|temporary|ECONN/gi)) {
+        await new Promise(res => setTimeout(res, 1000 * (attempt + 1)));
+      } else {
+        break; // Erro não recuperável
+      }
+    } catch (err) {
+      lastError = err;
+      console.error('[SENTRY] Exceção ao criar perfil (tentativa ' + (attempt+1) + '):', err, profileData);
+      await new Promise(res => setTimeout(res, 1000 * (attempt + 1)));
+    }
+    attempt++;
+  }
+  return lastError;
 }
