@@ -81,17 +81,13 @@ const SupabaseTest = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold mb-6">🔧 Teste de Configuração do Supabase</h2>
-      
       {/* Status do Servidor */}
       <ServerStatus />
-      
       {/* Validador de URLs */}
       <UrlValidator />
-      
       {/* Testes de Configuração */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-xl font-bold mb-4">🧪 Testes de Configuração</h3>
-        
         <button
           onClick={runTests}
           disabled={loading}
@@ -99,7 +95,6 @@ const SupabaseTest = () => {
         >
           {loading ? 'Testando...' : 'Executar Testes'}
         </button>
-
         <div className="space-y-2">
           {testResults.map((result, index) => (
             <div
@@ -114,7 +109,6 @@ const SupabaseTest = () => {
             </div>
           ))}
         </div>
-
         {testResults.length > 0 && (
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
             <h3 className="font-bold text-yellow-800 mb-2">📋 Instruções:</h3>
@@ -128,22 +122,38 @@ const SupabaseTest = () => {
           </div>
         )}
       </div>
-      <button onClick={handleShowJwt} style={{marginBottom: 12}}>
-        Mostrar JWT do usuário
-      </button>
-      {showJwt && (
-        <div style={{marginBottom: 12}}>
-          <textarea
-            value={jwt}
-            readOnly
-            rows={4}
-            style={{width: '100%', fontFamily: 'monospace'}}
-          />
-          <button onClick={handleCopyJwt} style={{marginTop: 4}}>
-            {copied ? 'Copiado!' : 'Copiar JWT'}
-          </button>
-        </div>
-      )}
+      <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-start space-y-4">
+        <h3 className="text-xl font-bold mb-2">🔑 JWT do Usuário Autenticado</h3>
+        <button
+          onClick={handleShowJwt}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          Mostrar JWT do usuário
+        </button>
+        {showJwt && (
+          <div className="w-full">
+            {jwt ? (
+              <>
+                <textarea
+                  value={jwt}
+                  readOnly
+                  rows={4}
+                  className="w-full p-2 border border-gray-300 rounded font-mono text-xs bg-gray-50 mb-2"
+                  style={{resize: 'vertical'}}
+                />
+                <button
+                  onClick={handleCopyJwt}
+                  className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                >
+                  {copied ? 'Copiado!' : 'Copiar JWT'}
+                </button>
+              </>
+            ) : (
+              <div className="text-red-600 font-semibold mt-2">Nenhum JWT encontrado. Faça login para gerar um token.</div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
