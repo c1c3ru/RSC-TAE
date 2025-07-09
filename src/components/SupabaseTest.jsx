@@ -6,6 +6,9 @@ import UrlValidator from './UrlValidator';
 const SupabaseTest = () => {
   const [testResults, setTestResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [jwt, setJwt] = useState('');
+  const [showJwt, setShowJwt] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const addResult = (message, type = 'info') => {
     setTestResults(prev => [...prev, { message, type, timestamp: new Date().toLocaleTimeString() }]);
@@ -60,6 +63,21 @@ const SupabaseTest = () => {
     }
   };
 
+  const handleShowJwt = async () => {
+    const { data } = await supabase.auth.getSession();
+    setJwt(data.session?.access_token || '');
+    setShowJwt(true);
+    setCopied(false);
+  };
+
+  const handleCopyJwt = () => {
+    if (jwt) {
+      navigator.clipboard.writeText(jwt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold mb-6">🔧 Teste de Configuração do Supabase</h2>
@@ -110,6 +128,22 @@ const SupabaseTest = () => {
           </div>
         )}
       </div>
+      <button onClick={handleShowJwt} style={{marginBottom: 12}}>
+        Mostrar JWT do usuário
+      </button>
+      {showJwt && (
+        <div style={{marginBottom: 12}}>
+          <textarea
+            value={jwt}
+            readOnly
+            rows={4}
+            style={{width: '100%', fontFamily: 'monospace'}}
+          />
+          <button onClick={handleCopyJwt} style={{marginTop: 4}}>
+            {copied ? 'Copiado!' : 'Copiar JWT'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
