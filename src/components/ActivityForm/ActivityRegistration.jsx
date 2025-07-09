@@ -10,6 +10,7 @@ import saveAnimation from '../../assets/lottie/save_profile_animation.json';
 
 const ActivityRegistration = ({ categoryFilter }) => {
   const { competencyItems, registerActivity } = useCompetency();
+  const { currentUser } = useAuth();
   const [formData, setFormData] = useState({
     itemCompetenciaId: '',
     quantidade: 1,
@@ -266,6 +267,17 @@ const ActivityRegistration = ({ categoryFilter }) => {
 
   // Filtrar categorias a exibir no select
   const categoriasParaMostrar = categoryFilter ? [categoryFilter] : Object.keys(groupedItems);
+
+  // Bloqueia o formulário se o perfil não estiver carregado
+  if (!currentUser || !currentUser.id) {
+    return (
+      <div className="text-red-600 font-bold p-6 bg-red-50 border border-red-200 rounded-lg max-w-xl mx-auto my-8 text-center animate-fadeIn">
+        Seu perfil ainda não foi carregado ou não foi criado com sucesso.<br/>
+        Por favor, recarregue a página ou entre em contato com o suporte.<br/>
+        <span className="text-xs text-gray-500">(O registro de atividades só é permitido após o perfil ser criado com sucesso.)</span>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6 relative">
