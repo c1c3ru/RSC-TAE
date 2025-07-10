@@ -21,6 +21,7 @@
     "exactOptionalPropertyTypes": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "types": [],
     "paths": {
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],

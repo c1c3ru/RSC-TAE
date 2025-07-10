@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getUserActivities } from '../../services/activityService';
 import { competencyItems } from '../../data/competencyItems';
@@ -19,7 +19,7 @@ interface ActivityListProps {
   refreshTrigger?: number;
 }
 
-const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }) => {
+const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityListProps) => {
   const { currentUser } = useAuth();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
