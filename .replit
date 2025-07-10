@@ -18,3 +18,7 @@ args = "pnpm install"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm run dev"
+
+[[ports]]
+localPort = 5173
+externalPort = 80
