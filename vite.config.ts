@@ -20,6 +20,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5000,
+    allowedHosts: ['all'],
     hmr: {
       overlay: false
     }
@@ -27,16 +28,20 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: true,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           supabase: ['@supabase/supabase-js'],
-          ui: ['@mui/material', '@emotion/react', '@emotion/styled']
+          ui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+          charts: ['chart.js'],
+          utils: ['date-fns', 'file-saver', 'jspdf', 'lottie-react']
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js']

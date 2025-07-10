@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface ScoreCardProps {
@@ -9,7 +8,7 @@ interface ScoreCardProps {
   subtitle?: string;
 }
 
-const ScoreCard: React.FC<ScoreCardProps> = ({ title, value, icon, color, subtitle }) => {
+const ScoreCard: React.FC<ScoreCardProps> = React.memo(({ title, value, icon, color, subtitle }) => {
   return (
     <div className="bg-white overflow-hidden shadow rounded-lg">
       <div className="p-5">
@@ -40,6 +39,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, value, icon, color, subtit
       </div>
     </div>
   );
-};
+});
 
 export default ScoreCard;
