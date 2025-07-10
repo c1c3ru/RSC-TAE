@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getUserActivities } from '../../services/activityService';
+import { competencyItems } from '../../data/competencyItems';
 
 interface Activity {
   id?: number;
@@ -50,6 +51,11 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }) => {
 
   const calculateTotalPoints = (): number => {
     return activities.reduce((total, activity) => total + (activity.quantity * activity.value), 0);
+  };
+
+  const getCompetencyTitle = (competenceId: string): string => {
+    const competency = competencyItems.find(item => item.id === competenceId);
+    return competency ? competency.title : competenceId;
   };
 
   if (loading) {
@@ -122,7 +128,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }) => {
                   {activities.map((activity) => (
                     <tr key={activity.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {activity.competence_id}
+                        {getCompetencyTitle(activity.competence_id)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {activity.quantity}

@@ -858,6 +858,98 @@ export const competencyItems: Competency[] = [
     max_points: 5,
     unit: 'aprendizado',
     
+  },
+
+  // Categoria 6 - Atividades de Ensino
+  {
+    id: 'CAT6-01',
+    category: 'CAT6',
+    title: 'Orientação de estágio',
+    type: 'Atividade',
+    points_per_unit: 0.50,
+    max_points: 100,
+    unit: 'orientação',
+    
+  },
+  {
+    id: 'CAT6-02',
+    category: 'CAT6',
+    title: 'Preceptoria em residência',
+    type: 'Atividade',
+    points_per_unit: 0.10,
+    max_points: 100,
+    unit: 'preceptoria',
+    
+  },
+  {
+    id: 'CAT6-03',
+    category: 'CAT6',
+    title: 'Tutoria acadêmica',
+    type: 'Atividade',
+    points_per_unit: 0.02,
+    max_points: 100,
+    unit: 'tutoria',
+    
+  },
+  {
+    id: 'CAT6-04',
+    category: 'CAT6',
+    title: 'Elaboração de material didático',
+    type: 'Atividade',
+    points_per_unit: 0.70,
+    max_points: 100,
+    unit: 'material',
+    
+  },
+  {
+    id: 'CAT6-05',
+    category: 'CAT6',
+    title: 'Correção de provas',
+    type: 'Atividade',
+    points_per_unit: 0.10,
+    max_points: 100,
+    unit: 'provas',
+    
+  },
+  {
+    id: 'CAT6-06',
+    category: 'CAT6',
+    title: 'Avaliação de curso pelo INEP',
+    type: 'Atividade',
+    points_per_unit: 2.50,
+    max_points: 100,
+    unit: 'avaliação',
+    
+  },
+  {
+    id: 'CAT6-07',
+    category: 'CAT6',
+    title: 'Elaboração de itens para concurso',
+    type: 'Atividade',
+    points_per_unit: 1.00,
+    max_points: 100,
+    unit: 'itens',
+    
+  },
+  {
+    id: 'CAT6-08',
+    category: 'CAT6',
+    title: 'Orientação de bolsista',
+    type: 'Atividade',
+    points_per_unit: 0.05,
+    max_points: 100,
+    unit: 'orientação',
+    
+  },
+  {
+    id: 'CAT6-09',
+    category: 'CAT6',
+    title: 'Apoio a preceptoria',
+    type: 'Atividade',
+    points_per_unit: 0.10,
+    max_points: 100,
+    unit: 'apoio',
+    
   }
 ] as const;
 
@@ -880,7 +972,8 @@ export const getCategoryName = (category: string): string => {
     'CAT2': 'Atividades de Pesquisa', 
     'CAT3': 'Atividades de Extensão',
     'CAT4': 'Atividades de Gestão e Representação',
-    'CAT5': 'Atividades de Capacitação e Qualificação'
+    'CAT5': 'Atividades de Capacitação e Qualificação',
+    'CAT6': 'Atividades de Ensino'
   };
   
   return categoryNames[category] || category;
@@ -892,7 +985,8 @@ export const getMaxPointsByCategory = (category: string): number => {
     'CAT2': 50,
     'CAT3': 40,
     'CAT4': 30,
-    'CAT5': 20
+    'CAT5': 20,
+    'CAT6': 25
   };
   
   return categoryLimits[category] || 0;
