@@ -4,13 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { getUserActivities } from '../../services/activityService';
 
 interface Activity {
-  id: number;
+  id?: number;
   competence_id: string;
   quantity: number;
   value: number;
   data_inicio: string;
   data_fim: string;
-  date_awarded: string;
+  date_awarded?: string;
   description?: string;
 }
 
@@ -137,7 +137,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }) => {
                         {formatDate(activity.data_inicio)} - {formatDate(activity.data_fim)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(activity.date_awarded)}
+                        {activity.date_awarded ? formatDate(activity.date_awarded) : 'N/A'}
                       </td>
                     </tr>
                   ))}
