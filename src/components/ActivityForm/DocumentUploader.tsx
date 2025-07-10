@@ -1,17 +1,33 @@
-
 import React, { useState } from 'react';
 import { LABELS } from '../../constants/texts';
 import supabase from '../../utils/supabaseClient';
 
 const BUCKET_NAME = 'rscstorage';
 
-const DocumentUploader = ({ documents, onDocumentsChange }) => {
+interface Document {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  filePath: string;
+}
+
+interface DocumentUploaderProps {
+  documents: Document[];
+  onDocumentsChange: (docs: Document[]) => void;
+}
+
+const DocumentUploader: React.FC<DocumentUploaderProps> = ({ documents, onDocumentsChange }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const fileInputRef = React.useRef();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleDrag = (e) => {
+  const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -21,7 +37,7 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -29,46 +45,46 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     handleFiles(files);
   };
 
-  const handleFileInput = (e) => {
-    const files = Array.from(e.target.files);
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
     handleFiles(files);
   };
 
-  // Tornar toda a área de upload clicável
   const handleAreaClick = () => {
     if (!uploading && fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // Função para upload real para o Supabase Storage
-  const handleFiles = async (files) => {
+  const handleFiles = async (files: File[]) => {
     setUploading(true);
     setUploadError('');
-    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     const validFiles = files.filter(file => {
       const isValidType = allowedTypes.includes(file.type);
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      const isValidSize = file.size <= maxSize;
       return isValidType && isValidSize;
     });
-    const uploadedDocs = [];
+    const uploadedDocs: Document[] = [];
     for (const file of validFiles) {
       const filePath = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file, { upsert: false });
-      if (error) {
-        setUploadError(`Erro ao enviar ${file.name}: ${error.message}`);
-        continue;
+      try {
+        const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file, { upsert: false });
+        if (error) {
+          setUploadError(`Erro ao enviar ${file.name}: ${error.message}`);
+          continue;
+        }
+        const { data: urlData } = await supabase.storage.from(BUCKET_NAME).createSignedUrl(filePath, 60 * 60);
+        uploadedDocs.push({
+          id: Date.now() + Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: urlData?.signedUrl || '',
+          filePath
+        });
+      } catch (err: any) {
+        setUploadError(`Erro ao enviar ${file.name}: ${err.message}`);
       }
-      // Gerar URL assinada temporária para download
-      const { data: urlData } = await supabase.storage.from(BUCKET_NAME).createSignedUrl(filePath, 60 * 60); // 1h
-      uploadedDocs.push({
-        id: Date.now() + Math.random().toString(36).substring(2, 9),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        url: urlData?.signedUrl || '',
-        filePath
-      });
     }
     setUploading(false);
     if (uploadedDocs.length > 0) {
@@ -76,12 +92,12 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     }
   };
 
-  const removeDocument = (docId) => {
+  const removeDocument = (docId: string) => {
     const updatedDocs = documents.filter(doc => doc.id !== docId);
     onDocumentsChange(updatedDocs);
   };
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB'];
@@ -93,15 +109,13 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
     <div className="space-y-4">
       {/* Upload Area */}
       <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragActive
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400'
-        }`}
+        role="button"
+        tabIndex={0}
+        aria-label="Área para soltar arquivos"
+        onDrop={handleDrop}
+        onDragOver={handleDrag}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
         onClick={handleAreaClick}
         style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
       >
@@ -130,10 +144,11 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
             {LABELS.tiposArquivosPermitidos}
           </p>
           {uploading && <div className="text-blue-600 text-xs mt-2">Enviando arquivo(s)...</div>}
-          {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
+          {uploadError && (
+            <div className="text-red-600 mt-2">{uploadError}</div>
+          )}
         </div>
       </div>
-
       {/* Documents List */}
       {documents.length > 0 && (
         <div className="space-y-2">
@@ -166,7 +181,7 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
                 title="Remover documento"
                 disabled={uploading}
               >
-                ✕
+                ×
               </button>
             </div>
           ))}
@@ -176,4 +191,4 @@ const DocumentUploader = ({ documents, onDocumentsChange }) => {
   );
 };
 
-export default DocumentUploader;
+export default DocumentUploader; 

@@ -82,7 +82,15 @@ const CategoryDistribution = () => {
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4">Distribuição por Categoria</h3>
       <div className="w-full flex justify-center items-center" style={{ minHeight: '300px', maxWidth: '500px', margin: '0 auto' }}>
-        <canvas ref={chartRef} style={{ width: '100%', height: '300px', maxWidth: '500px' }}></canvas>
+        <canvas
+          ref={chartRef}
+          aria-label="Gráfico radar de distribuição de pontos por categoria"
+          role="img"
+          style={{ width: '100%', height: '300px', maxWidth: '500px' }}
+        ></canvas>
+      </div>
+      <div className="sr-only">
+        Gráfico radar mostrando a distribuição de pontos por categoria. Cada ponto representa a pontuação do usuário em uma das categorias avaliadas.
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 overflow-x-auto">
         {categories.map((category, index) => (

@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
 import { useCompetency } from '../../context/CompetencyContext';
 
-const ActivityList = () => {
+interface Activity {
+  id: string;
+  titulo: string;
+  categoria?: string;
+  pontuacao: number;
+  dataInicio?: string;
+}
+
+interface Toast {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error';
+}
+
+const ActivityList: React.FC = () => {
   const { activities, deleteActivity } = useCompetency();
   const [modalOpen, setModalOpen] = useState(false);
-  const [activityToDelete, setActivityToDelete] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
+  const [toast, setToast] = useState<Toast>({ show: false, message: '', type: 'success' });
   const [loading, setLoading] = useState(false);
 
-  const handleDeleteClick = (activity) => {
+  const handleDeleteClick = (activity: Activity) => {
     setActivityToDelete(activity);
     setModalOpen(true);
   };
@@ -16,8 +30,10 @@ const ActivityList = () => {
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await deleteActivity(activityToDelete.id);
-      setToast({ show: true, message: 'Atividade excluída com sucesso!', type: 'success' });
+      if (activityToDelete) {
+        await deleteActivity(activityToDelete.id);
+        setToast({ show: true, message: 'Atividade excluída com sucesso!', type: 'success' });
+      }
     } catch (err) {
       setToast({ show: true, message: 'Erro ao excluir atividade.', type: 'error' });
     } finally {
@@ -52,7 +68,7 @@ const ActivityList = () => {
             </tr>
           </thead>
           <tbody>
-            {activities.map(activity => (
+            {activities.map((activity: Activity) => (
               <tr key={activity.id} className="border-b hover:bg-blue-50 transition-colors">
                 <td className="px-4 py-2">{activity.titulo}</td>
                 <td className="px-4 py-2">{activity.categoria}</td>
@@ -60,6 +76,7 @@ const ActivityList = () => {
                 <td className="px-4 py-2">{activity.dataInicio || '-'}</td>
                 <td className="px-4 py-2 text-right">
                   <button
+                    aria-label={`Excluir atividade ${activity.titulo}`}
                     className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded transition-colors"
                     onClick={() => handleDeleteClick(activity)}
                   >
@@ -71,7 +88,6 @@ const ActivityList = () => {
           </tbody>
         </table>
       </div>
-
       {/* Modal de confirmação */}
       {modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
@@ -93,7 +109,6 @@ const ActivityList = () => {
           </div>
         </div>
       )}
-
       {/* Toast de feedback */}
       {toast.show && (
         <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded shadow-lg text-white font-semibold animate-fadeIn ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>

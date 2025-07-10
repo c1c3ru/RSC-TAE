@@ -1,27 +1,27 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useLayout } from '../../context/LayoutContext'; // Import useLayout
+import { useLayout } from '../../context/LayoutContext';
 import { LABELS } from '../../constants/texts';
 
-const Header = () => {
-  const { currentUser, logout } = useAuth(); // Changed signOut to logout
-  const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
+const Header: React.FC = () => {
+  const { currentUser, logout } = useAuth();
+  const { isSidebarCollapsed, toggleSidebar } = useLayout();
 
   const handleSignOut = async () => {
     try {
-      await logout(); // Changed signOut() to logout()
+      await logout();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-50"> {/* Added fixed positioning and z-index */}
+    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 fixed top-0 left-0 right-0 z-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <button
             onClick={toggleSidebar}
-            className="mr-4 p-2 rounded-md hover:bg-gray-100 text-gray-600" // Removed lg:hidden
+            className="mr-4 p-2 rounded-md hover:bg-gray-100 text-gray-600"
             title={isSidebarCollapsed ? "Expandir menu" : "Encolher menu"}
           >
             {isSidebarCollapsed ? (
@@ -47,6 +47,7 @@ const Header = () => {
           <button
             onClick={handleSignOut}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            title="Sair do sistema"
           >
             {LABELS.sair}
           </button>
@@ -56,4 +57,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 

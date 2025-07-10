@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react'; // Import useState for selectedCategory
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCompetency } from '../../context/CompetencyContext';
-import { useLayout } from '../../context/LayoutContext'; // Import useLayout
+import { useLayout } from '../../context/LayoutContext';
 import { LABELS } from '../../constants/texts';
 import supabase from '../../utils/supabaseClient';
 
-const Sidebar = ({ isOpen, onClose }) => {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { categoryScores } = useCompetency();
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const { isSidebarCollapsed, toggleSidebar } = useLayout(); // Use LayoutContext
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { isSidebarCollapsed, toggleSidebar } = useLayout();
 
   useEffect(() => {
     // Removido: supabase.auth.getSession().then(console.log);
   }, []);
 
-  // Remover o useEffect que força o menu expandido em telas menores
-
-  // Usar nomes de categoria exatamente como no banco
   const categories = [
     { id: 'Administrativas', name: 'Atividades Administrativas', color: 'bg-blue-500' },
     { id: 'Experiência', name: 'Experiência Profissional', color: 'bg-green-500' },
@@ -27,7 +29,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { id: 'Produção Científica', name: 'Produção Científica', color: 'bg-red-500' },
     { id: 'Eventos', name: 'Participação em Eventos', color: 'bg-pink-500' },
     { id: 'Ensino', name: 'Atividades de Ensino', color: 'bg-indigo-500' },
-
   ];
 
   const menuItems = [
@@ -36,13 +37,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/profile', label: 'Meu Perfil', icon: '👤' }
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
-  const handleCategoryClick = (categoryId) => {
+  const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
   };
 
-  const handleNavigation = (path) => {
+  const handleNavigation = (path: string) => {
     navigate(path);
     if (window.innerWidth < 1024) {
       onClose?.();
@@ -58,15 +59,12 @@ const Sidebar = ({ isOpen, onClose }) => {
           onClick={onClose}
         />
       )}
-
       {/* Sidebar */}
-      {/* Main sidebar div with conditional width and flex layout */}
       <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         {/* Sidebar Header */}
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-lg font-bold text-gray-800">{LABELS.menu}</h2>
         </div>
-
         {/* Scrollable Navigation Area */}
         <nav className="flex-1 p-4 overflow-y-auto">
           {/* Navigation Items */}
@@ -75,7 +73,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <button
                 key={item.path}
                 onClick={() => handleNavigation(item.path)}
-                title={item.label} // Tooltip sempre disponível
+                title={item.label}
                 className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 transform hover:scale-105 ${
                   isActive(item.path)
                     ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500'
@@ -87,9 +85,8 @@ const Sidebar = ({ isOpen, onClose }) => {
               </button>
             ))}
           </div>
-
           {/* Categories Section */}
-          {!isSidebarCollapsed && ( // Hide entire categories section header if collapsed for now
+          {!isSidebarCollapsed && (
             <div className="border-t border-gray-200 pt-4">
               <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">
                 {!isSidebarCollapsed && 'Categorias'}
@@ -98,7 +95,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {categories.map((category, index) => {
                   const score = categoryScores[index] || 0;
                   const isSelected = selectedCategory === category.id;
-
                   return (
                     <div
                       key={category.id}
@@ -106,13 +102,13 @@ const Sidebar = ({ isOpen, onClose }) => {
                       className={`p-3 rounded-lg cursor-pointer transition-all duration-300 hover:shadow-md ${
                         isSelected ? 'bg-gray-50 shadow-inner' : 'hover:bg-gray-50'
                       } ${isSidebarCollapsed ? 'flex justify-center items-center' : ''}`}
-                      onClick={() => !isSidebarCollapsed && handleCategoryClick(category.id)} // Prevent click handling when collapsed for simplicity
+                      onClick={() => !isSidebarCollapsed && handleCategoryClick(category.id)}
                     >
                       <div className={`flex items-center ${isSidebarCollapsed ? '' : 'justify-between w-full'}`}>
                         <div className="flex items-center">
                           <div
                             className={`w-4 h-4 rounded-full ${category.color} ${!isSidebarCollapsed ? 'mr-3' : ''} transition-all duration-300 ${
-                              isSelected && !isSidebarCollapsed ? 'scale-125 shadow-lg' : '' // Only scale if not collapsed
+                              isSelected && !isSidebarCollapsed ? 'scale-125 shadow-lg' : ''
                             }`}
                           />
                           {!isSidebarCollapsed && (
@@ -127,7 +123,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                           </span>
                         )}
                       </div>
-
                       {isSelected && !isSidebarCollapsed && (
                         <div className="mt-2 ml-7 animate-fadeIn">
                           <div className="text-xs text-gray-600">
@@ -142,11 +137,10 @@ const Sidebar = ({ isOpen, onClose }) => {
             </div>
           )}
         </nav>
-
         {/* Sidebar Footer for Collapse Button */}
         <div className="p-4 border-t border-gray-200">
           <button
-            onClick={toggleSidebar} // Use toggleSidebar from context
+            onClick={toggleSidebar}
             className="w-full flex items-center justify-center p-2 rounded-lg text-gray-700 hover:bg-gray-200"
             title={isSidebarCollapsed ? "Expandir" : "Encolher"}
           >
@@ -167,4 +161,4 @@ const Sidebar = ({ isOpen, onClose }) => {
   );
 };
 
-export default Sidebar;
+export default Sidebar; 
