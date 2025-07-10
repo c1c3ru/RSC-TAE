@@ -11,6 +11,13 @@ export const LOGIN_TEXTS = {
   senhaObrigatoria: 'A senha é obrigatória',
   erroLogin: 'Erro ao fazer login. Verifique suas credenciais.',
   carregando: 'Carregando...',
+  nomeCompleto: 'Nome completo',
+  joaoSilva: 'João Silva',
+  emailInstitucional: 'Email institucional',
+  seuEmailInstituicaoEduBr: 'seuemail@instituicao.edu.br',
+  apenasEmailsComDominioEduSaoAceitosParaValidacaoInstitucional: 'Apenas emails com domínio .edu são aceitos para validação institucional.',
+  senha: 'Senha',
+  matricula: 'Matrícula',
 } as const;
 
 export const DASHBOARD_TEXTS = {

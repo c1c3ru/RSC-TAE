@@ -1,237 +1,188 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../utils/supabaseClient';
-import Lottie from 'lottie-react';
+import { useNavigate } from 'react-router-dom';
+import { CARGOS_TAE } from '../constants/cargos';
+import { PROFILE_TEXTS } from '../constants/texts';
+import { useLottie } from 'lottie-react';
 import editProfileAnimation from '../assets/lottie/edit_profile_animation.json';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES, PROFILE_TEXTS } from '../constants/texts';
+import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
+import { supabase } from '../utils/supabaseClient';
 
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string | null;
-  employee_number: string | null;
-  job: string | null;
-  functional_category: string | null;
-  date_singin: string | null;
-  education: string | null;
-  updated_at?: string | null;
-}
-
-const ProfilePage: React.FC = () => {
+const ProfilePage = () => {
   const { currentUser } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [cargo, setCargo] = useState('');
+  const [escolaridade, setEscolaridade] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [showSaveAnimation, setShowSaveAnimation] = useState(false);
+
+  const { View: EditView } = useLottie({
+    animationData: editProfileAnimation,
+    loop: true,
+    autoplay: true
+  });
+
+  const { View: SaveView } = useLottie({
+    animationData: saveProfileAnimation,
+    loop: false,
+    autoplay: showSaveAnimation
+  });
+
+  // Garantir que View é um elemento React
+  const renderEditView = () => {
+    return React.isValidElement(EditView) ? EditView : null;
+  };
+  const renderSaveView = () => {
+    return React.isValidElement(SaveView) ? SaveView : null;
+  };
 
   useEffect(() => {
     if (currentUser) {
-      loadProfile();
+      setName(currentUser.user_metadata?.nome || '');
+      setCargo(currentUser.user_metadata?.cargo || '');
+      setEscolaridade(currentUser.user_metadata?.escolaridade || '');
     }
   }, [currentUser]);
 
-  const loadProfile = async (): Promise<void> => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess(false);
     if (!currentUser) return;
-
     try {
-      setLoading(true);
-      setError('');
-
-      const { data, error } = await supabase
+      // Atualiza na tabela user_profile
+      const { error: updateError } = await supabase
         .from('user_profile')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setProfile(data);
-        setName(data.name || '');
-      } else {
-        // Create profile if it doesn't exist
-        const newProfile: Partial<UserProfile> = {
-          id: currentUser.id,
-          email: currentUser.email || '',
-          name: null,
-          employee_number: null,
-          job: null,
-          functional_category: null,
-          date_singin: null,
-          education: null
-        };
-
-        const { data: createdProfile, error: createError } = await supabase
-          .from('user_profile')
-          .insert([newProfile])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-
-        setProfile(createdProfile);
-        setName(createdProfile.name || '');
-      }
-    } catch (err) {
-      console.error('Error loading profile:', err);
-      setError(ERROR_MESSAGES.erroDesconhecido);
+        .update({ name, functional_category: cargo, education: escolaridade })
+        .eq('id', currentUser.id);
+      if (updateError) throw updateError;
+      setSuccess(true);
+      setShowSaveAnimation(true);
+      // refreshUser?.(); // Removido conforme instrução
+      // Reset animation after 3 seconds
+      setTimeout(() => {
+        setShowSaveAnimation(false);
+      }, 3000);
+    } catch {
+      setError(PROFILE_TEXTS.erroSalvar);
     } finally {
       setLoading(false);
+      // Removido o timeout automático - agora o usuário precisa clicar em OK
     }
   };
 
-  const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
+  // Corrigir agrupamento de cargos:
+  // Agrupar CARGOS_TAE por nivel e categoria
+  const cargosAgrupados = [
+    { label: 'Nível E - Superior', options: CARGOS_TAE.filter(c => c.nivel === 'E').map(c => c.nome) },
+    { label: 'Nível D - Técnico', options: CARGOS_TAE.filter(c => c.nivel === 'D' && c.categoria === 'Técnico').map(c => c.nome) },
+  ];
 
-    if (!currentUser || !profile) return;
-
-    try {
-      setSaving(true);
-      setError('');
-      setSuccessMessage('');
-
-      const { error } = await supabase
-        .from('user_profile')
-        .update({
-          name: name.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', currentUser.id);
-
-      if (error) throw error;
-
-      setProfile(prev => prev ? {
-        ...prev,
-        name: name.trim() || null,
-        updated_at: new Date().toISOString(),
-      } : null);
-
-      setSuccessMessage(SUCCESS_MESSAGES.perfilAtualizado);
-      setTimeout(() => setSuccessMessage(''), 5000);
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      setError(ERROR_MESSAGES.erroDesconhecido);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (!currentUser) return null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col items-center">
-        <Lottie animationData={editProfileAnimation} style={{ width: 180, height: 180 }} />
-        <h1 className="text-2xl font-bold text-gray-900">Perfil do Usuário</h1>
-        <p className="text-gray-600">Gerencie suas informações pessoais</p>
+    <div className="max-w-xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8">
+      {/* Botão Voltar */}
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Voltar
+        </button>
       </div>
-
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <div className="rounded-md bg-green-50 p-4 border border-green-200">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-green-800">
-                {successMessage}
-              </p>
-            </div>
-          </div>
+      <div className="flex flex-col items-center">
+        <div className="w-32 h-32 mb-4 flex items-center justify-center">
+          {renderEditView()}
         </div>
-      )}
-
-      {error && (
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-red-800">
-                {error}
-              </p>
-            </div>
-          </div>
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">{PROFILE_TEXTS.titulo}</h2>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.nomeCompleto}</label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
         </div>
-      )}
-
-      {/* Profile Form */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <form onSubmit={handleSaveProfile} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={currentUser?.email || ''}
-                  disabled
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  O email não pode ser alterado
-                </p>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+          <select
+            value={cargo}
+            onChange={e => setCargo(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          >
+            <option value="">Selecione</option>
+            {cargosAgrupados.map(group => (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Escolaridade</label>
+          <select
+            value={escolaridade}
+            onChange={e => setEscolaridade(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          >
+            <option value="">Selecione</option>
+            <option value="Ensino fundamental incompleto">Ensino fundamental incompleto</option>
+            <option value="Ensino fundamental completo">Ensino fundamental completo</option>
+            <option value="Ensino médio">Ensino médio</option>
+            <option value="Curso técnico">Curso técnico</option>
+            <option value="Graduação">Graduação</option>
+            <option value="Pós-graduação lato sensu (especialização)">Pós-graduação lato sensu (especialização)</option>
+            <option value="Mestrado">Mestrado</option>
+            <option value="Doutorado">Doutorado</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={loading}
+        >
+          {loading ? 'Salvando...' : 'Salvar Alterações'}
+        </button>
+        {success && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center animate-fadeIn">
+              <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-full h-full">
+                  {renderSaveView()}
+                </div>
               </div>
-
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Nome Completo
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Digite seu nome completo"
-                />
-              </div>
-            </div>
-
-            {profile?.updated_at && (
-              <div>
-                <p className="text-sm text-gray-500">
-                  Última atualização: {new Date(profile.updated_at).toLocaleString('pt-BR')}
-                </p>
-              </div>
-            )}
-
-            <div className="flex justify-end">
+              <div className="text-green-600 font-semibold text-lg mb-4">Perfil atualizado com sucesso!</div>
               <button
-                type="submit"
-                disabled={saving}
-                className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  saving
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                }`}
+                onClick={() => {
+                  setSuccess(false);
+                  setShowSaveAnimation(false);
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
               >
-                {saving ? 'Salvando...' : 'Salvar Alterações'}
+                OK
               </button>
             </div>
-          </form>
-        </div>
-      </div>
+          </div>
+        )}
+        {error && <div className="text-red-600 font-semibold mt-2">{error}</div>}
+      </form>
     </div>
   );
 };

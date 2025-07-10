@@ -1,17 +1,17 @@
-/* eslint-disable no-undef */
 import '@testing-library/jest-dom';
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ActivityRegistration from '@/components/ActivityForm/ActivityRegistration';
 import { CompetencyProvider } from '@/context/CompetencyContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { LayoutProvider } from '@/context/LayoutContext';
+import * as React from 'react';
+import * as activityService from '../../../services/activityService';
 
 // Mock do supabaseClient para evitar problemas com import.meta.env
 jest.mock('@/utils/supabaseClient', () => ({
   supabase: {
     auth: {
-      getSession: jest.fn(),
+      getSession: jest.fn().mockResolvedValue({ data: {} }),
       onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
       signInWithPassword: jest.fn(),
       signInWithOAuth: jest.fn(),
@@ -65,10 +65,11 @@ jest.mock('../../../services/activityService', () => {
 
 // Mock do DocumentUploader para não exigir upload real
 jest.mock('../../../components/ActivityForm/DocumentUploader', () => {
-  const React = require('react');
-  function MockUploader({ onDocumentsChange }) {
+  function MockUploader({ onDocumentsChange }: { onDocumentsChange?: (docs: { file: { type: string } }[]) => void }) {
     React.useEffect(() => {
-      onDocumentsChange && onDocumentsChange([{ file: { type: 'application/pdf' } }]);
+      if (onDocumentsChange) {
+        onDocumentsChange([{ file: { type: 'application/pdf' } }]);
+      }
     }, [onDocumentsChange]);
     return <div data-testid="mock-uploader">Uploader Mock</div>;
   }
@@ -89,7 +90,7 @@ describe('ActivityRegistration', () => {
         </LayoutProvider>
       </AuthProvider>
     );
-    expect(screen.getByText(/Registrar Nova Atividade/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cadastrar Nova Atividade/i)).toBeInTheDocument();
   });
 
   it('deve permitir registrar uma nova atividade', async () => {
@@ -112,13 +113,12 @@ describe('ActivityRegistration', () => {
     fireEvent.change(quantidadeInput, { target: { value: '2' } });
 
     // Simular envio do formulário
-    const submitButton = screen.getByRole('button', { name: /registrar/i });
+    const submitButton = screen.getByRole('button', { name: /Cadastrar Atividade/i });
     fireEvent.click(submitButton);
 
     // Verificar se a função de adicionar atividade foi chamada
     await waitFor(() => {
-      const { addActivity } = require('../../../services/activityService');
-      expect(addActivity).toHaveBeenCalled();
+      expect(activityService.addActivity).toHaveBeenCalled();
     });
   });
 }); 
