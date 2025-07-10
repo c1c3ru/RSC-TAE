@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
+import { ESCOLARIDADES } from '../constants/texts';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, LOGIN_TEXTS } from '../constants/texts';
 
 const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -13,20 +15,49 @@ const RegisterPage: React.FC = () => {
   const [matricula, setMatricula] = useState('');
   const [cargo, setCargo] = useState('');
   const [escolaridade, setEscolaridade] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [job, setJob] = useState('');
+  const [functionalCategory, setFunctionalCategory] = useState('');
+
+  const validateEmail = (email: string): boolean => {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return false;
+    const domain = email.split('@')[1];
+    if (!domain || !domain.includes('.edu')) return false;
+    return true;
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 6;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
+    if (!validateEmail(email)) {
+      setError(LOGIN_TEXTS.emailNaoEdu);
+      setLoading(false);
+      return;
+    }
+    if (!validatePassword(password)) {
+      setError(ERROR_MESSAGES.senhaMinima);
+      setLoading(false);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError(ERROR_MESSAGES.confirmarSenha);
+      setLoading(false);
+      return;
+    }
     try {
       await register(email, password);
-      // Após registro, salvar dados adicionais no perfil
-      // (pode ser feito via trigger no Supabase ou update via API)
-      setSuccess('Cadastro realizado! Verifique seu e-mail para ativar a conta.');
-      setName(''); setEmail(''); setPassword(''); setMatricula(''); setCargo(''); setEscolaridade('');
+      setSuccess(SUCCESS_MESSAGES.cadastroRealizado);
+      setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setMatricula(''); setCargo(''); setEscolaridade(''); setJob(''); setFunctionalCategory('');
     } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar');
+      setError(err.message || ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setLoading(false);
     }
@@ -40,6 +71,7 @@ const RegisterPage: React.FC = () => {
           <input type="text" placeholder="Nome" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2 border rounded" required />
+          <input type="password" placeholder="Confirmar Senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <input type="text" placeholder="Matrícula" value={matricula} onChange={e => setMatricula(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <select value={cargo} onChange={e => setCargo(e.target.value)} className="w-full px-3 py-2 border rounded" required>
             <option value="">Selecione o cargo</option>
@@ -47,7 +79,14 @@ const RegisterPage: React.FC = () => {
               <option key={c.codigo} value={c.nome}>{c.nome}</option>
             ))}
           </select>
-          <input type="text" placeholder="Escolaridade" value={escolaridade} onChange={e => setEscolaridade(e.target.value)} className="w-full px-3 py-2 border rounded" required />
+          <select value={escolaridade} onChange={e => setEscolaridade(e.target.value)} className="w-full px-3 py-2 border rounded" required>
+            <option value="">Selecione a escolaridade</option>
+            {ESCOLARIDADES.map((esc, idx) => (
+              <option key={idx} value={esc}>{esc}</option>
+            ))}
+          </select>
+          <input type="text" placeholder="Cargo (opcional)" value={job} onChange={e => setJob(e.target.value)} className="w-full px-3 py-2 border rounded" />
+          <input type="text" placeholder="Categoria Funcional (opcional)" value={functionalCategory} onChange={e => setFunctionalCategory(e.target.value)} className="w-full px-3 py-2 border rounded" />
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">{loading ? 'Cadastrando...' : 'Cadastrar'}</button>
         </form>
         {success && <div className="mt-4 text-green-600 text-center">{success}</div>}

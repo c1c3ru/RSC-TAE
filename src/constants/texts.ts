@@ -117,3 +117,17 @@ export const SUCCESS_MESSAGES = {
   atividadeAtualizada: 'Atividade atualizada com sucesso!',
   atividadeRemovida: 'Atividade removida com sucesso!',
 } as const;
+
+export const ESCOLARIDADES = [
+  'Ensino Fundamental Incompleto',
+  'Ensino Fundamental Completo',
+  'Ensino Médio Incompleto',
+  'Ensino Médio Completo',
+  'Técnico',
+  'Tecnólogo',
+  'Graduação',
+  'Pós-graduação',
+  'Mestrado',
+  'Doutorado',
+  'Outro'
+] as const;

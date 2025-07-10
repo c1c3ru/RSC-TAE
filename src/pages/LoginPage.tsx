@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LOGIN_TEXTS } from '../constants/texts';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, LOGIN_TEXTS } from '../constants/texts';
 import Lottie from 'lottie-react';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 
@@ -16,6 +16,7 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   const [loginError, setLoginError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fadeIn, setFadeIn] = useState<boolean>(false);
+  const [success, setSuccess] = useState<string>('');
 
   // Redirect if already logged in
   if (currentUser) {
@@ -59,22 +60,24 @@ const LoginPage: React.FC<LoginPageProps> = () => {
     e.preventDefault();
     
     if (!validateEmail(email)) {
+      setLoginError(LOGIN_TEXTS.emailNaoEdu);
       return;
     }
 
     if (!password) {
-      setLoginError('Por favor, digite sua senha');
+      setLoginError(LOGIN_TEXTS.senhaObrigatoria);
       return;
     }
 
     setIsLoading(true);
     setLoginError('');
+    setSuccess('');
 
     try {
       await login(email, password);
+      setSuccess(SUCCESS_MESSAGES.loginRealizado);
     } catch (error: any) {
-      console.error('Login error:', error);
-      setLoginError(error.message || 'Erro ao fazer login');
+      setLoginError(error.message || ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setIsLoading(false);
     }
@@ -151,6 +154,11 @@ const LoginPage: React.FC<LoginPageProps> = () => {
           {loginError && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-600">{loginError}</p>
+            </div>
+          )}
+          {success && (
+            <div className="rounded-md bg-green-50 p-4">
+              <p className="text-sm text-green-700">{success}</p>
             </div>
           )}
 
