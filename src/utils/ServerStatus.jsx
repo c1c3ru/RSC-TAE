@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabaseClient';
+import supabase from './supabaseClient';
 
 const ServerStatus = () => {
   const [status, setStatus] = useState('checking');
@@ -11,46 +11,51 @@ const ServerStatus = () => {
     setError(null);
     
     try {
-      // Teste 1: Conexão básica
-      const { data, error: connectionError } = await supabase.auth.getSession();
-      
-      if (connectionError) {
-        throw new Error(`Erro de conexão: ${connectionError.message}`);
-      }
-
-      // Teste 2: Verificar se o servidor está respondendo
+      // Teste 1: Conexão básica e saúde da API de autenticação.
+      // O endpoint /health é leve e feito para isso.
       const response = await fetch(`${supabase.supabaseUrl}/auth/v1/health`, {
         method: 'GET',
         headers: {
           'apikey': supabase.supabaseKey,
-          'Authorization': `Bearer ${supabase.supabaseKey}`
         }
       });
 
       if (!response.ok) {
-        throw new Error(`Servidor retornou status ${response.status}`);
+        // Se a resposta não for OK, o servidor está com problemas.
+        throw new Error(`Servidor de autenticação retornou status ${response.status}`);
       }
-
-      // Teste 3: Verificar configuração do Google OAuth
-      const { data: oauthData, error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'https://rsc-tae.vercel.app/dashboard',
-          skipBrowserRedirect: true
+      if (dbError) {
+        console.log('[DB ERROR]', dbError);
+        if (dbError.message !== 'JWT expired') {
+          throw new Error(`Erro na API de dados: ${dbError.message}`);
         }
-      });
-
-      if (oauthError) {
-        throw new Error(`Erro OAuth: ${oauthError.message}`);
+      }
+      
+      const healthData = await response.json();
+      if (healthData.status !== 'ok' && healthData.description !== 'database is healthy') {
+         throw new Error(`API retornou status não saudável: ${healthData.description}`);
       }
 
+      // Teste 2: Conexão com a API do banco de dados (PostgREST)
+      // Fazemos uma consulta leve para garantir que a API de dados está funcionando.
+      const { error: dbError } = await supabase
+        .from('user_profile') // Use uma de suas tabelas
+        .select('id')
+        .limit(1);
+
+      // Ignoramos erros de JWT inválido, pois não indicam que o servidor está fora.
+      if (dbError && dbError.message !== 'JWT expired') {
+        throw new Error(`Erro na API de dados: ${dbError.message}`);
+      }
+
+      // Se todos os testes passaram, o servidor está saudável.
       setStatus('healthy');
-      setLastCheck(new Date());
       
     } catch (err) {
       setStatus('error');
       setError(err.message);
-      setLastCheck(new Date());
+    } finally {
+        setLastCheck(new Date());
     }
   };
 
@@ -90,7 +95,7 @@ const ServerStatus = () => {
           <span className="text-2xl">{getStatusIcon()}</span>
           <span className={`px-2 py-1 rounded text-sm font-medium ${getStatusColor()}`}>
             {status === 'healthy' && 'Servidor OK'}
-            {status === 'error' && 'Erro no Servidor'}
+            {status === 'error' && 'Erro de Conexão'}
             {status === 'checking' && 'Verificando...'}
           </span>
         </div>
@@ -106,31 +111,21 @@ const ServerStatus = () => {
 
       {lastCheck && (
         <p className="text-xs text-gray-500 mb-2">
-          Última verificação: {lastCheck.toLocaleTimeString()}
+          Última verificação: {lastCheck.toLocaleTimeString('pt-BR')}
         </p>
       )}
 
       {error && (
         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-          <h4 className="font-medium text-red-800 mb-1">Erro Detectado:</h4>
-          <p className="text-sm text-red-700">{error}</p>
-          
-          <div className="mt-2 text-xs text-red-600">
-            <p><strong>Soluções sugeridas:</strong></p>
-            <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>Verificar logs do Supabase Dashboard</li>
-              <li>Reconfigurar Google OAuth</li>
-              <li>Aguardar alguns minutos e tentar novamente</li>
-              <li>Contatar suporte do Supabase se persistir</li>
-            </ul>
-          </div>
+          <h4 className="font-medium text-red-800 mb-1">Detalhe do Erro:</h4>
+          <p className="text-sm text-red-700 break-words">{error}</p>
         </div>
       )}
 
       {status === 'healthy' && (
         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
           <p className="text-sm text-green-700">
-            ✅ Servidor funcionando normalmente. O erro 500 pode ser temporário.
+            Conexão com a API e o banco de dados estabelecida com sucesso.
           </p>
         </div>
       )}
@@ -138,4 +133,4 @@ const ServerStatus = () => {
   );
 };
 
-export default ServerStatus; 
+export default ServerStatus;
