@@ -1,51 +1,44 @@
 
 import React, { useState, useCallback } from 'react';
+import { validateDocuments } from '../../services/activityService';
 
 interface DocumentUploaderProps {
-  onFileSelect: (files: File[]) => void;
-  acceptedFileTypes?: string;
-  maxFiles?: number;
-  maxFileSize?: number; // in bytes
+  onFilesChange: (files: File[]) => void;
+  validationRules?: any;
 }
 
 interface FileWithPreview extends File {
   preview?: string;
 }
 
-const DocumentUploader: React.FC<DocumentUploaderProps> = ({
-  onFileSelect,
-  acceptedFileTypes = '.pdf,.doc,.docx,.jpg,.jpeg,.png',
-  maxFiles = 5,
-  maxFileSize = 10 * 1024 * 1024 // 10MB
-}) => {
-  const [selectedFiles, setSelectedFiles] = useState<FileWithPreview[]>([]);
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+
+const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onFilesChange, validationRules }) => {
+  const [files, setFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   const validateFile = (file: File): string | null => {
-    if (file.size > maxFileSize) {
-      return `Arquivo ${file.name} excede o tamanho máximo de ${maxFileSize / (1024 * 1024)}MB`;
+    if (file.size > MAX_FILE_SIZE) {
+      return `Arquivo ${file.name} excede o tamanho máximo de ${MAX_FILE_SIZE / (1024 * 1024)}MB`;
     }
-
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!acceptedFileTypes.split(',').some(type => type.trim() === fileExtension)) {
+    if (!ACCEPTED_FILE_TYPES.split(',').some(type => type.trim() === fileExtension)) {
       return `Tipo de arquivo ${fileExtension} não é aceito`;
     }
-
     return null;
   };
 
-  const handleFiles = useCallback((files: FileList): void => {
+  const handleFiles = useCallback((fileList: FileList): void => {
     setError('');
-    const fileArray = Array.from(files);
-    
-    if (selectedFiles.length + fileArray.length > maxFiles) {
-      setError(`Máximo de ${maxFiles} arquivos permitidos`);
+    const fileArray = Array.from(fileList);
+    if (files.length + fileArray.length > MAX_FILES) {
+      setError(`Máximo de ${MAX_FILES} arquivos permitidos`);
       return;
     }
-
-    const validFiles: FileWithPreview[] = [];
-    
+    const validFiles: File[] = [];
     for (const file of fileArray) {
       const validationError = validateFile(file);
       if (validationError) {
@@ -54,11 +47,17 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       }
       validFiles.push(file);
     }
-
-    const newFiles = [...selectedFiles, ...validFiles];
-    setSelectedFiles(newFiles);
-    onFileSelect(newFiles);
-  }, [selectedFiles, maxFiles, onFileSelect]);
+    const newFiles = [...files, ...validFiles];
+    // Validação automática dos tipos de documentos anexados
+    const docValidationError = validateDocuments(newFiles, validationRules);
+    if (docValidationError) {
+      setError(docValidationError);
+      return;
+    }
+    setFiles(newFiles);
+    setError('');
+    onFilesChange(newFiles);
+  }, [files, onFilesChange, validationRules]);
 
   const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
@@ -74,7 +73,6 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFiles(e.dataTransfer.files);
     }
@@ -88,9 +86,10 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
   }, [handleFiles]);
 
   const removeFile = (index: number): void => {
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(newFiles);
-    onFileSelect(newFiles);
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    setError('');
+    onFilesChange(newFiles);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -116,10 +115,9 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
           type="file"
           multiple
           onChange={handleChange}
-          accept={acceptedFileTypes}
+          accept={ACCEPTED_FILE_TYPES}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
-        
         <div className="space-y-4">
           <div className="mx-auto h-12 w-12 text-gray-400">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,35 +129,32 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
               />
             </svg>
           </div>
-          
           <div>
             <p className="text-sm text-gray-600">
               <span className="font-medium text-blue-600">Clique para selecionar</span> ou
               arraste arquivos aqui
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Máximo {maxFiles} arquivos, {formatFileSize(maxFileSize)} cada
+              Máximo {MAX_FILES} arquivos, {formatFileSize(MAX_FILE_SIZE)} cada
             </p>
             <p className="text-xs text-gray-500">
-              Formatos aceitos: {acceptedFileTypes}
+              Formatos aceitos: {ACCEPTED_FILE_TYPES}
             </p>
           </div>
         </div>
       </div>
-
       {error && (
         <div className="mt-2 text-sm text-red-600">
           {error}
         </div>
       )}
-
-      {selectedFiles.length > 0 && (
+      {files.length > 0 && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Arquivos Selecionados ({selectedFiles.length})
+            Arquivos Selecionados ({files.length})
           </h4>
           <div className="space-y-2">
-            {selectedFiles.map((file, index) => (
+            {files.map((file, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-md"

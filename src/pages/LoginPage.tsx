@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LOGIN_TEXTS } from '../constants/texts';
+import Lottie from 'lottie-react';
+import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 
 interface LoginPageProps {}
 
@@ -95,7 +97,8 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className={`max-w-md w-full space-y-8 transition-opacity duration-1000 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-        <div>
+        <div className="flex flex-col items-center">
+          <Lottie animationData={saveProfileAnimation} style={{ width: 120, height: 120 }} />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {LOGIN_TEXTS.titulo}
           </h2>

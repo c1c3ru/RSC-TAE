@@ -192,3 +192,17 @@ export const getUserActivityStats = async (userId: string): Promise<{
     throw new Error('Erro desconhecido ao calcular estatísticas');
   }
 };
+
+// Função utilitária para validar documentos anexados
+export function validateDocuments(files: File[], validationRules: any): string | null {
+  if (!validationRules || !validationRules.docs) return null;
+  const requiredDocs = validationRules.docs as string[];
+  // Exemplo: checar se pelo menos um arquivo tem o nome ou extensão esperada
+  for (const doc of requiredDocs) {
+    const found = files.some(file => file.name.toLowerCase().includes(doc.toLowerCase()));
+    if (!found) {
+      return `É obrigatório anexar o documento: ${doc}`;
+    }
+  }
+  return null;
+}

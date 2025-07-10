@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabaseClient';
+import Lottie from 'lottie-react';
+import editProfileAnimation from '../assets/lottie/edit_profile_animation.json';
 
 interface UserProfile {
   id: string;
@@ -128,7 +130,8 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col items-center">
+        <Lottie animationData={editProfileAnimation} style={{ width: 180, height: 180 }} />
         <h1 className="text-2xl font-bold text-gray-900">Perfil do Usuário</h1>
         <p className="text-gray-600">Gerencie suas informações pessoais</p>
       </div>

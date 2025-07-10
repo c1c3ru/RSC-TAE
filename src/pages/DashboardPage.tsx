@@ -5,16 +5,9 @@ import { useCompetency } from '../context/CompetencyContext';
 import ScoreCard from '../components/Dashboard/ScoreCard';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import { getUserActivities } from '../services/activityService';
-
-interface Activity {
-  id: number;
-  competence_id: string;
-  quantity: number;
-  value: number;
-  data_inicio: string;
-  data_fim: string;
-  date_awarded: string;
-}
+import Lottie from 'lottie-react';
+import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
+import type { Activity } from '../services/activityService';
 
 interface CategoryData {
   category: string;
@@ -64,7 +57,7 @@ const DashboardPage: React.FC = () => {
     const currentYear = new Date().getFullYear();
     
     return activities.filter(activity => {
-      const activityDate = new Date(activity.date_awarded);
+      const activityDate = new Date(activity.date_awarded || '');
       return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
     }).length;
   };
@@ -112,7 +105,8 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col items-center">
+        <Lottie animationData={dashboardAnimation} style={{ width: 180, height: 180 }} />
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600">Visão geral das suas atividades RSC</p>
       </div>
@@ -188,7 +182,7 @@ const DashboardPage: React.FC = () => {
                           {activity.competence_id}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {new Date(activity.date_awarded).toLocaleDateString('pt-BR')}
+                          {new Date(activity.date_awarded || '').toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       <div className="text-right">

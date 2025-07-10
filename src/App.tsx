@@ -12,6 +12,8 @@ import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
 import './index.css';
 import SupabaseTest from './utils/SupabaseTest';
+import RegisterPage from './pages/RegisterPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Error Boundary Component
 interface ErrorBoundaryState {
@@ -140,13 +142,11 @@ const AppContent: React.FC = () => {
       />
       <Route 
         path="/register" 
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <ActivityRegistrationPage />
-            </MainLayout>
-          </ProtectedRoute>
-        } 
+        element={<RegisterPage />} 
+      />
+      <Route 
+        path="/reset-password" 
+        element={<ResetPasswordPage />} 
       />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/supabase-test" element={<SupabaseTest />} />      

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import ActivityRegistration from '../components/ActivityForm/ActivityRegistration';
 import ActivityList from '../components/ActivityForm/ActivityList';
+import Lottie from 'lottie-react';
+import activitiesAnimation from '../assets/lottie/activities_registration_animation.json';
 
 const ActivityRegistrationPage: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
@@ -27,7 +29,8 @@ const ActivityRegistrationPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col items-center">
+        <Lottie animationData={activitiesAnimation} style={{ width: 180, height: 180 }} />
         <h1 className="text-2xl font-bold text-gray-900">Cadastro de Atividades</h1>
         <p className="text-gray-600">Registre suas atividades de Reconhecimento de Saberes e Competências</p>
       </div>
