@@ -11,6 +11,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string, profileData?: any) => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,7 +60,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) {
+        // Tratar erros específicos
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error('Email não confirmado. Verifique sua caixa de entrada e confirme seu email antes de fazer login.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Email ou senha incorretos. Verifique suas credenciais.');
+        } else {
+          throw error;
+        }
+      }
     } catch (error) {
       console.error('Error logging in:', error);
       throw error;
@@ -86,6 +96,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const resendConfirmationEmail = async (email: string): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error resending confirmation email:', error);
+      throw error;
+    }
+  };
+
   const register = async (email: string, password: string, profileData?: any): Promise<void> => {
     setLoading(true);
     try {
@@ -103,7 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             {
               id: data.user.id,
               email: data.user.email,
-              name: profileData?.name || null,
+              name: profileData?.nome || profileData?.name || null,
               employee_number: profileData?.matricula || null,
               job: profileData?.cargo || null,
               functional_category: profileData?.functionalCategory || null,
@@ -114,8 +137,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (profileError) {
           console.error('Error creating user profile:', profileError);
-          // Não vamos falhar o cadastro se o perfil não for criado
-          // O usuário pode criar o perfil depois
+          // Tentar criar um perfil básico se falhar
+          const { error: basicProfileError } = await supabase
+            .from('user_profile')
+            .insert([
+              {
+                id: data.user.id,
+                email: data.user.email,
+                name: null,
+                employee_number: null,
+                job: null,
+                functional_category: null,
+                date_singin: new Date().toISOString(),
+                education: null
+              }
+            ]);
+          
+          if (basicProfileError) {
+            console.error('Error creating basic user profile:', basicProfileError);
+            // Não vamos falhar o cadastro se o perfil não for criado
+            // O usuário pode criar o perfil depois
+          }
         }
       }
     } catch (error) {
@@ -147,6 +189,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loginWithGoogle,
     logout,
     register,
+    resendConfirmationEmail,
   };
 
   return (

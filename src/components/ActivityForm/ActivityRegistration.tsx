@@ -4,6 +4,7 @@ import { useCompetency, type Competency } from '../../context/CompetencyContext'
 import { useAuth } from '../../context/AuthContext';
 import { createActivity } from '../../services/activityService';
 import { ACTIVITY_TEXTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants/texts';
+import { getCategoryName } from '../../data/competencyItems';
 
 interface ActivityFormData {
   competenceId: string;
@@ -19,9 +20,10 @@ interface ActivityRegistrationProps {
 }
 
 const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, onError }) => {
-  const { competencyItems } = useCompetency();
+  const { competencyItems, getAllCategories } = useCompetency();
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [formData, setFormData] = useState<ActivityFormData>({
     competenceId: '',
     quantity: 1,
@@ -33,12 +35,23 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
   const [selectedCompetency, setSelectedCompetency] = useState<Competency | null>(null);
   const [success, setSuccess] = useState<string>('');
 
+  // Filtrar competências por categoria selecionada
+  const filteredCompetencies = selectedCategory 
+    ? competencyItems?.filter(item => item.category === selectedCategory) 
+    : competencyItems;
+
   useEffect(() => {
     if (formData.competenceId && competencyItems) {
       const competency = competencyItems.find(item => item.id === formData.competenceId) || null;
       setSelectedCompetency(competency);
     }
   }, [formData.competenceId, competencyItems]);
+
+  // Resetar competência quando categoria mudar
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, competenceId: '' }));
+    setSelectedCompetency(null);
+  }, [selectedCategory]);
 
   const calculatePoints = (): number => {
     if (!selectedCompetency) return 0;
@@ -82,6 +95,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
         dataFim: '',
         description: ''
       });
+      setSelectedCategory('');
       
       setSuccess(SUCCESS_MESSAGES.atividadeCadastrada);
       onSuccess?.();
@@ -100,11 +114,36 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
     }));
   };
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedCategory(e.target.value);
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-lg font-medium text-gray-900 mb-6">Cadastrar Nova Atividade</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Filtro de Categoria */}
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            Categoria
+          </label>
+          <select
+            id="category"
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Selecione uma categoria</option>
+            {getAllCategories().map((category) => (
+              <option key={category} value={category}>
+                {category} - {getCategoryName(category)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Seleção de Competência */}
         <div>
           <label htmlFor="competenceId" className="block text-sm font-medium text-gray-700">
             Competência
@@ -115,15 +154,23 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
             value={formData.competenceId}
             onChange={handleInputChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            disabled={!selectedCategory}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
-            <option value="">Selecione uma competência</option>
-            {competencyItems?.map((item) => (
+            <option value="">
+              {selectedCategory ? 'Selecione uma competência' : 'Primeiro selecione uma categoria'}
+            </option>
+            {filteredCompetencies?.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.id} - {item.title} ({item.points_per_unit} pontos)
               </option>
             ))}
           </select>
+          {selectedCategory && (
+            <p className="mt-1 text-sm text-gray-500">
+              {filteredCompetencies?.length || 0} competência(s) encontrada(s) na categoria {getCategoryName(selectedCategory)}
+            </p>
+          )}
         </div>
 
         <div>
@@ -195,25 +242,17 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
             <p className="text-sm text-blue-700 mt-1">
               {formData.quantity} × {selectedCompetency.points_per_unit} pontos = {calculatePoints()} pontos totais
             </p>
+            <p className="text-xs text-blue-600 mt-2">
+              Categoria: {getCategoryName(selectedCompetency.category)} | Máximo: {selectedCompetency.max_points} {selectedCompetency.unit}(s)
+            </p>
           </div>
         )}
-
-        {success && (
-          <div className="rounded-md bg-green-50 p-4">
-            <p className="text-sm text-green-700">{success}</p>
-          </div>
-        )}
-        {/* Removed error message display */}
 
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={loading}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-              ${loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-              }`}
+            disabled={loading || !selectedCompetency}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Cadastrando...' : 'Cadastrar Atividade'}
           </button>

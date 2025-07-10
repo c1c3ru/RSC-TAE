@@ -12,7 +12,6 @@ import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
 import './index.css';
 import SupabaseTest from './utils/SupabaseTest';
-import RegisterPage from './pages/RegisterPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Error Boundary Component
@@ -139,10 +138,6 @@ const AppContent: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         } 
-      />
-      <Route 
-        path="/register" 
-        element={<RegisterPage />} 
       />
       <Route 
         path="/activity-registration" 

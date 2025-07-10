@@ -1,55 +1,85 @@
 
-import { useState, useEffect } from 'react';import { useCompetency } from '../context/CompetencyContext';
+import { useState, useEffect } from 'react';
+import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import ScoreCard from '../components/Dashboard/ScoreCard';
 import ActivityList from '../components/ActivityForm/ActivityList';
-import jsPDF from 'jspdf';
+import LevelRequirements from '../components/Dashboard/LevelRequirements';
+import ProcessSteps from '../components/Dashboard/ProcessSteps';
 import { DASHBOARD_TEXTS } from '../constants/texts';
 import { supabase } from '../utils/supabaseClient';
+import { useAuth } from '../context/AuthContext';
+import { getUserActivityStats } from '../services/activityService';
 import Lottie from 'lottie-react';
 import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
 
 const DashboardPage = () => {
+  const { currentUser } = useAuth();
+  const { loading } = useCompetency();
+  const [userStats, setUserStats] = useState({
+    totalPoints: 0,
+    totalActivities: 0,
+    activitiesByCategory: {} as Record<string, number>
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+
   useEffect(() => {
     supabase.auth.getSession().then(() => {
       // JWT do usuário pode ser usado aqui se necessário
     });
   }, []);
 
-  const { loading } = useCompetency();
-  const [downloadingPDF, setDownloadingPDF] = useState(false);
-
-  // Função fictícia para gerar PDF (adapte conforme sua lógica real)
-  const handleDownloadAllDocuments = async () => {
-    setDownloadingPDF(true);
-    try {
-      // Exemplo: obtenha as atividades do usuário do contexto ou serviço
-      const stats = { total: 10, totalScore: 100 }; // Placeholder
-      if (!stats || stats.total === 0) {
-        alert('Nenhum documento encontrado');
-        return;
+  useEffect(() => {
+    const loadUserStats = async () => {
+      if (currentUser) {
+        try {
+          setLoadingStats(true);
+          const stats = await getUserActivityStats(currentUser.id);
+          console.log('User Stats loaded:', stats); // Debug log
+          setUserStats(stats);
+        } catch (error) {
+          console.error('Error loading user stats:', error);
+        } finally {
+          setLoadingStats(false);
+        }
       }
-      const pdf = new jsPDF();
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Documentação Completa - Sistema RSC TAE', 20, 20);
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Dados do Usuário:', 20, 40);
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Total de Atividades: ${stats.total}`, 20, 50);
-      // Adicione mais informações conforme necessário
-      pdf.save(`documentacao_completa_${new Date().toISOString().split('T')[0]}.pdf`);
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      alert('Erro ao gerar PDF');
-    } finally {
-      setDownloadingPDF(false);
-    }
+    };
+
+    loadUserStats();
+  }, [currentUser]);
+
+  // Calcular número de categorias únicas
+  const uniqueCategories = Object.keys(userStats.activitiesByCategory).length;
+  
+  // Calcular progresso geral baseado nos dados reais
+  const calculateProgress = (): number => {
+    if (userStats.totalActivities === 0) return 0;
+    
+    // Progresso baseado em múltiplos fatores:
+    // 1. Número de atividades (máximo 5 atividades = 100%)
+    // 2. Pontuação total (máximo 15 pontos = 100%)
+    // 3. Diversidade de categorias (máximo 3 categorias = 100%)
+    
+    const activityProgress = Math.min((userStats.totalActivities / 5) * 100, 100);
+    const pointsProgress = Math.min((userStats.totalPoints / 15) * 100, 100);
+    const categoryProgress = Math.min((uniqueCategories / 3) * 100, 100);
+    
+    // Média ponderada dos três fatores
+    const totalProgress = (activityProgress * 0.4 + pointsProgress * 0.4 + categoryProgress * 0.2);
+    
+    return Math.round(totalProgress * 10) / 10; // Arredondar para 1 casa decimal
+  };
+  
+  const progressPercentage = calculateProgress();
+  
+  // Determinar etapa atual
+  const getCurrentStep = (): number => {
+    if (userStats.totalActivities === 0) return 1;
+    if (userStats.totalActivities > 0) return 2;
+    return 1;
   };
 
-  if (loading) {
+  if (loading || loadingStats) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fadeIn">
         <div className="mb-6">
@@ -82,51 +112,35 @@ const DashboardPage = () => {
     );
   }
 
-  const stats = { total: 10, totalScore: 100 }; // Placeholder
-  const progressPercentage = 85.5; // Placeholder
-
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">{DASHBOARD_TEXTS.titulo}</h1>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="text-sm text-gray-500">
-            Progresso
-          </div>
-          <button
-            onClick={handleDownloadAllDocuments}
-            disabled={downloadingPDF || stats.total === 0}
-            className={`px-4 py-2 rounded-md font-medium transition-all duration-200 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ${
-              downloadingPDF 
-                ? 'bg-gray-400 text-white' 
-                : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-            }`}
-          >
-            {downloadingPDF ? (
-              <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Gerando PDF...
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-                Baixar documentação
-              </div>
-            )}
-          </button>
-        </div>
       </div>
+
+      {/* Process Steps */}
+      <ProcessSteps 
+        currentStep={getCurrentStep()}
+        userPoints={userStats.totalPoints}
+        userActivities={userStats.totalActivities}
+      />
+
+      {/* Level Requirements */}
+      <LevelRequirements 
+        userPoints={userStats.totalPoints}
+        userActivities={userStats.totalActivities}
+        userCategories={uniqueCategories}
+      />
+
       <ScoreCard
         title="Total de Pontos"
-        value={stats.totalScore}
+        value={userStats.totalPoints}
         icon={<svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>}
         color="yellow"
+        maxValue={15} // Meta para nível E (Superior)
+        subtitle="pontos acumulados"
       />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <div className="flex items-center">
@@ -137,7 +151,7 @@ const DashboardPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Total de Atividades</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities}</p>
             </div>
           </div>
         </div>
@@ -163,21 +177,27 @@ const DashboardPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Pontos por Atividade</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total > 0 ? (stats.totalScore / stats.total).toFixed(1) : '0.0'}</p>
+              <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities > 0 ? (userStats.totalPoints / userStats.totalActivities).toFixed(1) : '0.0'}</p>
             </div>
           </div>
         </div>
       </div>
-      {stats.total === 0 ? (
+
+      {userStats.totalActivities === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
           Nenhuma atividade encontrada
         </div>
       ) : (
         <CategoryDistribution
-          data={[]}
+          data={Object.entries(userStats.activitiesByCategory).map(([category, value]) => ({
+            category,
+            value,
+            color: `hsl(${Math.random() * 360}, 70%, 50%)`
+          }))}
           title="Distribuição por Categoria"
         />
       )}
+
       <ActivityList />
     </div>
   );

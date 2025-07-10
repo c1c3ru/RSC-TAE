@@ -23,8 +23,66 @@ export interface CreateActivityData {
   data_fim: string;
 }
 
+// Função para verificar e criar perfil do usuário se necessário
+const ensureUserProfile = async (userId: string): Promise<void> => {
+  try {
+    // Verificar se o perfil já existe usando uma consulta mais simples
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('user_profile')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking user profile:', checkError);
+      // Se o erro for 406, pode ser um problema de permissão, vamos tentar criar o perfil
+      if (checkError.code === '406') {
+        console.log('Attempting to create user profile due to 406 error');
+      } else {
+        throw new Error('Erro ao verificar perfil do usuário');
+      }
+    }
+
+    // Se o perfil não existe, criar um perfil básico
+    if (!existingProfile) {
+      const { error: createError } = await supabase
+        .from('user_profile')
+        .insert([
+          {
+            id: userId,
+            email: '', // Será atualizado quando o usuário fizer login
+            name: null,
+            employee_number: null,
+            job: null,
+            functional_category: null,
+            date_singin: new Date().toISOString(),
+            education: null
+          }
+        ]);
+
+      if (createError) {
+        console.error('Error creating user profile:', createError);
+        // Se o erro for de chave duplicada, o perfil já existe
+        if (createError.code === '23505') {
+          console.log('User profile already exists, continuing...');
+          return;
+        }
+        throw new Error('Erro ao criar perfil do usuário');
+      }
+    }
+  } catch (error) {
+    console.error('Error ensuring user profile:', error);
+    // Não vamos falhar completamente se houver erro no perfil
+    // O usuário pode continuar usando o sistema
+    console.log('Continuing without user profile creation...');
+  }
+};
+
 export const createActivity = async (activityData: CreateActivityData): Promise<Activity> => {
   try {
+    // Garantir que o perfil do usuário existe antes de criar a atividade
+    await ensureUserProfile(activityData.user_id);
+
     const { data, error } = await supabase
       .from('user_rsc')
       .insert([{

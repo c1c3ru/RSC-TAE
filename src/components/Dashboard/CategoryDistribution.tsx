@@ -1,5 +1,26 @@
 
 import React from 'react';
+import { getCategoryName } from '../../data/competencyItems';
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Radar } from 'react-chartjs-2';
+
+// Registrar os componentes necessários para o gráfico radar
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+);
 
 interface CategoryData {
   category: string;
@@ -15,10 +36,86 @@ interface CategoryDistributionProps {
 const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title }) => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
+  // Preparar dados para o gráfico radar apenas se houver dados
+  const radarData = React.useMemo(() => ({
+    labels: data.map(item => getCategoryName(item.category)),
+    datasets: [
+      {
+        label: 'Pontos por Categoria',
+        data: data.map(item => item.value),
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: data.map(item => item.color),
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  }), [data]);
+
+  const radarOptions = React.useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => `${context.label}: ${context.parsed.r} pontos`,
+        },
+      },
+    },
+    scales: {
+      r: {
+        angleLines: { 
+          display: true,
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        suggestedMin: 0,
+        suggestedMax: Math.max(...data.map(item => item.value), 5),
+        pointLabels: {
+          font: { 
+            size: 12,
+            weight: 'bold' as const,
+          },
+          color: 'rgba(0, 0, 0, 0.7)',
+        },
+        ticks: {
+          stepSize: 1,
+          font: { size: 10 },
+          color: 'rgba(0, 0, 0, 0.5)',
+          backdropColor: 'transparent',
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+  }), [data]);
+
   return (
     <div className="bg-white overflow-hidden shadow rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
+        
+        {/* Gráfico Radar */}
+        {total > 0 && data.length > 0 ? (
+          <div className="mb-6" style={{ height: '300px' }}>
+            <Radar data={radarData} options={radarOptions} />
+          </div>
+        ) : (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="text-center text-gray-500">
+              <div className="text-2xl mb-2">📊</div>
+              <div className="text-sm">Nenhuma atividade registrada</div>
+              <div className="text-xs">Registre atividades para ver o gráfico de distribuição</div>
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-3">
           {data.map((item) => {
             const percentage = total > 0 ? (item.value / total) * 100 : 0;
@@ -30,7 +127,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="text-sm font-medium text-gray-900">
-                    {item.category}
+                    {getCategoryName(item.category)}
                   </span>
                 </div>
                 <div className="flex items-center">

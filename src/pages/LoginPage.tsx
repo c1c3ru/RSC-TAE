@@ -21,6 +21,7 @@ const LoginPage = () => {
   const [fadeIn, setFadeIn] = useState(false);
   const [showEmailValidation, setShowEmailValidation] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [showResendEmail, setShowResendEmail] = useState(false);
   
   // Registration form fields
   const [registerName, setRegisterName] = useState('');
@@ -34,7 +35,7 @@ const LoginPage = () => {
   // Novo estado para loading do Google
   const [googleLoading, setGoogleLoading] = useState(false);
   
-  const { login, loginWithGoogle, register } = useAuth();
+  const { login, loginWithGoogle, register, resendConfirmationEmail } = useAuth();
   const navigate = useNavigate();
   
   // Remover configuração das animações de perfil
@@ -166,8 +167,28 @@ const LoginPage = () => {
       setLoading(true);
       await login(email, password);
       navigate('/dashboard');
-    } catch {
-      setError('Erro ao fazer login');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
+      setError(errorMessage);
+      
+      // Se o erro for de email não confirmado, mostrar opção de reenvio
+      if (errorMessage.includes('Email não confirmado')) {
+        setShowResendEmail(true);
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setLoading(true);
+      await resendConfirmationEmail(email);
+      setMessage('Email de confirmação reenviado! Verifique sua caixa de entrada.');
+      setShowResendEmail(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao reenviar email';
+      setError(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -305,6 +326,34 @@ const LoginPage = () => {
                     className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
                   >
                     Entendi, fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showResendEmail && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-md" role="alert">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">
+                    <strong>Email não confirmado:</strong> Não foi possível autenticar seu email.
+                    <br />
+                    Por favor, verifique sua caixa de entrada e clique no link de confirmação.
+                    <br />
+                    Se não recebeu o email, clique em "Reenviar email de confirmação".
+                  </p>
+                  <button
+                    onClick={handleResendEmail}
+                    className="mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
+                    disabled={loading}
+                  >
+                    {loading ? "Reenviando..." : "Reenviar email de confirmação"}
                   </button>
                 </div>
               </div>
@@ -498,15 +547,6 @@ const LoginPage = () => {
               >
                 {registerMode ? 'Já tenho uma conta' : 'Criar nova conta'}
               </button>
-              {!registerMode && (
-                <button
-                  type="button"
-                  onClick={() => navigate('/register')}
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Cadastrar-se
-                </button>
-              )}
             </div>
           </form>
 
