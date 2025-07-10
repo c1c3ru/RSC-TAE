@@ -229,6 +229,9 @@ export const getUserActivityStats = async (userId: string): Promise<{
       0
     );
     
+    // Arredondar para 2 casas decimais para evitar imprecisões
+    const roundedTotalPoints = Math.round(totalPoints * 100) / 100;
+    
     const totalActivities = activities.length;
     
     const activitiesByCategory: Record<string, number> = {};
@@ -238,7 +241,7 @@ export const getUserActivityStats = async (userId: string): Promise<{
     });
 
     return {
-      totalPoints,
+      totalPoints: roundedTotalPoints,
       totalActivities,
       activitiesByCategory,
     };

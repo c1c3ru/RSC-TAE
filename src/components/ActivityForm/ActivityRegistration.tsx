@@ -55,7 +55,8 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
 
   const calculatePoints = (): number => {
     if (!selectedCompetency) return 0;
-    return selectedCompetency.points_per_unit * formData.quantity;
+    const points = selectedCompetency.points_per_unit * formData.quantity;
+    return Math.round(points * 100) / 100; // Arredonda para 2 casas decimais
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {

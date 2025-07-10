@@ -950,6 +950,28 @@ export const competencyItems: Competency[] = [
     max_points: 100,
     unit: 'apoio',
     
+  },
+
+  // Formação Excedente
+  {
+    id: 'FORM-EXC-01',
+    category: 'FORM-EXC',
+    title: 'Formação Excedente - Tipo 1',
+    type: 'Atividade',
+    points_per_unit: 1.00,
+    max_points: 100,
+    unit: 'formação',
+    
+  },
+  {
+    id: 'FORM-EXC-02',
+    category: 'FORM-EXC',
+    title: 'Formação Excedente - Tipo 2',
+    type: 'Atividade',
+    points_per_unit: 1.50,
+    max_points: 100,
+    unit: 'formação',
+    
   }
 ] as const;
 
@@ -973,7 +995,8 @@ export const getCategoryName = (category: string): string => {
     'CAT3': 'Atividades de Extensão',
     'CAT4': 'Atividades de Gestão e Representação',
     'CAT5': 'Atividades de Capacitação e Qualificação',
-    'CAT6': 'Atividades de Ensino'
+    'CAT6': 'Atividades de Ensino',
+    'FORM-EXC': 'Formação Excedente'
   };
   
   return categoryNames[category] || category;
@@ -986,7 +1009,8 @@ export const getMaxPointsByCategory = (category: string): number => {
     'CAT3': 40,
     'CAT4': 30,
     'CAT5': 20,
-    'CAT6': 25
+    'CAT6': 25,
+    'FORM-EXC': 30
   };
   
   return categoryLimits[category] || 0;

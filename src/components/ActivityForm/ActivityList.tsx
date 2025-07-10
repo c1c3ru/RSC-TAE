@@ -50,7 +50,8 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
   };
 
   const calculateTotalPoints = (): number => {
-    return activities.reduce((total, activity) => total + (activity.quantity * activity.value), 0);
+    const total = activities.reduce((total, activity) => total + (activity.quantity * activity.value), 0);
+    return Math.round(total * 100) / 100; // Arredonda para 2 casas decimais
   };
 
   const getCompetencyTitle = (competenceId: string): string => {
@@ -137,7 +138,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
                         {activity.value}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {activity.quantity * activity.value}
+                        {Math.round((activity.quantity * activity.value) * 100) / 100}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(activity.data_inicio)} - {formatDate(activity.data_fim)}
