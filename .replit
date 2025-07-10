@@ -2,3 +2,19 @@ modules = ["nodejs-20", "web", "bash"]
 
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Development"
+
+[[workflows.workflow]]
+name = "Development"
+author = 44859249
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm run dev"
