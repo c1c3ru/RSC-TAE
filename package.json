@@ -1,7 +1,6 @@
 {
   "name": "react-template",
   "private": true,
-  "packageManager": "pnpm@10.12.4",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -10,10 +9,6 @@
     "lint": "eslint ./src --quiet",
     "preview": "vite preview",
     "test": "jest"
-  },
-  "vercel": {
-    "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run build",
-    "installCommand": "pnpm install --no-frozen-lockfile"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -57,7 +52,6 @@
     "globals": "^15.9.0",
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
-    "pnpm": "^10.12.4",
     "postcss": "^8.4.45",
     "tailwindcss": "^3.4.10",
     "ts-jest": "^29.4.0",
