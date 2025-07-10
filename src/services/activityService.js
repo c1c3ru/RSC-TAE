@@ -70,8 +70,12 @@ export const createActivity = async (activityData) => {
       .from('user_profile')
       .select('*')
       .eq('id', user.id)
-      .single();
-    if (!profile && !profileError) {
+      .maybeSingle();
+    if (profileError) {
+      console.error('[PERFIL] Erro inesperado ao buscar perfil:', profileError);
+      throw profileError;
+    }
+    if (!profile) {
       // Cria perfil se não existir
       const userMeta = user.user_metadata || {};
       const { error: insertError } = await supabase.from('user_profile').insert([
@@ -95,9 +99,14 @@ export const createActivity = async (activityData) => {
       .from('competences')
       .select('*')
       .eq('id', activityData.itemCompetenciaId)
-      .single();
-
-    if (compError) throw compError;
+      .maybeSingle();
+    if (compError) {
+      console.error('[COMPETENCE] Erro inesperado ao buscar competência:', compError);
+      throw compError;
+    }
+    if (!competence) {
+      throw new Error('Competência não encontrada.');
+    }
 
     // Calculate value based on quantity and points per unit
     const calculatedValue = (activityData.quantidade || 1) * competence.points_per_unit;
