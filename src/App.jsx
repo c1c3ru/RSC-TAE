@@ -9,9 +9,9 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
-import SupabaseTest from './components/SupabaseTest';
 import './index.css';
 import { useLottie } from 'lottie-react';
+import SupabaseTest from './utils/SupabaseTest';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
