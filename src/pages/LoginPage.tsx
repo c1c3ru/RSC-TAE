@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
+import GoogleLoginDebug from '../components/Debug/GoogleLoginDebug';
 // import { useLottie } from 'lottie-react';
 // Remover as importações de animações de perfil
 // import saveAnimation from '../assets/lottie/save_profile_animation.json';
@@ -208,12 +209,36 @@ const LoginPage = () => {
     try {
       setGoogleLoading(true);
       setLoading(true);
+      setError('');
+      setMessage('');
+      
+      console.log('🔍 Debug - Iniciando processo de login Google');
+      
       // Garante pelo menos 1 segundo de spinner
       const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
       await Promise.all([loginWithGoogle(), minDelay]);
-      navigate('/dashboard');
-    } catch {
-      setError('Erro ao fazer login');
+      
+      console.log('🔍 Debug - Login Google concluído com sucesso');
+      // O redirecionamento será feito automaticamente pelo Supabase
+      
+    } catch (error) {
+      console.error('🔍 Debug - Erro no login Google:', error);
+      
+      let errorMessage = 'Erro ao fazer login com Google';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('URL de redirecionamento inválida')) {
+          errorMessage = 'Configuração incorreta. Entre em contato com o administrador.';
+        } else if (error.message.includes('Google OAuth não está configurado')) {
+          errorMessage = 'Login com Google temporariamente indisponível. Tente novamente mais tarde.';
+        } else if (error.message.includes('Client ID do Google não encontrado')) {
+          errorMessage = 'Configuração do Google incompleta. Tente novamente mais tarde.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       setLoading(false);
       setGoogleLoading(false);
     }
@@ -663,6 +688,9 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Componente de debug apenas em desenvolvimento */}
+      <GoogleLoginDebug onTestLogin={handleGoogleLogin} />
     </div>
   );
 };

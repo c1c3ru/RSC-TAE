@@ -81,16 +81,61 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithGoogle = async (): Promise<void> => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('🔍 Debug - Iniciando login com Google');
+      console.log('🔍 Debug - URL atual:', window.location.href);
+      console.log('🔍 Debug - Origin:', window.location.origin);
+      
+      // Determinar URL de redirecionamento baseada no ambiente
+      let redirectUrl = window.location.origin;
+      
+      // Se estiver no Vercel, usar a URL específica
+      if (window.location.hostname.includes('vercel.app')) {
+        redirectUrl = 'https://rsc-tae.vercel.app/dashboard';
+        console.log('🔍 Debug - Ambiente Vercel detectado');
+      } else if (window.location.hostname === 'localhost') {
+        redirectUrl = 'http://localhost:5173/dashboard';
+        console.log('🔍 Debug - Ambiente local detectado');
+      }
+      
+      console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
-      if (error) throw error;
+      
+      console.log('🔍 Debug - Resposta do Supabase:', { data, error });
+      
+      if (error) {
+        console.error('🔍 Debug - Erro do Supabase:', error);
+        throw error;
+      }
+      
+      console.log('🔍 Debug - Login Google iniciado com sucesso');
+      
     } catch (error) {
-      console.error('Error logging in with Google:', error);
-      throw error;
+      console.error('🔍 Debug - Erro no login com Google:', error);
+      
+      // Tratar erros específicos
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid redirect URL')) {
+          throw new Error('URL de redirecionamento inválida. Verifique a configuração no Supabase.');
+        } else if (error.message.includes('Provider not configured')) {
+          throw new Error('Google OAuth não está configurado. Verifique a configuração no Supabase.');
+        } else if (error.message.includes('Client ID not found')) {
+          throw new Error('Client ID do Google não encontrado. Verifique a configuração no Supabase.');
+        } else {
+          throw new Error(`Erro no login com Google: ${error.message}`);
+        }
+      } else {
+        throw new Error('Erro desconhecido no login com Google');
+      }
     } finally {
       setLoading(false);
     }
