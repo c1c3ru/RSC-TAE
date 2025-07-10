@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabaseClient';
 import Lottie from 'lottie-react';
 import editProfileAnimation from '../assets/lottie/edit_profile_animation.json';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES, PROFILE_TEXTS } from '../constants/texts';
 
 interface UserProfile {
   id: string;
@@ -78,7 +79,7 @@ const ProfilePage: React.FC = () => {
       }
     } catch (err) {
       console.error('Error loading profile:', err);
-      setError('Erro ao carregar perfil');
+      setError(ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setLoading(false);
     }
@@ -110,11 +111,11 @@ const ProfilePage: React.FC = () => {
         updated_at: new Date().toISOString(),
       } : null);
 
-      setSuccessMessage('Perfil atualizado com sucesso!');
+      setSuccessMessage(SUCCESS_MESSAGES.perfilAtualizado);
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (err) {
       console.error('Error saving profile:', err);
-      setError('Erro ao salvar perfil');
+      setError(ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setSaving(false);
     }

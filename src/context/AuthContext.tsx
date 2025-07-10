@@ -10,7 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, profileData?: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,14 +86,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string): Promise<void> => {
+  const register = async (email: string, password: string, profileData?: any): Promise<void> => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
       if (error) throw error;
+      
+      // Criar perfil do usuário na tabela user_profile
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('user_profile')
+          .insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              name: profileData?.name || null,
+              employee_number: profileData?.matricula || null,
+              job: profileData?.cargo || null,
+              functional_category: profileData?.functionalCategory || null,
+              date_singin: new Date().toISOString(),
+              education: profileData?.escolaridade || null
+            }
+          ]);
+        
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Não vamos falhar o cadastro se o perfil não for criado
+          // O usuário pode criar o perfil depois
+        }
+      }
     } catch (error) {
       console.error('Error registering:', error);
       throw error;

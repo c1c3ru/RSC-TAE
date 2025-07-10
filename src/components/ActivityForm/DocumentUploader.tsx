@@ -1,10 +1,11 @@
 
 import React, { useState, useCallback } from 'react';
 import { validateDocuments } from '../../services/activityService';
+import type { ValidationRules } from '../../context/CompetencyContext';
 
 interface DocumentUploaderProps {
   onFilesChange: (files: File[]) => void;
-  validationRules?: any;
+  validationRules?: ValidationRules;
 }
 
 interface FileWithPreview extends File {

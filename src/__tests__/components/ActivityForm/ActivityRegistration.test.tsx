@@ -4,12 +4,12 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ActivityRegistration from '../../../components/ActivityForm/ActivityRegistration';
 import { CompetencyProvider } from '../../context/CompetencyContext';
-import { AuthProvider } from '../../context/AuthContext.jsx';
+import { AuthProvider } from '../../context/AuthContext';
 import { LayoutProvider } from '../../context/LayoutContext';
 
 // Mock do hook useAuth para simular usuário autenticado
-jest.mock('../../../context/AuthContext.jsx', () => {
-  const originalModule = jest.requireActual('../../../context/AuthContext.jsx');
+jest.mock('../../../context/AuthContext', () => {
+  const originalModule = jest.requireActual('../../../context/AuthContext');
   return {
     ...originalModule,
     useAuth: () => ({

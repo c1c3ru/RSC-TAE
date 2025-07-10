@@ -2,6 +2,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { competencyItems as defaultCompetencyItems } from '../data/competencyItems';
 
+export interface ValidationRules {
+  docs?: string[];
+  [key: string]: any;
+}
+
 // Ajustar interface Competency para refletir o banco
 export interface Competency {
   id: string;
@@ -11,7 +16,7 @@ export interface Competency {
   points_per_unit: number;
   max_points: number;
   unit: string;
-  validation_rules?: any;
+  validation_rules?: ValidationRules;
 }
 
 interface CompetencyContextType {

@@ -11,7 +11,6 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.20,
     max_points: 12,
     unit: 'material',
-    validation_rules: null
   },
   {
     id: 'CAT1-02', 
@@ -21,7 +20,6 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 6,
     unit: 'participação',
-    validation_rules: null
   },
   {
     id: 'CAT1-03',
@@ -31,7 +29,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-04',
@@ -41,7 +39,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-05',
@@ -51,7 +49,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 6,
     unit: 'co-orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-06',
@@ -61,7 +59,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 5.00,
     max_points: 2,
     unit: 'orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-07',
@@ -71,7 +69,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'co-orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-08',
@@ -81,7 +79,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-09',
@@ -91,7 +89,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'orientação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-10',
@@ -101,7 +99,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.30,
     max_points: 40,
     unit: 'hora-aula',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-11',
@@ -111,7 +109,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 24,
     unit: 'hora',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-12',
@@ -121,7 +119,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.20,
     max_points: 60,
     unit: 'hora',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-13',
@@ -131,7 +129,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 8.00,
     max_points: 1,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-14',
@@ -141,7 +139,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 4.00,
     max_points: 2,
     unit: 'vice-coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-15',
@@ -151,7 +149,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-16',
@@ -161,7 +159,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'supervisão',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-17',
@@ -171,7 +169,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-18',
@@ -181,7 +179,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 24,
     unit: 'questão',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-19',
@@ -191,7 +189,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.10,
     max_points: 120,
     unit: 'prova',
-    validation_rules: null
+    
   },
   {
     id: 'CAT1-20',
@@ -201,7 +199,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
 
   // Categoria 2 - Atividades de Pesquisa
@@ -213,7 +211,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 10.00,
     max_points: 1,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-02',
@@ -223,7 +221,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 8.00,
     max_points: 1,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-03',
@@ -233,7 +231,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 6.00,
     max_points: 2,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-04',
@@ -243,7 +241,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 4.00,
     max_points: 2,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-05',
@@ -253,7 +251,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-06',
@@ -263,7 +261,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-07',
@@ -273,7 +271,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-08',
@@ -283,7 +281,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 8.00,
     max_points: 1,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-09',
@@ -293,7 +291,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-10',
@@ -303,7 +301,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-11',
@@ -313,7 +311,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.75,
     max_points: 13,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-12',
@@ -323,7 +321,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 20,
     unit: 'publicação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-13',
@@ -333,7 +331,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 5.00,
     max_points: 2,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-14',
@@ -343,7 +341,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-15',
@@ -353,7 +351,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-16',
@@ -363,7 +361,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-17',
@@ -373,7 +371,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 8.00,
     max_points: 1,
     unit: 'registro',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-18',
@@ -383,7 +381,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 4.00,
     max_points: 2,
     unit: 'produto',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-19',
@@ -393,7 +391,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'organização',
-    validation_rules: null
+    
   },
   {
     id: 'CAT2-20',
@@ -403,7 +401,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'organização',
-    validation_rules: null
+    
   },
 
   // Categoria 3 - Atividades de Extensão
@@ -415,7 +413,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 5.00,
     max_points: 2,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-02',
@@ -425,7 +423,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-03',
@@ -435,7 +433,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-04',
@@ -445,7 +443,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-05',
@@ -455,7 +453,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-06',
@@ -465,7 +463,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'curso',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-07',
@@ -475,7 +473,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-08',
@@ -485,7 +483,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'organização',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-09',
@@ -495,7 +493,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-10',
@@ -505,7 +503,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 20,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-11',
@@ -515,7 +513,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.25,
     max_points: 40,
     unit: 'acompanhamento',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-12',
@@ -525,7 +523,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-13',
@@ -535,7 +533,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-14',
@@ -545,7 +543,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.75,
     max_points: 13,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT3-15',
@@ -555,7 +553,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'publicação',
-    validation_rules: null
+    
   },
 
   // Categoria 4 - Atividades de Gestão e Representação
@@ -567,7 +565,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 15.00,
     max_points: 1,
     unit: 'exercício',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-02',
@@ -577,7 +575,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 10.00,
     max_points: 1,
     unit: 'exercício',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-03',
@@ -587,7 +585,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 5.00,
     max_points: 2,
     unit: 'exercício',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-04',
@@ -597,7 +595,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'exercício',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-05',
@@ -607,7 +605,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-06',
@@ -617,7 +615,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-07',
@@ -627,7 +625,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-08',
@@ -637,7 +635,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'representação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-09',
@@ -647,7 +645,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-10',
@@ -657,7 +655,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'presidência',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-11',
@@ -667,7 +665,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-12',
@@ -677,7 +675,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 4.00,
     max_points: 2,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-13',
@@ -687,7 +685,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-14',
@@ -697,7 +695,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'elaboração',
-    validation_rules: null
+    
   },
   {
     id: 'CAT4-15',
@@ -707,7 +705,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
 
   // Categoria 5 - Atividades de Capacitação e Qualificação
@@ -719,7 +717,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 15.00,
     max_points: 1,
     unit: 'conclusão',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-02',
@@ -729,7 +727,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 10.00,
     max_points: 1,
     unit: 'conclusão',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-03',
@@ -739,7 +737,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 5.00,
     max_points: 2,
     unit: 'conclusão',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-04',
@@ -749,7 +747,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 20,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-05',
@@ -759,7 +757,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-06',
@@ -769,7 +767,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.50,
     max_points: 7,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-07',
@@ -779,7 +777,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-08',
@@ -789,7 +787,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-09',
@@ -799,7 +797,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-10',
@@ -809,7 +807,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 0.50,
     max_points: 20,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-11',
@@ -819,7 +817,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 3.00,
     max_points: 3,
     unit: 'obtenção',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-12',
@@ -829,7 +827,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 1.00,
     max_points: 10,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-13',
@@ -839,7 +837,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'coordenação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-14',
@@ -849,7 +847,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.50,
     max_points: 4,
     unit: 'participação',
-    validation_rules: null
+    
   },
   {
     id: 'CAT5-15',
@@ -859,7 +857,7 @@ export const competencyItems: Competency[] = [
     points_per_unit: 2.00,
     max_points: 5,
     unit: 'aprendizado',
-    validation_rules: null
+    
   }
 ] as const;
 

@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useCompetency } from '../../context/CompetencyContext';
+import { useCompetency, type Competency } from '../../context/CompetencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { createActivity } from '../../services/activityService';
+import { ACTIVITY_TEXTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants/texts';
 
 interface ActivityFormData {
   competenceId: string;
@@ -29,30 +30,32 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
     description: ''
   });
 
-  const [selectedCompetency, setSelectedCompetency] = useState<any>(null);
+  const [selectedCompetency, setSelectedCompetency] = useState<Competency | null>(null);
+  const [success, setSuccess] = useState<string>('');
 
   useEffect(() => {
     if (formData.competenceId && competencyItems) {
-      const competency = competencyItems.find(item => item.id === formData.competenceId);
+      const competency = competencyItems.find(item => item.id === formData.competenceId) || null;
       setSelectedCompetency(competency);
     }
   }, [formData.competenceId, competencyItems]);
 
   const calculatePoints = (): number => {
     if (!selectedCompetency) return 0;
-    return selectedCompetency.value * formData.quantity;
+    return selectedCompetency.points_per_unit * formData.quantity;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    setSuccess('');
     
     if (!currentUser) {
-      onError?.('Usuário não autenticado');
+      onError?.(ERROR_MESSAGES.usuarioNaoAutenticado);
       return;
     }
 
     if (!selectedCompetency) {
-      onError?.('Selecione uma competência');
+      onError?.(ACTIVITY_TEXTS.selecioneCompetencia);
       return;
     }
 
@@ -63,7 +66,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
         user_id: currentUser.id,
         competence_id: formData.competenceId,
         quantity: formData.quantity,
-        value: selectedCompetency.value,
+        value: selectedCompetency.points_per_unit,
         data_inicio: formData.dataInicio,
         data_fim: formData.dataFim,
         description: formData.description ?? ''
@@ -80,10 +83,10 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
         description: ''
       });
       
+      setSuccess(SUCCESS_MESSAGES.atividadeCadastrada);
       onSuccess?.();
     } catch (error) {
-      console.error('Erro ao cadastrar atividade:', error);
-      onError?.(error instanceof Error ? error.message : 'Erro desconhecido');
+      onError?.(ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setLoading(false);
     }
@@ -190,10 +193,17 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
           <div className="bg-blue-50 p-4 rounded-md">
             <h4 className="text-sm font-medium text-blue-900">Resumo da Pontuação</h4>
             <p className="text-sm text-blue-700 mt-1">
-              {formData.quantity} × {selectedCompetency.value} pontos = {calculatePoints()} pontos totais
+              {formData.quantity} × {selectedCompetency.points_per_unit} pontos = {calculatePoints()} pontos totais
             </p>
           </div>
         )}
+
+        {success && (
+          <div className="rounded-md bg-green-50 p-4">
+            <p className="text-sm text-green-700">{success}</p>
+          </div>
+        )}
+        {/* Removed error message display */}
 
         <div className="flex justify-end">
           <button

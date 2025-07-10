@@ -3,9 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
 import { ESCOLARIDADES } from '../constants/texts';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES, LOGIN_TEXTS } from '../constants/texts';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterPage: React.FC = () => {
   const { register } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,6 @@ const RegisterPage: React.FC = () => {
   const [cargo, setCargo] = useState('');
   const [escolaridade, setEscolaridade] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [job, setJob] = useState('');
   const [functionalCategory, setFunctionalCategory] = useState('');
 
   const validateEmail = (email: string): boolean => {
@@ -53,9 +54,15 @@ const RegisterPage: React.FC = () => {
       return;
     }
     try {
-      await register(email, password);
+      await register(email, password, {
+        name,
+        matricula,
+        cargo,
+        escolaridade,
+        functionalCategory
+      });
       setSuccess(SUCCESS_MESSAGES.cadastroRealizado);
-      setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setMatricula(''); setCargo(''); setEscolaridade(''); setJob(''); setFunctionalCategory('');
+      setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setMatricula(''); setCargo(''); setEscolaridade(''); setFunctionalCategory('');
     } catch (err: any) {
       setError(err.message || ERROR_MESSAGES.erroDesconhecido);
     } finally {
@@ -66,6 +73,13 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white p-8 rounded shadow">
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="mb-4 text-blue-600 hover:underline flex items-center"
+        >
+          ← Voltar para o login
+        </button>
         <h2 className="text-2xl font-bold mb-6 text-center">Criar Conta</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="text" placeholder="Nome" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded" required />
@@ -85,12 +99,21 @@ const RegisterPage: React.FC = () => {
               <option key={idx} value={esc}>{esc}</option>
             ))}
           </select>
-          <input type="text" placeholder="Cargo (opcional)" value={job} onChange={e => setJob(e.target.value)} className="w-full px-3 py-2 border rounded" />
           <input type="text" placeholder="Categoria Funcional (opcional)" value={functionalCategory} onChange={e => setFunctionalCategory(e.target.value)} className="w-full px-3 py-2 border rounded" />
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">{loading ? 'Cadastrando...' : 'Cadastrar'}</button>
         </form>
         {success && <div className="mt-4 text-green-600 text-center">{success}</div>}
         {error && <div className="mt-4 text-red-600 text-center">{error}</div>}
+        <div className="mt-6 text-center">
+          Já tem cadastro?{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="text-blue-600 hover:underline"
+          >
+            Clique aqui para voltar para o login
+          </button>
+        </div>
       </div>
     </div>
   );
