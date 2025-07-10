@@ -1,23 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import supabase from '../utils/supabaseClient';
 import { REDIRECT_URLS } from '../config/environment';
 
-// Types for better type safety (consider migrating to TypeScript)
-const LoadingStates = {
-  IDLE: 'idle',
-  AUTHENTICATING: 'authenticating',
-  LOADING_PROFILE: 'loading_profile',
-  CREATING_PROFILE: 'creating_profile',
-  SIGNING_OUT: 'signing_out'
-};
-
 const AuthContext = createContext();
 
-/**
- * Custom hook to access authentication context
- * @returns {Object} Authentication context value
- * @throws {Error} When used outside AuthProvider
- */
+// Hook para usar o contexto de autenticação
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -26,477 +13,217 @@ export const useAuth = () => {
   return context;
 };
 
-/**
- * Authentication Provider Component
- * Manages user authentication state and provides auth methods
- */
-export const AuthProvider = ({ children, onError = null }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loadingState, setLoadingState] = useState(LoadingStates.IDLE);
+// Função utilitária para mapear cargo
+function getProfileFromCargo(cargo) {
+  if (!cargo) return null;
+  const cargoLower = cargo.toLowerCase();
+  if (cargoLower.includes('assistente')) return 'assistente';
+  if (cargoLower.includes('auxiliar')) return 'auxiliar';
+  if (cargoLower.includes('técnico') || cargoLower.includes('tecnico')) return 'tecnico';
+  if (cargoLower.includes('analista')) return 'analista';
+  return null;
+}
+
+// Componente AuthProvider
+export const AuthProvider = ({ children, onError }) => {
+  const [userSession, setUserSession] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState({
+    session: true,
+    authenticating: false,
+    signingOut: false,
+    profile: false,
+    creatingProfile: false,
+    any: true, // Um estado geral para saber se qualquer loading está ativo
+  });
   const [error, setError] = useState(null);
 
-  // Computed loading states for better UX
-  const loading = useMemo(() => ({
-    any: loadingState !== LoadingStates.IDLE,
-    authenticating: loadingState === LoadingStates.AUTHENTICATING,
-    profile: loadingState === LoadingStates.LOADING_PROFILE,
-    creatingProfile: loadingState === LoadingStates.CREATING_PROFILE,
-    signingOut: loadingState === LoadingStates.SIGNING_OUT
-  }), [loadingState]);
-
-  /**
-   * Centralized error handler
-   */
-  const handleError = useCallback((error, context = '') => {
-    const errorMessage = error?.message || 'Unknown error occurred';
-    const fullError = { message: errorMessage, context, timestamp: new Date().toISOString() };
-    
-    // Only log in development
-    if (import.meta.env.MODE === 'development') {
-      console.error(`[AuthContext${context ? ` - ${context}` : ''}]:`, error);
+  // Atualiza o estado de loading geral
+  useEffect(() => {
+    const anyLoading = Object.values(loading).some(status => status === true);
+    if (anyLoading !== loading.any) {
+      setLoading(prev => ({...prev, any: anyLoading}));
     }
-    
-    setError(fullError);
-    onError?.(fullError);
-    return fullError;
+  }, [loading]);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  const handleAuthError = useCallback((err, context) => {
+    console.error(`[AUTH ERROR] Context: ${context}`, err);
+    const errorMessage = { message: err.message || 'Ocorreu um erro.', context };
+    setError(errorMessage);
+    if (onError) {
+      onError(errorMessage);
+    }
+    return { success: false, error: errorMessage };
   }, [onError]);
 
-  /**
-   * Clear error state
-   */
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  /**
-   * Validate user input data
-   */
-  const validateUserData = useCallback((userData) => {
-    const errors = [];
-    
-    if (!userData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
-      errors.push('Valid email is required');
-    }
-    
-    if (userData.password && userData.password.length < 6) {
-      errors.push('Password must be at least 6 characters');
-    }
-    
-    return errors;
-  }, []);
-
-  /**
-   * Get profile category from job title
-   */
-  const getProfileFromJobTitle = useCallback((jobTitle) => {
-    if (!jobTitle) return null;
-    
-    const titleLower = jobTitle.toLowerCase();
-    const profileMap = {
-      'assistente': 'assistant',
-      'auxiliar': 'auxiliary',
-      'técnico': 'technician',
-      'tecnico': 'technician',
-      'analista': 'analyst'
-    };
-    
-    for (const [key, value] of Object.entries(profileMap)) {
-      if (titleLower.includes(key)) return value;
-    }
-    
-    return null;
-  }, []);
-
-  /**
-   * Create user profile with retry logic
-   */
-  const createUserProfile = useCallback(async (profileData, maxAttempts = 3) => {
-    let attempt = 0;
-    let lastError = null;
-
-    while (attempt < maxAttempts) {
-      try {
-        const { error } = await supabase
-          .from('user_profile')
-          .insert([profileData]);
-        
-        if (!error) return { success: true };
-        
-        lastError = error;
-        
-        // Retry only for network/temporary errors
-        if (error.message?.match(/timeout|network|temporary|ECONN/gi)) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-        } else {
-          break; // Non-recoverable error
-        }
-      } catch (err) {
-        lastError = err;
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-      }
-      attempt++;
-    }
-    
-    return { success: false, error: lastError };
-  }, []);
-
-  /**
-   * Fetch or create user profile
-   */
-  const ensureUserProfile = useCallback(async (user) => {
-    try {
-      setLoadingState(LoadingStates.LOADING_PROFILE);
-      
-      // Try to fetch existing profile
-      const { data: profile, error: fetchError } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profile && !fetchError) {
-        return { success: true, profile };
-      }
-
-      // Create profile if it doesn't exist
-      setLoadingState(LoadingStates.CREATING_PROFILE);
-      
-      const userMeta = user.user_metadata || {};
-      const profileData = {
-        id: user.id,
-        name: userMeta.name || userMeta.nome || user.email,
-        email: user.email,
-        employee_number: userMeta.employee_number || userMeta.matricula || '',
-        education: userMeta.education || userMeta.escolaridade || '',
-        functional_category: userMeta.functional_category || 
-                           getProfileFromJobTitle(userMeta.profile || '')
-      };
-
-      const createResult = await createUserProfile(profileData);
-      
-      if (!createResult.success) {
-        return { 
-          success: false, 
-          error: 'Failed to create user profile after multiple attempts' 
-        };
-      }
-
-      // Fetch the newly created profile
-      const { data: newProfile, error: newFetchError } = await supabase
-        .from('user_profile')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (newProfile && !newFetchError) {
-        return { success: true, profile: newProfile };
-      }
-
-      return { success: false, error: 'Profile created but could not be retrieved' };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }, [createUserProfile, getProfileFromJobTitle]);
-
-  /**
-   * Update current user state with profile data
-   */
-  const updateUserState = useCallback(async (user) => {
+  // Função para buscar o perfil do usuário
+  const fetchUserProfile = useCallback(async (user) => {
     if (!user) {
-      setCurrentUser(null);
-      return;
+      setUserProfile(null);
+      return null;
     }
+    setLoading(prev => ({ ...prev, profile: true }));
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('user_profile')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    const profileResult = await ensureUserProfile(user);
-    
-    if (profileResult.success) {
-      setCurrentUser({
-        ...user,
-        ...profileResult.profile
-      });
-    } else {
-      handleError(new Error(profileResult.error), 'Profile Management');
-      setCurrentUser(null);
-      return false;
+      if (fetchError) throw fetchError;
+      
+      setUserProfile(data);
+      return data;
+    } catch (err) {
+      handleAuthError(err, 'Fetching Profile');
+      return null;
+    } finally {
+      setLoading(prev => ({ ...prev, profile: false }));
     }
-    
-    return true;
-  }, [ensureUserProfile, handleError]);
+  }, [handleAuthError]);
 
-  /**
-   * Initialize authentication state
-   */
   useEffect(() => {
-    let mounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        setLoadingState(LoadingStates.LOADING_PROFILE);
-        
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          handleError(error, 'Session Initialization');
-          return;
-        }
-
-        if (mounted) {
-          if (session?.user) {
-            await updateUserState(session.user);
-          } else {
-            setCurrentUser(null);
-          }
-        }
-      } catch (error) {
-        if (mounted) {
-          handleError(error, 'Auth Initialization');
-        }
-      } finally {
-        if (mounted) {
-          setLoadingState(LoadingStates.IDLE);
-        }
+    // Busca a sessão inicial
+    const getInitialSession = async () => {
+      setLoading(prev => ({ ...prev, session: true }));
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        handleAuthError(sessionError, 'Session Initialization');
+      } else if (session?.user) {
+        setUserSession(session);
+        await fetchUserProfile(session.user);
       }
+      setLoading(prev => ({ ...prev, session: false }));
     };
 
-    initializeAuth();
+    getInitialSession();
 
-    // Listen for auth state changes
+    // Listener para mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-
-        try {
-          setLoadingState(LoadingStates.LOADING_PROFILE);
+        if (event === 'SIGNED_IN' && session?.user) {
+          setLoading(prev => ({ ...prev, creatingProfile: true }));
+          const { data: profile } = await supabase.from('user_profile').select('id').eq('id', session.user.id).maybeSingle();
           
-          if (session?.user) {
-            const success = await updateUserState(session.user);
-            if (!success && event === 'SIGNED_IN') {
-              // Handle profile creation failure
+          if (!profile) {
+            console.log('[AUTH] Perfil não encontrado, criando...');
+            const userMeta = session.user.user_metadata || {};
+            const profileData = {
+              id: session.user.id,
+              name: userMeta.name || session.user.email,
+              email: session.user.email,
+              employee_number: userMeta.employee_number || '',
+              education: userMeta.escolaridade || '',
+              functional_category: userMeta.functional_category || getProfileFromCargo(userMeta.functional_category || '')
+            };
+            const { error: insertError } = await supabase.from('user_profile').insert(profileData);
+            if (insertError) {
               await supabase.auth.signOut();
-              return;
+              return handleAuthError(insertError, 'Profile Creation');
             }
-          } else {
-            setCurrentUser(null);
           }
-        } catch (error) {
-          handleError(error, 'Auth State Change');
-        } finally {
-          setLoadingState(LoadingStates.IDLE);
+          setUserSession(session);
+          await fetchUserProfile(session.user);
+          setLoading(prev => ({ ...prev, creatingProfile: false }));
+        } else if (event === 'SIGNED_OUT') {
+          setUserSession(null);
+          setUserProfile(null);
         }
       }
     );
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [updateUserState, handleError]);
+    return () => subscription.unsubscribe();
+  }, [fetchUserProfile, handleAuthError]);
 
-  /**
-   * Sign in with email and password
-   */
-  const login = useCallback(async (email, password) => {
+  // Funções de autenticação
+  const login = async (email, password) => {
+    setLoading(prev => ({ ...prev, authenticating: true }));
+    clearError();
     try {
-      clearError();
-      
-      const validationErrors = validateUserData({ email, password });
-      if (validationErrors.length > 0) {
-        throw new Error(validationErrors.join(', '));
-      }
-
-      setLoadingState(LoadingStates.AUTHENTICATING);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password
-      });
-
-      if (error) throw error;
-      
-      return { success: true, user: data.user };
-    } catch (error) {
-      const handledError = handleError(error, 'Email Login');
-      return { success: false, error: handledError };
+      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      if (loginError) throw loginError;
+      return { success: true };
+    } catch (err) {
+      return handleAuthError(err, 'Login');
     } finally {
-      setLoadingState(LoadingStates.IDLE);
+      setLoading(prev => ({ ...prev, authenticating: false }));
     }
-  }, [validateUserData, handleError, clearError]);
+  };
 
-  /**
-   * Sign in with Google OAuth
-   */
-  const loginWithGoogle = useCallback(async () => {
+  const register = async (userInfo) => {
+    setLoading(prev => ({ ...prev, authenticating: true }));
+    clearError();
     try {
-      clearError();
-      setLoadingState(LoadingStates.AUTHENTICATING);
-      
-      const redirectUrl = REDIRECT_URLS.dashboard();
-      
-      if (!redirectUrl || redirectUrl.includes(' ')) {
-        throw new Error('Invalid redirect URL configuration');
-      }
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
-        }
-      });
-
-      if (error) {
-        // Fallback without extra query params
-        const { data: fallbackData, error: fallbackError } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: redirectUrl }
-        });
-        
-        if (fallbackError) throw fallbackError;
-        return { success: true, url: fallbackData.url };
-      }
-
-      return { success: true, url: data.url };
-    } catch (error) {
-      const handledError = handleError(error, 'Google Login');
-      return { success: false, error: handledError };
-    } finally {
-      setLoadingState(LoadingStates.IDLE);
-    }
-  }, [handleError, clearError]);
-
-  /**
-   * Register new user
-   */
-  const register = useCallback(async (userInfo) => {
-    try {
-      clearError();
-      
-      const validationErrors = validateUserData(userInfo);
-      if (validationErrors.length > 0) {
-        throw new Error(validationErrors.join(', '));
-      }
-
-      setLoadingState(LoadingStates.AUTHENTICATING);
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: userInfo.email.trim(),
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: userInfo.email,
         password: userInfo.password,
         options: {
           data: {
-            name: userInfo.name || userInfo.nome,
-            employee_number: userInfo.employee_number || userInfo.matricula,
-            functional_category: userInfo.functional_category || 
-                               getProfileFromJobTitle(userInfo.profile || '')
+            name: userInfo.name,
+            employee_number: userInfo.employee_number,
+            functional_category: userInfo.functional_category
           },
           emailRedirectTo: REDIRECT_URLS.login()
         }
       });
-
-      if (error) throw error;
-      
-      return { success: true, user: data.user };
-    } catch (error) {
-      const handledError = handleError(error, 'Registration');
-      return { success: false, error: handledError };
-    } finally {
-      setLoadingState(LoadingStates.IDLE);
-    }
-  }, [validateUserData, getProfileFromJobTitle, handleError, clearError]);
-
-  /**
-   * Sign out current user
-   */
-  const logout = useCallback(async () => {
-    try {
-      clearError();
-      setLoadingState(LoadingStates.SIGNING_OUT);
-      
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      setCurrentUser(null);
+      if (signUpError) throw signUpError;
       return { success: true };
-    } catch (error) {
-      const handledError = handleError(error, 'Logout');
-      return { success: false, error: handledError };
+    } catch (err) {
+      return handleAuthError(err, 'Registration');
     } finally {
-      setLoadingState(LoadingStates.IDLE);
+      setLoading(prev => ({ ...prev, authenticating: false }));
     }
-  }, [handleError, clearError]);
+  };
 
-  /**
-   * Send password reset email
-   */
-  const forgotPassword = useCallback(async (email) => {
+  const logout = async () => {
+    setLoading(prev => ({ ...prev, signingOut: true }));
+    clearError();
     try {
-      clearError();
-      
-      const validationErrors = validateUserData({ email });
-      if (validationErrors.length > 0) {
-        throw new Error(validationErrors.join(', '));
-      }
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: REDIRECT_URLS.resetPassword()
-      });
-
-      if (error) throw error;
-
-      return {
-        success: true,
-        message: 'Password reset email sent! Please check your inbox.'
-      };
-    } catch (error) {
-      const handledError = handleError(error, 'Password Reset');
-      return { success: false, error: handledError };
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+      return { success: true };
+    } catch (err) {
+      return handleAuthError(err, 'Logout');
+    } finally {
+      setLoading(prev => ({ ...prev, signingOut: false }));
     }
-  }, [validateUserData, handleError, clearError]);
+  };
+  
+  const forgotPassword = async (email) => {
+    setLoading(prev => ({ ...prev, authenticating: true }));
+    clearError();
+    try {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: REDIRECT_URLS.resetPassword()
+        });
+        if (resetError) throw resetError;
+        return { success: true };
+    } catch (err) {
+        return handleAuthError(err, 'Password Reset');
+    } finally {
+        setLoading(prev => ({ ...prev, authenticating: false }));
+    }
+  };
 
-  // Memoize context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({
-    // State
-    currentUser,
+  const value = {
+    isAuthenticated: !!userSession,
+    currentUser: userSession?.user,
+    userProfile,
     loading,
     error,
-    
-    // Actions
-    login,
-    loginWithGoogle,
-    register,
-    logout,
-    forgotPassword,
     clearError,
-    
-    // Utilities
-    isAuthenticated: !!currentUser,
-    userProfile: currentUser ? {
-      id: currentUser.id,
-      name: currentUser.name,
-      email: currentUser.email,
-      employeeNumber: currentUser.employee_number,
-      education: currentUser.education,
-      functionalCategory: currentUser.functional_category
-    } : null
-  }), [
-    currentUser,
-    loading,
-    error,
     login,
-    loginWithGoogle,
     register,
     logout,
-    forgotPassword,
-    clearError
-  ]);
+    forgotPassword
+  };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export default AuthProvider;
