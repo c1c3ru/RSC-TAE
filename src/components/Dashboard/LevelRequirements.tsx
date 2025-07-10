@@ -4,8 +4,8 @@ interface LevelRequirement {
   level: string;
   name: string;
   minPoints: number;
-  minActivities: number;
-  minCategories: number;
+  minItems: number;
+  educationRequirement: string;
   requirements: string[];
   color: string;
   icon: string;
@@ -24,46 +24,88 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
 }) => {
   const levels: LevelRequirement[] = [
     {
-      level: 'E',
-      name: 'Nível Superior',
-      minPoints: 15,
-      minActivities: 3,
-      minCategories: 3,
+      level: 'VI',
+      name: 'RSC-TAE VI (Doutorado)',
+      minPoints: 75,
+      minItems: 12,
+      educationRequirement: 'Diploma de mestre',
       requirements: [
-        'Mínimo de 3 atividades em diferentes categorias',
-        'Pelo menos 1 atividade de Produção Científica',
-        'Pelo menos 1 atividade de Formação Acadêmica',
-        'Total mínimo de 15 pontos'
+        'Diploma de mestre',
+        'Mínimo de 75 pontos',
+        'Distribuídos em no mínimo 12 itens do rol de saberes e competências'
       ],
-      color: 'bg-purple-500',
+      color: 'bg-purple-600',
       icon: '🎓'
     },
     {
-      level: 'D',
-      name: 'Nível Médio/Técnico',
-      minPoints: 10,
-      minActivities: 2,
-      minCategories: 2,
+      level: 'V',
+      name: 'RSC-TAE V (Mestrado)',
+      minPoints: 52,
+      minItems: 8,
+      educationRequirement: 'Certificado de pós-graduação lato sensu',
       requirements: [
-        'Mínimo de 2 atividades em diferentes categorias',
-        'Pelo menos 1 atividade de Formação Acadêmica ou Complementar',
-        'Total mínimo de 10 pontos'
+        'Certificado de pós-graduação lato sensu',
+        'Mínimo de 52 pontos',
+        'Distribuídos em no mínimo 8 itens do rol de saberes e competências'
       ],
-      color: 'bg-blue-500',
+      color: 'bg-purple-500',
       icon: '📚'
     },
     {
-      level: 'C',
-      name: 'Nível Médio',
-      minPoints: 5,
-      minActivities: 1,
-      minCategories: 1,
+      level: 'IV',
+      name: 'RSC-TAE IV (Graduação)',
+      minPoints: 30,
+      minItems: 5,
+      educationRequirement: 'Diploma de graduação',
       requirements: [
-        'Mínimo de 1 atividade em qualquer categoria',
-        'Total mínimo de 5 pontos'
+        'Diploma de graduação',
+        'Mínimo de 30 pontos',
+        'Distribuídos em no mínimo 5 itens do rol de saberes e competências'
+      ],
+      color: 'bg-blue-500',
+      icon: '🎓'
+    },
+    {
+      level: 'III',
+      name: 'RSC-TAE III (Ensino Médio)',
+      minPoints: 25,
+      minItems: 4,
+      educationRequirement: 'Diploma de ensino médio ou técnico de nível médio',
+      requirements: [
+        'Diploma de ensino médio ou técnico de nível médio',
+        'Mínimo de 25 pontos',
+        'Distribuídos em no mínimo 4 itens do rol de saberes e competências'
       ],
       color: 'bg-green-500',
       icon: '📖'
+    },
+    {
+      level: 'II',
+      name: 'RSC-TAE II (Fundamental Completo)',
+      minPoints: 20,
+      minItems: 3,
+      educationRequirement: 'Diploma de ensino fundamental completo',
+      requirements: [
+        'Diploma de ensino fundamental completo',
+        'Mínimo de 20 pontos',
+        'Distribuídos em no mínimo 3 itens do rol de saberes e competências'
+      ],
+      color: 'bg-yellow-500',
+      icon: '📝'
+    },
+    {
+      level: 'I',
+      name: 'RSC-TAE I (Fundamental Incompleto)',
+      minPoints: 10,
+      minItems: 2,
+      educationRequirement: 'Comprovante de ensino fundamental incompleto',
+      requirements: [
+        'Comprovante de ensino fundamental incompleto',
+        'Mínimo de 10 pontos',
+        'Distribuídos em no mínimo 2 itens do rol de saberes e competências'
+      ],
+      color: 'bg-orange-500',
+      icon: '📋'
     }
   ];
 
@@ -84,20 +126,12 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       missingRequirements.push(`Pontos insuficientes (${userPoints}/${level.minPoints})`);
     }
 
-    // Verificar atividades mínimas
+    // Verificar itens mínimos (atividades)
     totalChecks++;
-    if (userActivities >= level.minActivities) {
+    if (userActivities >= level.minItems) {
       progress++;
     } else {
-      missingRequirements.push(`Atividades insuficientes (${userActivities}/${level.minActivities})`);
-    }
-
-    // Verificar categorias mínimas
-    totalChecks++;
-    if (userCategories >= level.minCategories) {
-      progress++;
-    } else {
-      missingRequirements.push(`Categorias insuficientes (${userCategories}/${level.minCategories})`);
+      missingRequirements.push(`Itens insuficientes (${userActivities}/${level.minItems})`);
     }
 
     return {
@@ -110,10 +144,10 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h3 className="text-xl font-bold text-gray-900 mb-6">
-        Requisitos por Nível de Classificação
+        Requisitos por Nível RSC-TAE
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {levels.map((level) => {
           const eligibility = checkLevelEligibility(level);
           
@@ -181,7 +215,7 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>Seus pontos: <span className="font-semibold">{userPoints}</span></div>
-                  <div>Suas atividades: <span className="font-semibold">{userActivities}</span></div>
+                  <div>Seus itens: <span className="font-semibold">{userActivities}</span></div>
                   <div>Suas categorias: <span className="font-semibold">{userCategories}</span></div>
                 </div>
               </div>
@@ -209,10 +243,11 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <h4 className="text-sm font-semibold text-blue-800 mb-2">ℹ️ Informações Importantes</h4>
         <ul className="text-xs text-blue-700 space-y-1">
-          <li>• Você pode registrar mais atividades do que o mínimo necessário</li>
-          <li>• Atividades são aprovadas pela comissão antes da pontuação final</li>
-          <li>• Documentos comprobatórios são obrigatórios para todas as atividades</li>
+          <li>• Você pode registrar mais itens do que o mínimo necessário</li>
+          <li>• Itens são aprovados pela comissão antes da pontuação final</li>
+          <li>• Documentos comprobatórios são obrigatórios para todos os itens</li>
           <li>• O sistema calcula automaticamente sua elegibilidade para cada nível</li>
+          <li>• É necessário comprovar a escolaridade mínima para cada nível</li>
         </ul>
       </div>
     </div>

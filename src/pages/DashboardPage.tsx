@@ -6,6 +6,7 @@ import ScoreCard from '../components/Dashboard/ScoreCard';
 import ActivityList from '../components/ActivityForm/ActivityList';
 import LevelRequirements from '../components/Dashboard/LevelRequirements';
 import ProcessSteps from '../components/Dashboard/ProcessSteps';
+import EducationValidation from '../components/Dashboard/EducationValidation';
 import { DASHBOARD_TEXTS } from '../constants/texts';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../context/AuthContext';
@@ -22,6 +23,7 @@ const DashboardPage = () => {
     activitiesByCategory: {} as Record<string, number>
   });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [userEducation, setUserEducation] = useState<string>('');
 
   useEffect(() => {
     supabase.auth.getSession().then(() => {
@@ -56,16 +58,16 @@ const DashboardPage = () => {
     if (userStats.totalActivities === 0) return 0;
     
     // Progresso baseado em múltiplos fatores:
-    // 1. Número de atividades (máximo 5 atividades = 100%)
-    // 2. Pontuação total (máximo 15 pontos = 100%)
-    // 3. Diversidade de categorias (máximo 3 categorias = 100%)
+    // 1. Número de itens (máximo 12 itens = 100%)
+    // 2. Pontuação total (máximo 75 pontos = 100%)
+    // 3. Diversidade de categorias (máximo 5 categorias = 100%)
     
-    const activityProgress = Math.min((userStats.totalActivities / 5) * 100, 100);
-    const pointsProgress = Math.min((userStats.totalPoints / 15) * 100, 100);
-    const categoryProgress = Math.min((uniqueCategories / 3) * 100, 100);
+    const itemProgress = Math.min((userStats.totalActivities / 12) * 100, 100);
+    const pointsProgress = Math.min((userStats.totalPoints / 75) * 100, 100);
+    const categoryProgress = Math.min((uniqueCategories / 5) * 100, 100);
     
     // Média ponderada dos três fatores
-    const totalProgress = (activityProgress * 0.4 + pointsProgress * 0.4 + categoryProgress * 0.2);
+    const totalProgress = (itemProgress * 0.4 + pointsProgress * 0.4 + categoryProgress * 0.2);
     
     return Math.round(totalProgress * 10) / 10; // Arredondar para 1 casa decimal
   };
@@ -125,6 +127,12 @@ const DashboardPage = () => {
         userActivities={userStats.totalActivities}
       />
 
+      {/* Education Validation */}
+      <EducationValidation 
+        userEducation={userEducation}
+        onEducationChange={setUserEducation}
+      />
+
       {/* Level Requirements */}
       <LevelRequirements 
         userPoints={userStats.totalPoints}
@@ -137,7 +145,7 @@ const DashboardPage = () => {
         value={userStats.totalPoints}
         icon={<svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>}
         color="yellow"
-        maxValue={15} // Meta para nível E (Superior)
+        maxValue={75} // Meta para nível VI (Doutorado)
         subtitle="pontos acumulados"
       />
 
@@ -150,7 +158,7 @@ const DashboardPage = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Total de Atividades</p>
+              <p className="text-sm font-medium text-gray-600">Total de Itens</p>
               <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities}</p>
             </div>
           </div>
@@ -176,7 +184,7 @@ const DashboardPage = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Pontos por Atividade</p>
+              <p className="text-sm font-medium text-gray-600">Pontos por Item</p>
               <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities > 0 ? (userStats.totalPoints / userStats.totalActivities).toFixed(1) : '0.0'}</p>
             </div>
           </div>
@@ -185,7 +193,7 @@ const DashboardPage = () => {
 
       {userStats.totalActivities === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-          Nenhuma atividade encontrada
+          Nenhum item encontrado
         </div>
       ) : (
         <CategoryDistribution
