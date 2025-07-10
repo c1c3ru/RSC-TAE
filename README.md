@@ -18,6 +18,15 @@ Sistema web para registro, pontuação e acompanhamento de atividades para Recon
 
 ## Estrutura do Projeto
 
+graph TD
+    A[Usuário autenticado] --> B[Buscar perfil com maybeSingle]
+    B --> C{Perfil existe?}
+    C -->|Não| D[Criar novo perfil]
+    C -->|Sim| E[Atualizar estado]
+    D --> F{Sucesso?}
+    F -->|Sim| E
+    F -->|Não| G[Erro + Logout]
+
 ```
 ├── src/
 │   ├── App.jsx                # Rotas e layout principal
