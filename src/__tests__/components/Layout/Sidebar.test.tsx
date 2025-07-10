@@ -1,5 +1,4 @@
 /* eslint-env node, jest */
-/* global global, require */
 import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -68,12 +67,12 @@ describe('Sidebar', () => {
         <AuthProvider>
           <LayoutProvider>
             <CompetencyProvider>
-              <Sidebar isOpen={true} />
+              <Sidebar />
             </CompetencyProvider>
           </LayoutProvider>
         </AuthProvider>
       </MemoryRouter>
     );
-    expect(await screen.findByText(/Menu/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
   });
 }); 

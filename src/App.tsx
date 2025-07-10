@@ -145,6 +145,16 @@ const AppContent: React.FC = () => {
         element={<RegisterPage />} 
       />
       <Route 
+        path="/activity-registration" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <ActivityRegistrationPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/reset-password" 
         element={<ResetPasswordPage />} 
       />

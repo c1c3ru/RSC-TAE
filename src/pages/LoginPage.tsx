@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
-import { useLottie } from 'lottie-react';
-import saveAnimation from '../assets/lottie/save_profile_animation.json';
-import editAnimation from '../assets/lottie/edit_profile_animation.json';
+// import { useLottie } from 'lottie-react';
+// Remover as importações de animações de perfil
+// import saveAnimation from '../assets/lottie/save_profile_animation.json';
+// import editAnimation from '../assets/lottie/edit_profile_animation.json';
+// Se houver uma animação genérica de login, importe aqui, exemplo:
+// import loginAnimation from '../assets/lottie/login_animation.json';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -34,26 +37,26 @@ const LoginPage = () => {
   const { login, loginWithGoogle, register } = useAuth();
   const navigate = useNavigate();
   
-  // Configuração das animações
-  const { View: SaveAnimationView } = useLottie({
-    animationData: saveAnimation,
-    loop: false,
-    autoplay: false
-  });
+  // Remover configuração das animações de perfil
+  // const { View: SaveAnimationView } = useLottie({
+  //   animationData: saveAnimation,
+  //   loop: false,
+  //   autoplay: false
+  // });
+  // const { View: EditAnimationView } = useLottie({
+  //   animationData: editAnimation,
+  //   loop: true,
+  //   autoplay: true
+  // });
 
-  const { View: EditAnimationView } = useLottie({
-    animationData: editAnimation,
-    loop: true,
-    autoplay: true
-  });
-
+  // Remover funções renderSaveAnimation e renderEditAnimation
   // Garantir que View é um elemento React
-  const renderSaveAnimation = () => {
-    return saveAnimation && typeof saveAnimation === 'object' && React.isValidElement(SaveAnimationView) ? SaveAnimationView : null;
-  };
-  const renderEditAnimation = () => {
-    return editAnimation && typeof editAnimation === 'object' && React.isValidElement(EditAnimationView) ? EditAnimationView : null;
-  };
+  // const renderSaveAnimation = () => {
+  //   return saveAnimation && typeof saveAnimation === 'object' && React.isValidElement(SaveAnimationView) ? SaveAnimationView : null;
+  // };
+  // const renderEditAnimation = () => {
+  //   return editAnimation && typeof editAnimation === 'object' && React.isValidElement(EditAnimationView) ? EditAnimationView : null;
+  // };
   
   // Animate component on mount
   useEffect(() => {
@@ -211,7 +214,7 @@ const LoginPage = () => {
               </>
             ) : (
               <>
-                <div className="w-32 h-32 mb-4">{renderSaveAnimation()}</div>
+                {/* Remover o uso de {renderSaveAnimation()} e {renderEditAnimation()} */}
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
                   {registerMode
                     ? 'Cadastrando...'
@@ -236,8 +239,11 @@ const LoginPage = () => {
           <div className="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
           
           <div className="flex items-center justify-center relative z-10">
+            {/* Remover o uso de {renderEditAnimation()} */}
             <div className="w-16 h-16 mr-4">
-              {renderEditAnimation()}
+              {/* Se houver uma animação de login, pode adicionar aqui:
+              <Lottie animationData={loginAnimation} style={{ width: 64, height: 64 }} />
+              */}
             </div>
             <div>
               <h1 className="text-white text-center text-3xl font-bold">
@@ -459,11 +465,22 @@ const LoginPage = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  {!registerMode && (
+                    <div className="mt-2 text-right">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/reset-password')}
+                        className="text-sm text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Esqueci minha senha
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
             
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex justify-between items-center mb-4">
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
@@ -481,6 +498,15 @@ const LoginPage = () => {
               >
                 {registerMode ? 'Já tenho uma conta' : 'Criar nova conta'}
               </button>
+              {!registerMode && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/register')}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Cadastrar-se
+                </button>
+              )}
             </div>
           </form>
 

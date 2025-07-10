@@ -3,8 +3,6 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useLayout } from '../../context/LayoutContext';
 
-interface SidebarProps {}
-
 interface NavigationItem {
   name: string;
   href: string;
@@ -31,11 +29,11 @@ const ProfileIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: DashboardIcon },
-  { name: 'Cadastrar Atividade', href: '/cadastro', icon: ActivityIcon },
-  { name: 'Perfil', href: '/perfil', icon: ProfileIcon },
+  { name: 'Cadastrar Atividade', href: '/activity-registration', icon: ActivityIcon },
+  { name: 'Perfil', href: '/profile', icon: ProfileIcon },
 ];
 
-const Sidebar: React.FC<SidebarProps> = () => {
+const Sidebar: React.FC = () => {
   const { isSidebarCollapsed } = useLayout();
 
   return (
