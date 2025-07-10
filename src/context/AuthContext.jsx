@@ -1,10 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import supabase from '../utils/supabaseClient';
 import { REDIRECT_URLS } from '../config/environment';
 
+// Types for better type safety (consider migrating to TypeScript)
+const LoadingStates = {
+  IDLE: 'idle',
+  AUTHENTICATING: 'authenticating',
+  LOADING_PROFILE: 'loading_profile',
+  CREATING_PROFILE: 'creating_profile',
+  SIGNING_OUT: 'signing_out'
+};
+
 const AuthContext = createContext();
 
-// Hook to use auth context
+/**
+ * Custom hook to access authentication context
+ * @returns {Object} Authentication context value
+ * @throws {Error} When used outside AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -13,129 +26,317 @@ export const useAuth = () => {
   return context;
 };
 
-// Auth Provider component
-export const AuthProvider = ({ children }) => {
+/**
+ * Authentication Provider Component
+ * Manages user authentication state and provides auth methods
+ */
+export const AuthProvider = ({ children, onError = null }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingState, setLoadingState] = useState(LoadingStates.IDLE);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
+  // Computed loading states for better UX
+  const loading = useMemo(() => ({
+    any: loadingState !== LoadingStates.IDLE,
+    authenticating: loadingState === LoadingStates.AUTHENTICATING,
+    profile: loadingState === LoadingStates.LOADING_PROFILE,
+    creatingProfile: loadingState === LoadingStates.CREATING_PROFILE,
+    signingOut: loadingState === LoadingStates.SIGNING_OUT
+  }), [loadingState]);
+
+  /**
+   * Centralized error handler
+   */
+  const handleError = useCallback((error, context = '') => {
+    const errorMessage = error?.message || 'Unknown error occurred';
+    const fullError = { message: errorMessage, context, timestamp: new Date().toISOString() };
+    
+    // Only log in development
+    if (import.meta.env.MODE === 'development') {
+      console.error(`[AuthContext${context ? ` - ${context}` : ''}]:`, error);
+    }
+    
+    setError(fullError);
+    onError?.(fullError);
+    return fullError;
+  }, [onError]);
+
+  /**
+   * Clear error state
+   */
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  /**
+   * Validate user input data
+   */
+  const validateUserData = useCallback((userData) => {
+    const errors = [];
+    
+    if (!userData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+      errors.push('Valid email is required');
+    }
+    
+    if (userData.password && userData.password.length < 6) {
+      errors.push('Password must be at least 6 characters');
+    }
+    
+    return errors;
+  }, []);
+
+  /**
+   * Get profile category from job title
+   */
+  const getProfileFromJobTitle = useCallback((jobTitle) => {
+    if (!jobTitle) return null;
+    
+    const titleLower = jobTitle.toLowerCase();
+    const profileMap = {
+      'assistente': 'assistant',
+      'auxiliar': 'auxiliary',
+      'técnico': 'technician',
+      'tecnico': 'technician',
+      'analista': 'analyst'
+    };
+    
+    for (const [key, value] of Object.entries(profileMap)) {
+      if (titleLower.includes(key)) return value;
+    }
+    
+    return null;
+  }, []);
+
+  /**
+   * Create user profile with retry logic
+   */
+  const createUserProfile = useCallback(async (profileData, maxAttempts = 3) => {
+    let attempt = 0;
+    let lastError = null;
+
+    while (attempt < maxAttempts) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          // Get user profile data
-          const { data: profile } = await supabase
-            .from('user_profile')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          setCurrentUser({
-            ...session.user,
-            ...profile
-          });
+        const { error } = await supabase
+          .from('user_profile')
+          .insert([profileData]);
+        
+        if (!error) return { success: true };
+        
+        lastError = error;
+        
+        // Retry only for network/temporary errors
+        if (error.message?.match(/timeout|network|temporary|ECONN/gi)) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
         } else {
-          setCurrentUser(null);
+          break; // Non-recoverable error
+        }
+      } catch (err) {
+        lastError = err;
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+      attempt++;
+    }
+    
+    return { success: false, error: lastError };
+  }, []);
+
+  /**
+   * Fetch or create user profile
+   */
+  const ensureUserProfile = useCallback(async (user) => {
+    try {
+      setLoadingState(LoadingStates.LOADING_PROFILE);
+      
+      // Try to fetch existing profile
+      const { data: profile, error: fetchError } = await supabase
+        .from('user_profile')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profile && !fetchError) {
+        return { success: true, profile };
+      }
+
+      // Create profile if it doesn't exist
+      setLoadingState(LoadingStates.CREATING_PROFILE);
+      
+      const userMeta = user.user_metadata || {};
+      const profileData = {
+        id: user.id,
+        name: userMeta.name || userMeta.nome || user.email,
+        email: user.email,
+        employee_number: userMeta.employee_number || userMeta.matricula || '',
+        education: userMeta.education || userMeta.escolaridade || '',
+        functional_category: userMeta.functional_category || 
+                           getProfileFromJobTitle(userMeta.profile || '')
+      };
+
+      const createResult = await createUserProfile(profileData);
+      
+      if (!createResult.success) {
+        return { 
+          success: false, 
+          error: 'Failed to create user profile after multiple attempts' 
+        };
+      }
+
+      // Fetch the newly created profile
+      const { data: newProfile, error: newFetchError } = await supabase
+        .from('user_profile')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (newProfile && !newFetchError) {
+        return { success: true, profile: newProfile };
+      }
+
+      return { success: false, error: 'Profile created but could not be retrieved' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }, [createUserProfile, getProfileFromJobTitle]);
+
+  /**
+   * Update current user state with profile data
+   */
+  const updateUserState = useCallback(async (user) => {
+    if (!user) {
+      setCurrentUser(null);
+      return;
+    }
+
+    const profileResult = await ensureUserProfile(user);
+    
+    if (profileResult.success) {
+      setCurrentUser({
+        ...user,
+        ...profileResult.profile
+      });
+    } else {
+      handleError(new Error(profileResult.error), 'Profile Management');
+      setCurrentUser(null);
+      return false;
+    }
+    
+    return true;
+  }, [ensureUserProfile, handleError]);
+
+  /**
+   * Initialize authentication state
+   */
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        setLoadingState(LoadingStates.LOADING_PROFILE);
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          handleError(error, 'Session Initialization');
+          return;
+        }
+
+        if (mounted) {
+          if (session?.user) {
+            await updateUserState(session.user);
+          } else {
+            setCurrentUser(null);
+          }
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        if (mounted) {
+          handleError(error, 'Auth Initialization');
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoadingState(LoadingStates.IDLE);
+        }
       }
     };
 
-    getSession();
+    initializeAuth();
 
-    // Listen for auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          // Verifica se já existe perfil
-          let { data: profile, error: profileError } = await supabase
-            .from('user_profile')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          if (!profile && !profileError) {
-            const userMeta = session.user.user_metadata || {};
-            const profileData = {
-              id: session.user.id,
-              name: userMeta.nome || userMeta.name || session.user.email,
-              email: session.user.email,
-              employee_number: userMeta.matricula || '',
-              education: userMeta.escolaridade || '',
-              functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
-            };
-            const result = await tryCreateUserProfile(profileData);
-            if (result !== true) {
-              console.error('[PERFIL] Falha ao criar perfil automaticamente:', result, profileData);
-              alert('Erro ao criar seu perfil no banco de dados. O acesso será bloqueado. Tente novamente ou contate o suporte.');
-              setCurrentUser(null);
-              setLoading(false);
-              // Opcional: Redirecionar para tela de login ou página de erro
-              window.location.href = '/login';
+        if (!mounted) return;
+
+        try {
+          setLoadingState(LoadingStates.LOADING_PROFILE);
+          
+          if (session?.user) {
+            const success = await updateUserState(session.user);
+            if (!success && event === 'SIGNED_IN') {
+              // Handle profile creation failure
+              await supabase.auth.signOut();
               return;
             }
-            // Após criar, buscar novamente
-            ({ data: profile } = await supabase
-              .from('user_profile')
-              .select('*')
-              .eq('id', session.user.id)
-              .single());
-            if (!profile) {
-              console.error('[PERFIL] Perfil ainda não encontrado após criação:', profileData);
-              alert('Seu perfil não foi encontrado após a criação. O acesso será bloqueado.');
-              setCurrentUser(null);
-              setLoading(false);
-              window.location.href = '/login';
-              return;
-            }
+          } else {
+            setCurrentUser(null);
           }
-          setCurrentUser({
-            ...session.user,
-            ...profile
-          });
-        } else {
-          setCurrentUser(null);
+        } catch (error) {
+          handleError(error, 'Auth State Change');
+        } finally {
+          setLoadingState(LoadingStates.IDLE);
         }
-        setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [updateUserState, handleError]);
 
-  // Sign in function
-  const login = async (email, password) => {
+  /**
+   * Sign in with email and password
+   */
+  const login = useCallback(async (email, password) => {
     try {
-      setLoading(true);
+      clearError();
+      
+      const validationErrors = validateUserData({ email, password });
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(', '));
+      }
+
+      setLoadingState(LoadingStates.AUTHENTICATING);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.trim(),
+        password
       });
 
       if (error) throw error;
-      return data.user;
+      
+      return { success: true, user: data.user };
     } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
+      const handledError = handleError(error, 'Email Login');
+      return { success: false, error: handledError };
     } finally {
-      setLoading(false);
+      setLoadingState(LoadingStates.IDLE);
     }
-  };
+  }, [validateUserData, handleError, clearError]);
 
-  // Google login function
-  const loginWithGoogle = async () => {
+  /**
+   * Sign in with Google OAuth
+   */
+  const loginWithGoogle = useCallback(async () => {
     try {
-      setLoading(true);
+      clearError();
+      setLoadingState(LoadingStates.AUTHENTICATING);
+      
       const redirectUrl = REDIRECT_URLS.dashboard();
+      
       if (!redirectUrl || redirectUrl.includes(' ')) {
-        console.error('❌ URL de redirecionamento inválida:', redirectUrl);
-        throw new Error('URL de redirecionamento inválida');
+        throw new Error('Invalid redirect URL configuration');
       }
-      // Inicia o login OAuth
-      let { data, error } = await supabase.auth.signInWithOAuth({
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -145,180 +346,157 @@ export const AuthProvider = ({ children }) => {
           }
         }
       });
+
       if (error) {
-        // Segunda tentativa sem queryParams extras
-        const { data: data2, error: error2 } = await supabase.auth.signInWithOAuth({
+        // Fallback without extra query params
+        const { data: fallbackData, error: fallbackError } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo: redirectUrl }
         });
-        if (error2) throw error2;
-        data = data2;
+        
+        if (fallbackError) throw fallbackError;
+        return { success: true, url: fallbackData.url };
       }
-      // Redireciona para o Google
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-      // Após o redirecionamento e retorno, garantir que o perfil existe
-      setTimeout(async () => {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const user = sessionData?.session?.user;
-        if (user) {
-          // Verifica se já existe perfil
-          const { data: profile, error: profileError } = await supabase
-            .from('user_profile')
-            .select('id')
-            .eq('id', user.id)
-            .single();
-          if (!profile && !profileError) {
-            const userMeta = user.user_metadata || {};
-            const profileData = {
-              id: user.id,
-              name: userMeta.nome || userMeta.name || user.email,
-              email: user.email,
-              employee_number: userMeta.matricula || '',
-              education: userMeta.escolaridade || '',
-              functional_category: userMeta.profile || getProfileFromCargo(userMeta.profile || '')
-            };
-            const result = await tryCreateUserProfile(profileData);
-            if (result !== true) {
-              alert('Erro ao criar seu perfil. Tente novamente ou contate o suporte.');
-              setCurrentUser(null);
-              setLoading(false);
-              return;
-            }
-          }
-        }
-      }, 3000); // Aguarda 3s para garantir que o usuário está autenticado
-      return data;
-    } catch (error) {
-      console.error('❌ Erro completo no login com Google:', error);
-      if (error.message?.includes('500') || error.message?.includes('unexpected_failure')) {
-        throw new Error('Erro temporário no servidor. Tente novamente em alguns minutos ou entre em contato com o suporte.');
-      }
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Register function
-  const register = async (userInfo) => {
+      return { success: true, url: data.url };
+    } catch (error) {
+      const handledError = handleError(error, 'Google Login');
+      return { success: false, error: handledError };
+    } finally {
+      setLoadingState(LoadingStates.IDLE);
+    }
+  }, [handleError, clearError]);
+
+  /**
+   * Register new user
+   */
+  const register = useCallback(async (userInfo) => {
     try {
-      setLoading(true);
+      clearError();
+      
+      const validationErrors = validateUserData(userInfo);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(', '));
+      }
+
+      setLoadingState(LoadingStates.AUTHENTICATING);
+      
       const { data, error } = await supabase.auth.signUp({
-        email: userInfo.email,
+        email: userInfo.email.trim(),
         password: userInfo.password,
         options: {
           data: {
-            name: userInfo.nome,
-            employee_number: userInfo.matricula,
-            functional_category: userInfo.profile || getProfileFromCargo(userInfo.profile)
+            name: userInfo.name || userInfo.nome,
+            employee_number: userInfo.employee_number || userInfo.matricula,
+            functional_category: userInfo.functional_category || 
+                               getProfileFromJobTitle(userInfo.profile || '')
           },
           emailRedirectTo: REDIRECT_URLS.login()
         }
       });
 
-      if (error) {
-        console.error('[REGISTER] Erro ao criar usuário no Auth:', error);
-        throw error;
-      }
-
-      // Não cria mais o perfil aqui! O perfil será criado após o login/autenticação.
-      // Apenas retorna o usuário criado no Auth.
-      return data.user;
+      if (error) throw error;
+      
+      return { success: true, user: data.user };
     } catch (error) {
-      console.error('[REGISTER] Erro geral no cadastro:', error);
-      throw error;
+      const handledError = handleError(error, 'Registration');
+      return { success: false, error: handledError };
     } finally {
-      setLoading(false);
+      setLoadingState(LoadingStates.IDLE);
     }
-  };
+  }, [validateUserData, getProfileFromJobTitle, handleError, clearError]);
 
-  // Sign out function
-  const logout = async () => {
+  /**
+   * Sign out current user
+   */
+  const logout = useCallback(async () => {
     try {
-      setLoading(true);
+      clearError();
+      setLoadingState(LoadingStates.SIGNING_OUT);
+      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
       setCurrentUser(null);
+      return { success: true };
     } catch (error) {
-      console.error('Error signing out:', error);
-      throw error;
+      const handledError = handleError(error, 'Logout');
+      return { success: false, error: handledError };
     } finally {
-      setLoading(false);
+      setLoadingState(LoadingStates.IDLE);
     }
-  };
+  }, [handleError, clearError]);
 
-  // Forgot password function
-  const forgotPassword = async (email) => {
+  /**
+   * Send password reset email
+   */
+  const forgotPassword = useCallback(async (email) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      clearError();
+      
+      const validationErrors = validateUserData({ email });
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join(', '));
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: REDIRECT_URLS.resetPassword()
       });
 
       if (error) throw error;
 
       return {
-        message: 'E-mail de recuperação enviado! Verifique sua caixa de entrada.'
+        success: true,
+        message: 'Password reset email sent! Please check your inbox.'
       };
     } catch (error) {
-      console.error('Error resetting password:', error);
-      throw error;
+      const handledError = handleError(error, 'Password Reset');
+      return { success: false, error: handledError };
     }
-  };
+  }, [validateUserData, handleError, clearError]);
 
-  const value = {
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    // State
     currentUser,
     loading,
+    error,
+    
+    // Actions
     login,
     loginWithGoogle,
     register,
     logout,
-    forgotPassword
-  };
+    forgotPassword,
+    clearError,
+    
+    // Utilities
+    isAuthenticated: !!currentUser,
+    userProfile: currentUser ? {
+      id: currentUser.id,
+      name: currentUser.name,
+      email: currentUser.email,
+      employeeNumber: currentUser.employee_number,
+      education: currentUser.education,
+      functionalCategory: currentUser.functional_category
+    } : null
+  }), [
+    currentUser,
+    loading,
+    error,
+    login,
+    loginWithGoogle,
+    register,
+    logout,
+    forgotPassword,
+    clearError
+  ]);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Função utilitária para mapear cargo para profile
-function getProfileFromCargo(cargo) {
-  if (!cargo) return null;
-  const cargoLower = cargo.toLowerCase();
-  if (cargoLower.includes('assistente')) return 'assistente';
-  if (cargoLower.includes('auxiliar')) return 'auxiliar';
-  if (cargoLower.includes('técnico') || cargoLower.includes('tecnico')) return 'tecnico';
-  if (cargoLower.includes('analista')) return 'analista';
-  // Adicione outros conforme necessário
-  return null;
-}
-
-// Função auxiliar para tentativas automáticas
-async function tryCreateUserProfile(profileData, maxAttempts = 3) {
-  let attempt = 0;
-  let lastError = null;
-  while (attempt < maxAttempts) {
-    try {
-      const { error } = await supabase.from('user_profile').insert([profileData]);
-      if (!error) return true;
-      lastError = error;
-      // Simula log centralizado (ex: Sentry)
-      console.error('[SENTRY] Erro ao criar perfil (tentativa ' + (attempt+1) + '):', error, profileData);
-      // Se for erro de rede ou temporário, tenta novamente
-      if (error.message && error.message.match(/timeout|network|temporário|temporary|ECONN/gi)) {
-        await new Promise(res => setTimeout(res, 1000 * (attempt + 1)));
-      } else {
-        break; // Erro não recuperável
-      }
-    } catch (err) {
-      lastError = err;
-      console.error('[SENTRY] Exceção ao criar perfil (tentativa ' + (attempt+1) + '):', err, profileData);
-      await new Promise(res => setTimeout(res, 1000 * (attempt + 1)));
-    }
-    attempt++;
-  }
-  return lastError;
-}
+export default AuthProvider;
