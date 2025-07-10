@@ -2,21 +2,24 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { competencyItems as defaultCompetencyItems } from '../data/competencyItems';
 
-export interface CompetencyItem {
+// Ajustar interface Competency para refletir o banco
+export interface Competency {
   id: string;
   category: string;
-  description: string;
-  value: number;
-  maxQuantity?: number;
-  unit?: string;
+  title: string;
+  type: string;
+  points_per_unit: number;
+  max_points: number;
+  unit: string;
+  validation_rules?: any;
 }
 
 interface CompetencyContextType {
-  competencyItems: CompetencyItem[];
+  competencyItems: Competency[];
   loading: boolean;
   error: string | null;
-  getCompetencyById: (id: string) => CompetencyItem | undefined;
-  getCompetenciesByCategory: (category: string) => CompetencyItem[];
+  getCompetencyById: (id: string) => Competency | undefined;
+  getCompetenciesByCategory: (category: string) => Competency[];
   getAllCategories: () => string[];
 }
 
@@ -35,7 +38,7 @@ interface CompetencyProviderProps {
 }
 
 export const CompetencyProvider: React.FC<CompetencyProviderProps> = ({ children }) => {
-  const [competencyItems, setCompetencyItems] = useState<CompetencyItem[]>([]);
+  const [competencyItems, setCompetencyItems] = useState<Competency[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,11 +61,11 @@ export const CompetencyProvider: React.FC<CompetencyProviderProps> = ({ children
     }
   };
 
-  const getCompetencyById = (id: string): CompetencyItem | undefined => {
+  const getCompetencyById = (id: string): Competency | undefined => {
     return competencyItems.find(item => item.id === id);
   };
 
-  const getCompetenciesByCategory = (category: string): CompetencyItem[] => {
+  const getCompetenciesByCategory = (category: string): Competency[] => {
     return competencyItems.filter(item => item.category === category);
   };
 

@@ -117,7 +117,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
             <option value="">Selecione uma competência</option>
             {competencyItems?.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.id} - {item.description} ({item.value} pontos)
+                {item.id} - {item.title} ({item.points_per_unit} pontos)
               </option>
             ))}
           </select>

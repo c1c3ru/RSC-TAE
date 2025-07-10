@@ -152,3 +152,4 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }) => {
 };
 
 export default ActivityList;
+ 

@@ -6,9 +6,13 @@ import { supabase } from '../utils/supabaseClient';
 interface UserProfile {
   id: string;
   email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  updated_at: string | null;
+  name: string | null;
+  employee_number: string | null;
+  job: string | null;
+  functional_category: string | null;
+  date_singin: string | null;
+  education: string | null;
+  updated_at?: string | null;
 }
 
 const ProfilePage: React.FC = () => {
@@ -18,7 +22,7 @@ const ProfilePage: React.FC = () => {
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
+  const [name, setName] = useState<string>('');
 
   useEffect(() => {
     if (currentUser) {
@@ -45,14 +49,18 @@ const ProfilePage: React.FC = () => {
 
       if (data) {
         setProfile(data);
-        setFullName(data.full_name || '');
+        setName(data.name || '');
       } else {
         // Create profile if it doesn't exist
         const newProfile: Partial<UserProfile> = {
           id: currentUser.id,
           email: currentUser.email || '',
-          full_name: null,
-          avatar_url: null,
+          name: null,
+          employee_number: null,
+          job: null,
+          functional_category: null,
+          date_singin: null,
+          education: null
         };
 
         const { data: createdProfile, error: createError } = await supabase
@@ -64,7 +72,7 @@ const ProfilePage: React.FC = () => {
         if (createError) throw createError;
 
         setProfile(createdProfile);
-        setFullName(createdProfile.full_name || '');
+        setName(createdProfile.name || '');
       }
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -87,7 +95,7 @@ const ProfilePage: React.FC = () => {
       const { error } = await supabase
         .from('user_profile')
         .update({
-          full_name: fullName.trim() || null,
+          name: name.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentUser.id);
@@ -96,7 +104,7 @@ const ProfilePage: React.FC = () => {
 
       setProfile(prev => prev ? {
         ...prev,
-        full_name: fullName.trim() || null,
+        name: name.trim() || null,
         updated_at: new Date().toISOString(),
       } : null);
 
@@ -182,14 +190,14 @@ const ProfilePage: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                   Nome Completo
                 </label>
                 <input
                   type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Digite seu nome completo"
                 />

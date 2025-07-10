@@ -11,9 +11,9 @@ export interface Activity {
   data_fim: string;
   date_awarded?: string;
   data_atualizacao?: string;
-  description?: string;
 }
 
+// Ajustar interfaces e funções para refletir o schema do banco
 export interface CreateActivityData {
   user_id: string;
   competence_id: string;
@@ -21,7 +21,6 @@ export interface CreateActivityData {
   value: number;
   data_inicio: string;
   data_fim: string;
-  description?: string;
 }
 
 export const createActivity = async (activityData: CreateActivityData): Promise<Activity> => {
@@ -37,7 +36,6 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
         data_fim: activityData.data_fim,
         date_awarded: new Date().toISOString(),
         data_atualizacao: new Date().toISOString(),
-        description: activityData.description || null,
       }])
       .select()
       .single();
