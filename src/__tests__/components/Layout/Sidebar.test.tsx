@@ -1,6 +1,5 @@
 /* eslint-env node, jest */
 import '@testing-library/jest-dom';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Sidebar from '@/components/Layout/Sidebar';
 import { AuthProvider } from '@/context/AuthContext';
