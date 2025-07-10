@@ -165,6 +165,22 @@ const LoginPage: React.FC<LoginPageProps> = () => {
             </button>
           </div>
 
+          {/* Links de recuperação e cadastro */}
+          <div className="flex justify-between mt-2">
+            <a
+              href="/reset-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Esqueci minha senha
+            </a>
+            <a
+              href="/register"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Criar conta
+            </a>
+          </div>
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300" />

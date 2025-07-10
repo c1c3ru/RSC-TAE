@@ -66,7 +66,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
         value: selectedCompetency.value,
         data_inicio: formData.dataInicio,
         data_fim: formData.dataFim,
-        description: formData.description
+        description: formData.description ?? ''
       };
 
       await createActivity(activityData);
