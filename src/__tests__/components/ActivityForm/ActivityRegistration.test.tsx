@@ -43,11 +43,11 @@ jest.mock('../../../services/activityService', () => {
     __esModule: true,
     getCompetences: jest.fn().mockResolvedValue([
       {
-        id: 'COMP1',
+        id: 'CAT1-01',
         category: 'Administrativas',
-        title: 'Competência Teste',
+        title: 'Desenvolvimento de material didático ou instrucional',
         type: 'EVENTS',
-        points_per_unit: 1
+        points_per_unit: 1.2
       }
     ]),
     getUserActivities: jest.fn().mockResolvedValue([
@@ -106,11 +106,22 @@ describe('ActivityRegistration', () => {
 
     // Esperar o select de atividade aparecer
     const atividadeSelect = await screen.findByRole('combobox');
-    fireEvent.change(atividadeSelect, { target: { value: 'COMP1' } });
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: /CAT1-01/i })).toBeInTheDocument();
+    });
+    fireEvent.change(atividadeSelect, { target: { value: 'CAT1-01' } });
 
     // Preencher campo de quantidade
     const quantidadeInput = await screen.findByLabelText(/Quantidade/i);
     fireEvent.change(quantidadeInput, { target: { value: '2' } });
+
+    // Preencher campo de data de início
+    const dataInicioInput = await screen.findByLabelText(/Data de Início/i);
+    fireEvent.change(dataInicioInput, { target: { value: '2024-01-01' } });
+
+    // Preencher campo de data de fim
+    const dataFimInput = await screen.findByLabelText(/Data de Fim/i);
+    fireEvent.change(dataFimInput, { target: { value: '2024-01-02' } });
 
     // Simular envio do formulário
     const submitButton = screen.getByRole('button', { name: /Cadastrar Atividade/i });

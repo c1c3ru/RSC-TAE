@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { useCompetency } from '../context/CompetencyContext';
+import { useState, useEffect } from 'react';import { useCompetency } from '../context/CompetencyContext';
 import CategoryDistribution from '../components/Dashboard/CategoryDistribution';
 import ScoreCard from '../components/Dashboard/ScoreCard';
 import ActivityList from '../components/ActivityForm/ActivityList';
