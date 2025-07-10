@@ -59,7 +59,7 @@ jest.mock('../../../services/activityService', () => {
         status: 'pendente'
       }
     ]),
-    addActivity: jest.fn().mockResolvedValue({ success: true })
+    createActivity: jest.fn().mockResolvedValue({ success: true })
   };
 });
 
@@ -118,7 +118,7 @@ describe('ActivityRegistration', () => {
 
     // Verificar se a função de adicionar atividade foi chamada
     await waitFor(() => {
-      expect(activityService.addActivity).toHaveBeenCalled();
+      expect(activityService.createActivity).toHaveBeenCalled();
     });
   });
 }); 
