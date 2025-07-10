@@ -1,4 +1,4 @@
-import * as activityService from './activityService';
+import * as activityService from '../activityService';
 
 describe('activityService', () => {
   it('deve buscar atividades do usuário (mock)', async () => {

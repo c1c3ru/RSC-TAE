@@ -8,10 +8,6 @@ interface DocumentUploaderProps {
   validationRules?: ValidationRules;
 }
 
-interface FileWithPreview extends File {
-  preview?: string;
-}
-
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.jpg,.jpeg,.png';

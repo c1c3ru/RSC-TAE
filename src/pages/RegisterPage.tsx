@@ -15,10 +15,8 @@ const RegisterPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [matricula, setMatricula] = useState('');
-  const [cargo, setCargo] = useState('');
   const [escolaridade, setEscolaridade] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [functionalCategory, setFunctionalCategory] = useState('');
 
   const validateEmail = (email: string): boolean => {
     if (!email) return false;
@@ -57,12 +55,10 @@ const RegisterPage: React.FC = () => {
       await register(email, password, {
         name,
         matricula,
-        cargo,
-        escolaridade,
-        functionalCategory
+        escolaridade
       });
       setSuccess(SUCCESS_MESSAGES.cadastroRealizado);
-      setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setMatricula(''); setCargo(''); setEscolaridade(''); setFunctionalCategory('');
+      setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setMatricula(''); setEscolaridade('');
     } catch (err: any) {
       setError(err.message || ERROR_MESSAGES.erroDesconhecido);
     } finally {
@@ -87,19 +83,12 @@ const RegisterPage: React.FC = () => {
           <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <input type="password" placeholder="Confirmar Senha" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 border rounded" required />
           <input type="text" placeholder="Matrícula" value={matricula} onChange={e => setMatricula(e.target.value)} className="w-full px-3 py-2 border rounded" required />
-          <select value={cargo} onChange={e => setCargo(e.target.value)} className="w-full px-3 py-2 border rounded" required>
-            <option value="">Selecione o cargo</option>
-            {CARGOS_TAE.map(c => (
-              <option key={c.codigo} value={c.nome}>{c.nome}</option>
-            ))}
-          </select>
           <select value={escolaridade} onChange={e => setEscolaridade(e.target.value)} className="w-full px-3 py-2 border rounded" required>
             <option value="">Selecione a escolaridade</option>
             {ESCOLARIDADES.map((esc, idx) => (
               <option key={idx} value={esc}>{esc}</option>
             ))}
           </select>
-          <input type="text" placeholder="Categoria Funcional (opcional)" value={functionalCategory} onChange={e => setFunctionalCategory(e.target.value)} className="w-full px-3 py-2 border rounded" />
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">{loading ? 'Cadastrando...' : 'Cadastrar'}</button>
         </form>
         {success && <div className="mt-4 text-green-600 text-center">{success}</div>}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { AuthProvider, useAuth } from './AuthContext';
+import { AuthProvider, useAuth } from '../../context/AuthContext';
 import '@testing-library/jest-dom';
 
 function TestComponent() {
