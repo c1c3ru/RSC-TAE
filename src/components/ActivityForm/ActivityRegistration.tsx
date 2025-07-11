@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useCompetency, type Competency } from '../../context/CompetencyContext';
 import { useAuth } from '../../context/AuthContext';
-import { createActivity } from '../../services/activityService';
+import { createActivity, createActivityDirect } from '../../services/activityService';
 import { ACTIVITY_TEXTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants/texts';
 import { getCategoryName } from '../../data/competencyItems';
 
@@ -86,7 +86,14 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
         description: formData.description ?? ''
       };
 
-      await createActivity(activityData);
+      try {
+        // Tentar criar atividade normalmente primeiro
+        await createActivity(activityData);
+      } catch (error) {
+        console.log('🔍 Debug - Falha na criação normal, tentando criação direta...');
+        // Se falhar, tentar criação direta
+        await createActivityDirect(activityData);
+      }
       
       // Reset form
       setFormData({
@@ -101,6 +108,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
       setSuccess(SUCCESS_MESSAGES.atividadeCadastrada);
       onSuccess?.();
     } catch (error) {
+      console.error('🔍 Debug - Erro final na criação de atividade:', error);
       onError?.(ERROR_MESSAGES.erroDesconhecido);
     } finally {
       setLoading(false);

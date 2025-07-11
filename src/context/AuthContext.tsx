@@ -45,6 +45,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
     return () => subscription.unsubscribe();
   }, []);
 
+  const ensureUserProfileExists = async (userId: string): Promise<void> => {
+    try {
+      console.log('🔍 Debug - Verificando se usuário tem perfil:', userId);
+      
+      // Verificar se o perfil existe
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('user_profile')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (checkError) {
+        console.error('🔍 Debug - Erro ao verificar perfil:', checkError);
+      }
+      
+      if (!existingProfile) {
+        console.log('🔍 Debug - Usuário não tem perfil, criando...');
+        
+        // Tentar criar o perfil
+        const { error: createError } = await supabase
+          .from('user_profile')
+          .upsert([
+            {
+              id: userId,
+              email: null,
+              name: null,
+              employee_number: null,
+              job: null,
+              functional_category: null,
+              date_singin: new Date().toISOString(),
+              education: null
+            }
+          ], {
+            onConflict: 'id',
+            ignoreDuplicates: true
+          });
+        
+        if (createError) {
+          console.error('🔍 Debug - Erro ao criar perfil para usuário existente:', createError);
+        } else {
+          console.log('🔍 Debug - Perfil criado para usuário existente');
+        }
+      } else {
+        console.log('🔍 Debug - Usuário já tem perfil');
+      }
+    } catch (error) {
+      console.error('🔍 Debug - Erro ao verificar/criar perfil:', error);
+    }
+  };
+
   const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
     try {
@@ -83,6 +133,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
           // Para outros erros, usar a mensagem original mas com contexto
           throw new Error(`Erro no login: ${error.message}`);
         }
+      }
+      
+      // Se o login foi bem-sucedido, verificar se o usuário tem perfil
+      if (data.user) {
+        await ensureUserProfileExists(data.user.id);
       }
       
       console.log('🔍 Debug - Login bem-sucedido');
@@ -181,56 +236,107 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   const register = async (email: string, password: string, profileData?: any): Promise<void> => {
     setLoading(true);
     try {
+      console.log('🔍 Debug - Iniciando registro de usuário:', email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error('🔍 Debug - Erro no signUp:', error);
+        throw error;
+      }
+      
+      console.log('🔍 Debug - Usuário criado no auth:', data.user?.id);
       
       // Criar perfil do usuário na tabela user_profile
       if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profile')
-          .insert([
-            {
-              id: data.user.id,
-              email: data.user.email,
-              name: profileData?.nome || profileData?.name || null,
-              employee_number: profileData?.matricula || null,
-              job: profileData?.cargo || null,
-              functional_category: profileData?.functionalCategory || null,
-              date_singin: new Date().toISOString(),
-              education: profileData?.escolaridade || null
-            }
-          ]);
+        console.log('🔍 Debug - Tentando criar perfil do usuário...');
         
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          // Tentar criar um perfil básico se falhar
-          const { error: basicProfileError } = await supabase
+        try {
+          const { error: profileError } = await supabase
             .from('user_profile')
-            .insert([
+            .upsert([
               {
                 id: data.user.id,
                 email: data.user.email,
-                name: null,
-                employee_number: null,
-                job: null,
-                functional_category: null,
+                name: profileData?.nome || profileData?.name || null,
+                employee_number: profileData?.matricula || null,
+                job: profileData?.cargo || null,
+                functional_category: profileData?.functionalCategory || null,
                 date_singin: new Date().toISOString(),
-                education: null
+                education: profileData?.escolaridade || null
               }
-            ]);
+            ], {
+              onConflict: 'id',
+              ignoreDuplicates: true
+            });
           
-          if (basicProfileError) {
-            console.error('Error creating basic user profile:', basicProfileError);
-            // Não vamos falhar o cadastro se o perfil não for criado
-            // O usuário pode criar o perfil depois
+          if (profileError) {
+            console.error('🔍 Debug - Erro ao criar perfil completo:', profileError);
+            
+            // Tentar criar um perfil básico se falhar
+            console.log('🔍 Debug - Tentando criar perfil básico...');
+            const { error: basicProfileError } = await supabase
+              .from('user_profile')
+              .upsert([
+                {
+                  id: data.user.id,
+                  email: data.user.email,
+                  name: null,
+                  employee_number: null,
+                  job: null,
+                  functional_category: null,
+                  date_singin: new Date().toISOString(),
+                  education: null
+                }
+              ], {
+                onConflict: 'id',
+                ignoreDuplicates: true
+              });
+            
+            if (basicProfileError) {
+              console.error('🔍 Debug - Erro ao criar perfil básico:', basicProfileError);
+              
+              // Tentar uma abordagem mais simples
+              console.log('🔍 Debug - Tentando inserção simples...');
+              const { error: simpleError } = await supabase
+                .from('user_profile')
+                .insert([
+                  {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: null,
+                    employee_number: null,
+                    job: null,
+                    functional_category: null,
+                    date_singin: new Date().toISOString(),
+                    education: null
+                  }
+                ]);
+              
+              if (simpleError) {
+                console.error('🔍 Debug - Erro na inserção simples:', simpleError);
+                console.log('🔍 Debug - Perfil não foi criado, mas o usuário foi registrado');
+              } else {
+                console.log('🔍 Debug - Perfil criado com inserção simples');
+              }
+            } else {
+              console.log('🔍 Debug - Perfil básico criado com sucesso');
+            }
+          } else {
+            console.log('🔍 Debug - Perfil completo criado com sucesso');
           }
+        } catch (profileException) {
+          console.error('🔍 Debug - Exceção ao criar perfil:', profileException);
+          console.log('🔍 Debug - Usuário registrado, mas perfil não foi criado');
         }
       }
+      
+      console.log('🔍 Debug - Registro concluído');
     } catch (error) {
-      console.error('Error registering:', error);
+      console.error('🔍 Debug - Erro no registro:', error);
       throw error;
     } finally {
       setLoading(false);

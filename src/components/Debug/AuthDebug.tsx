@@ -45,6 +45,41 @@ const AuthDebug: React.FC = () => {
       info += `❌ Erro ao testar conexão: ${err}\n`;
     }
     
+    // Testar se o email existe no sistema
+    info += '\n=== TESTE DE USUÁRIO ===\n';
+    const testEmail = 'cicero.silva@ifce.edu.br';
+    info += `Testando email: ${testEmail}\n`;
+    
+    try {
+      // Tentar buscar usuário por email (isso pode não funcionar devido a permissões)
+      const { data: users, error } = await supabase
+        .from('auth.users')
+        .select('id, email, created_at')
+        .eq('email', testEmail)
+        .limit(1);
+      
+      if (error) {
+        info += `❌ Erro ao verificar usuário: ${error.message}\n`;
+        info += `💡 Isso é normal - a tabela auth.users pode não estar acessível\n`;
+      } else {
+        if (users && users.length > 0) {
+          info += `✅ Usuário encontrado: ${users[0].email}\n`;
+          info += `ID: ${users[0].id}\n`;
+          info += `Criado em: ${users[0].created_at}\n`;
+        } else {
+          info += `❌ Usuário não encontrado no sistema\n`;
+          info += `💡 Sugestão: Criar novo usuário com este email\n`;
+        }
+      }
+    } catch (err) {
+      info += `❌ Erro ao verificar usuário: ${err}\n`;
+    }
+    
+    // Verificar configurações de autenticação
+    info += '\n=== CONFIGURAÇÕES ===\n';
+    info += `Email deve ser .edu: ${testEmail.includes('.edu') ? '✅' : '❌'}\n`;
+    info += `Formato de email válido: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail) ? '✅' : '❌'}\n`;
+    
     setDebugInfo(info);
   };
 

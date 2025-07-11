@@ -26,63 +26,84 @@ export interface CreateActivityData {
 // Função para verificar e criar perfil do usuário se necessário
 const ensureUserProfile = async (userId: string): Promise<void> => {
   try {
-    // Verificar se o perfil já existe usando uma consulta mais simples
-    const { data: existingProfile, error: checkError } = await supabase
+    console.log('🔍 Debug - Verificando perfil do usuário:', userId);
+    
+    // Tentar criar o perfil diretamente, ignorando se já existe
+    const { error: createError } = await supabase
       .from('user_profile')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle();
+      .upsert([
+        {
+          id: userId,
+          email: null,
+          name: null,
+          employee_number: null,
+          job: null,
+          functional_category: null,
+          date_singin: new Date().toISOString(),
+          education: null
+        }
+      ], {
+        onConflict: 'id',
+        ignoreDuplicates: true
+      });
 
-    if (checkError) {
-      console.error('Error checking user profile:', checkError);
-      // Se o erro for 406, pode ser um problema de permissão, vamos tentar criar o perfil
-      if (checkError.code === '406') {
-        console.log('Attempting to create user profile due to 406 error');
-      } else {
-        throw new Error('Erro ao verificar perfil do usuário');
-      }
-    }
-
-    // Se o perfil não existe, criar um perfil básico
-    if (!existingProfile) {
-      const { error: createError } = await supabase
-        .from('user_profile')
-        .insert([
-          {
-            id: userId,
-            email: '', // Será atualizado quando o usuário fizer login
-            name: null,
-            employee_number: null,
-            job: null,
-            functional_category: null,
-            date_singin: new Date().toISOString(),
-            education: null
+    if (createError) {
+      console.error('Error creating/updating user profile:', createError);
+      
+      // Se o erro for de permissão, vamos tentar uma abordagem diferente
+      if (createError.code === '42501' || createError.code === '401' || createError.code === '409') {
+        console.log('Permission denied or conflict, trying alternative approach...');
+        
+        // Tentar inserir com ignoreDuplicates
+        const { error: insertError } = await supabase
+          .from('user_profile')
+          .insert([
+            {
+              id: userId,
+              email: null,
+              name: null,
+              employee_number: null,
+              job: null,
+              functional_category: null,
+              date_singin: new Date().toISOString(),
+              education: null
+            }
+          ])
+          .select()
+          .maybeSingle();
+        
+        if (insertError) {
+          console.error('Error inserting user profile:', insertError);
+          
+          // Se ainda falhar, vamos tentar uma abordagem mais simples
+          if (insertError.code === '23505') {
+            console.log('User profile already exists, continuing...');
+            return;
           }
-        ]);
-
-      if (createError) {
-        console.error('Error creating user profile:', createError);
-        // Se o erro for de chave duplicada, o perfil já existe
-        if (createError.code === '23505') {
-          console.log('User profile already exists, continuing...');
+          
+          console.log('Continuing without user profile creation...');
           return;
         }
-        throw new Error('Erro ao criar perfil do usuário');
       }
+    } else {
+      console.log('🔍 Debug - Perfil do usuário criado/atualizado com sucesso');
     }
   } catch (error) {
     console.error('Error ensuring user profile:', error);
     // Não vamos falhar completamente se houver erro no perfil
-    // O usuário pode continuar usando o sistema
     console.log('Continuing without user profile creation...');
   }
 };
 
 export const createActivity = async (activityData: CreateActivityData): Promise<Activity> => {
   try {
+    console.log('🔍 Debug - Criando atividade para usuário:', activityData.user_id);
+    
     // Garantir que o perfil do usuário existe antes de criar a atividade
     await ensureUserProfile(activityData.user_id);
 
+    console.log('🔍 Debug - Criando atividade no banco...');
+    
     const { data, error } = await supabase
       .from('user_rsc')
       .insert([{
@@ -100,9 +121,63 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
 
     if (error) {
       console.error('Supabase error:', error);
+      
+      // Se o erro for de chave estrangeira, tentar criar o perfil primeiro
+      if (error.code === '23503') {
+        console.log('🔍 Debug - Erro de chave estrangeira, tentando criar perfil...');
+        
+        const { error: profileCreateError } = await supabase
+          .from('user_profile')
+          .upsert([
+            {
+              id: activityData.user_id,
+              email: null,
+              name: null,
+              employee_number: null,
+              job: null,
+              functional_category: null,
+              date_singin: new Date().toISOString(),
+              education: null
+            }
+          ], {
+            onConflict: 'id',
+            ignoreDuplicates: true
+          });
+        
+        if (profileCreateError) {
+          console.error('Error creating profile for foreign key:', profileCreateError);
+        } else {
+          console.log('🔍 Debug - Perfil criado, tentando atividade novamente...');
+          
+          // Tentar criar a atividade novamente
+          const { data: retryData, error: retryError } = await supabase
+            .from('user_rsc')
+            .insert([{
+              user_id: activityData.user_id,
+              competence_id: activityData.competence_id,
+              quantity: activityData.quantity,
+              value: activityData.value,
+              data_inicio: activityData.data_inicio,
+              data_fim: activityData.data_fim,
+              date_awarded: new Date().toISOString(),
+              data_atualizacao: new Date().toISOString(),
+            }])
+            .select()
+            .single();
+          
+          if (retryError) {
+            console.error('Supabase error on retry:', retryError);
+            throw new Error(`Erro ao criar atividade: ${retryError.message}`);
+          }
+          
+          return retryData;
+        }
+      }
+      
       throw new Error(`Erro ao criar atividade: ${error.message}`);
     }
 
+    console.log('🔍 Debug - Atividade criada com sucesso');
     return data;
   } catch (error) {
     console.error('Error creating activity:', error);
@@ -110,6 +185,41 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
       throw error;
     }
     throw new Error('Erro desconhecido ao criar atividade');
+  }
+};
+
+export const createActivityDirect = async (activityData: CreateActivityData): Promise<Activity> => {
+  try {
+    console.log('🔍 Debug - Tentando criar atividade diretamente...');
+    
+    const { data, error } = await supabase
+      .from('user_rsc')
+      .insert([{
+        user_id: activityData.user_id,
+        competence_id: activityData.competence_id,
+        quantity: activityData.quantity,
+        value: activityData.value,
+        data_inicio: activityData.data_inicio,
+        data_fim: activityData.data_fim,
+        date_awarded: new Date().toISOString(),
+        data_atualizacao: new Date().toISOString(),
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Direct activity creation error:', error);
+      throw new Error(`Erro ao criar atividade diretamente: ${error.message}`);
+    }
+
+    console.log('🔍 Debug - Atividade criada diretamente com sucesso');
+    return data;
+  } catch (error) {
+    console.error('Error creating activity directly:', error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Erro desconhecido ao criar atividade diretamente');
   }
 };
 
