@@ -37,7 +37,6 @@ const DashboardPage = () => {
         try {
           setLoadingStats(true);
           const stats = await getUserActivityStats(currentUser.id);
-          console.log('User Stats loaded:', stats); // Debug log
           setUserStats(stats);
         } catch (error) {
           console.error('Error loading user stats:', error);
@@ -51,7 +50,7 @@ const DashboardPage = () => {
   }, [currentUser]);
 
   // Calcular número de categorias únicas
-  const uniqueCategories = Object.keys(userStats.activitiesByCategory).length;
+  const uniqueCategories = Object.keys(userStats.activitiesByCategory || {}).length;
   
   // Calcular progresso geral baseado nos dados reais
   const calculateProgress = (): number => {

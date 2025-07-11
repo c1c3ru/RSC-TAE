@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
 
       // 2. Se não existe, cria um novo
       if (!existingProfile) {
-        console.log('Perfil não encontrado para o usuário, criando um novo...');
+        // console.log('Perfil não encontrado para o usuário, criando um novo...');
         const { error: createError } = await supabase
           .from('user_profile')
           .insert([
@@ -81,14 +81,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
           ]);
         
         if (createError) {
-          // Se o erro for de duplicidade (outro usuário com mesmo email), não é um erro fatal aqui.
-          if (createError.code === '23505') {
-             console.warn('Conflito de e-mail ao criar perfil. Outro usuário pode ter o mesmo e-mail.', createError.message);
-          } else {
+          // Se o erro for de duplicidade (outro usuário com mesmo email), ignore silenciosamente
+          if (createError.code !== '23505') {
              console.error('Erro CRÍTICO ao criar perfil básico:', createError);
           }
         } else {
-          console.log('Perfil básico criado com sucesso para o usuário:', user.id);
+          // console.log('Perfil básico criado com sucesso para o usuário:', user.id);
         }
       }
     } catch (error) {

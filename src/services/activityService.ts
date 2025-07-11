@@ -86,4 +86,47 @@ export const getUserActivities = async (userId: string): Promise<Activity[]> => 
     throw new Error('Erro desconhecido ao carregar atividades');
   }
 };
-// ... e assim por diante
+
+export const deleteActivity = async (id: number): Promise<void> => {
+  const { error } = await supabase
+    .from('user_rsc')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Erro ao deletar atividade:', error);
+    throw new Error(`Erro ao deletar atividade: ${error.message}`);
+  }
+};
+
+export const getUserActivityStats = async (userId: string) => {
+  // Busca todas as atividades do usuário
+  const { data, error } = await supabase
+    .from('user_rsc')
+    .select('*')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Erro ao buscar estatísticas de atividades:', error);
+    throw new Error(`Erro ao buscar estatísticas: ${error.message}`);
+  }
+
+  // Calcula estatísticas básicas
+  const totalActivities = data ? data.length : 0;
+  const totalPoints = data ? data.reduce((sum: number, activity: any) => sum + (activity.quantity * activity.value), 0) : 0;
+
+  // Calcula atividades por categoria
+  const activitiesByCategory: Record<string, number> = {};
+  if (data) {
+    data.forEach((activity: any) => {
+      const category = activity.competence_id || 'Desconhecida';
+      activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
+    });
+  }
+
+  return {
+    totalActivities,
+    totalPoints,
+    activitiesByCategory
+  };
+};

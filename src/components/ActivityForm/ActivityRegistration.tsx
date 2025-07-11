@@ -135,11 +135,11 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
               <button
                 key={category}
                 type="button"
-                className={`px-4 py-2 rounded shadow text-sm font-semibold border transition ${
-                  selectedCategory === category
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
-                }`}
+                className={`px-4 py-2 rounded-lg shadow-md text-sm font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 transform
+                  ${selectedCategory === category
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white border-blue-700 scale-105 shadow-lg animate-pulse'
+                    : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-100 hover:scale-105 hover:shadow-lg'}
+                `}
                 onClick={() => setSelectedCategory(category)}
               >
                 {getCategoryName(category)}
@@ -148,7 +148,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
             {selectedCategory && (
               <button
                 type="button"
-                className="ml-2 px-3 py-2 rounded bg-gray-200 text-gray-700 border border-gray-300 hover:bg-gray-300"
+                className="ml-2 px-3 py-2 rounded-lg bg-gray-200 text-gray-700 border border-gray-300 hover:bg-gray-300 transition-all duration-200 hover:scale-105 shadow focus:outline-none focus:ring-2 focus:ring-gray-400"
                 onClick={() => setSelectedCategory('')}
               >
                 Remover filtro
