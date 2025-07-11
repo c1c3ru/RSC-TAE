@@ -990,11 +990,11 @@ export const getAllCategories = (): string[] => {
 
 export const getCategoryName = (category: string): string => {
   const categoryNames: Record<string, string> = {
-    'CAT1': 'Atividades de Ensino',
-    'CAT2': 'Atividades de Pesquisa', 
-    'CAT3': 'Atividades de Extensão',
-    'CAT4': 'Atividades de Gestão e Representação',
-    'CAT5': 'Atividades de Capacitação e Qualificação',
+    'CAT1': 'Administrativas',
+    'CAT2': 'Experiência',
+    'CAT3': 'Formação Complementar',
+    'CAT4': 'Produção Científica',
+    'CAT5': 'Eventos',
     'CAT6': 'Atividades de Ensino',
     'FORM-EXC': 'Formação Excedente'
   };
