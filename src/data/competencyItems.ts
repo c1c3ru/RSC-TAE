@@ -998,7 +998,6 @@ export const getCategoryName = (category: string): string => {
     'CAT6': 'Atividades de Ensino',
     'FORM-EXC': 'Formação Excedente'
   };
-  
   return categoryNames[category] || category;
 };
 
