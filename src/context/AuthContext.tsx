@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -26,283 +25,121 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Get initial session
+    // Busca a sessão inicial ao carregar o app
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setCurrentUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
+    // Listener para mudanças no estado de autenticação
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
-      setCurrentUser(session?.user ?? null);
+      const user = session?.user;
+      setCurrentUser(user ?? null);
+      
+      // Se o usuário acabou de fazer login, garanta que o perfil exista
+      if (event === 'SIGNED_IN' && user) {
+        ensureUserProfileExists(user);
+      }
+      
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const ensureUserProfileExists = async (userId: string): Promise<void> => {
+  // Função centralizada para garantir a criação do perfil
+  const ensureUserProfileExists = async (user: User): Promise<void> => {
     try {
-      console.log('🔍 Debug - Verificando se usuário tem perfil:', userId);
-      
-      // Verificar se o perfil existe
+      // 1. Verifica se o perfil já existe
       const { data: existingProfile, error: checkError } = await supabase
         .from('user_profile')
         .select('id')
-        .eq('id', userId)
+        .eq('id', user.id)
         .maybeSingle();
-      
+
       if (checkError) {
-        console.error('🔍 Debug - Erro ao verificar perfil:', checkError);
-        return; // Não tentar criar se não conseguir verificar
+        console.error('Erro ao verificar perfil:', checkError);
+        return;
       }
-      
+
+      // 2. Se não existe, cria um novo
       if (!existingProfile) {
-        console.log('🔍 Debug - Usuário não tem perfil, criando perfil básico...');
-        
-        // Criar perfil básico para o usuário
+        console.log('Perfil não encontrado para o usuário, criando um novo...');
         const { error: createError } = await supabase
           .from('user_profile')
           .insert([
             {
-              id: userId,
-              email: currentUser?.email || null,
-              name: null,
-              employee_number: null,
-              job: null,
-              functional_category: null,
-              date_singin: new Date().toISOString(),
-              education: null
+              id: user.id,
+              email: user.email, // Usa o e-mail real do usuário
+              name: user.user_metadata?.name || user.email, // Usa o nome dos metadados ou o e-mail
+              // Outros campos podem ser nulos ou ter valores padrão
             }
           ]);
         
         if (createError) {
-          // Se for erro 409 (Conflict), o perfil já existe, então está tudo certo
-          if (createError.code === '409') {
-            console.log('🔍 Debug - Perfil já existia, prosseguindo normalmente.');
-            return;
-          }
-          console.error('🔍 Debug - Erro ao criar perfil básico:', createError);
-          
-          // Se falhar, tentar com upsert
-          const { error: upsertError } = await supabase
-            .from('user_profile')
-            .upsert([
-              {
-                id: userId,
-                email: currentUser?.email || null,
-                name: null,
-                employee_number: null,
-                job: null,
-                functional_category: null,
-                date_singin: new Date().toISOString(),
-                education: null
-              }
-            ], {
-              onConflict: 'id'
-            });
-          
-          if (upsertError) {
-            console.error('🔍 Debug - Erro ao criar perfil com upsert:', upsertError);
-            console.log('🔍 Debug - Perfil não foi criado. Usuário pode continuar usando o sistema.');
+          // Se o erro for de duplicidade (outro usuário com mesmo email), não é um erro fatal aqui.
+          if (createError.code === '23505') {
+             console.warn('Conflito de e-mail ao criar perfil. Outro usuário pode ter o mesmo e-mail.', createError.message);
           } else {
-            console.log('🔍 Debug - Perfil criado com upsert');
+             console.error('Erro CRÍTICO ao criar perfil básico:', createError);
           }
         } else {
-          console.log('🔍 Debug - Perfil básico criado com sucesso');
+          console.log('Perfil básico criado com sucesso para o usuário:', user.id);
         }
-      } else {
-        console.log('🔍 Debug - Usuário já tem perfil');
       }
     } catch (error) {
-      console.error('🔍 Debug - Erro ao verificar/criar perfil:', error);
+      console.error('Erro inesperado na função ensureUserProfileExists:', error);
     }
   };
 
   const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
-    try {
-      console.log('🔍 Debug - Tentando login com email:', email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      console.log('🔍 Debug - Resposta do Supabase:', { data, error });
-      
-      if (error) {
-        console.error('🔍 Debug - Erro detalhado:', error);
-        
-        // Tratar erros específicos com mensagens mais claras
-        if (error.message.includes('Email not confirmed')) {
-          throw new Error('Email não confirmado. Verifique sua caixa de entrada e confirme seu email antes de fazer login.');
-        } else if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid email or password')) {
-          throw new Error('Email ou senha incorretos. Verifique suas credenciais.');
-        } else if (error.message.includes('Too many requests')) {
-          throw new Error('Muitas tentativas de login. Aguarde alguns minutos antes de tentar novamente.');
-        } else if (error.message.includes('User not found')) {
-          throw new Error('Usuário não encontrado. Verifique se o email está correto.');
-        } else if (error.message.includes('Password should be at least')) {
-          throw new Error('Senha muito curta. A senha deve ter pelo menos 6 caracteres.');
-        } else if (error.message.includes('Unable to validate email address')) {
-          throw new Error('Email inválido. Verifique se o formato está correto.');
-        } else if (error.message.includes('Signup not allowed')) {
-          throw new Error('Cadastro não permitido. Entre em contato com o administrador.');
-        } else if (error.message.includes('User is disabled')) {
-          throw new Error('Usuário desabilitado. Entre em contato com o administrador.');
-        } else if (error.message.includes('Invalid email')) {
-          throw new Error('Formato de email inválido. Verifique se o email está correto.');
-        } else {
-          // Para outros erros, usar a mensagem original mas com contexto
-          throw new Error(`Erro no login: ${error.message}`);
-        }
-      }
-      
-      // Se o login foi bem-sucedido, verificar se o usuário tem perfil
-      if (data.user) {
-        console.log('🔍 Debug - Login bem-sucedido, verificando perfil...');
-        await ensureUserProfileExists(data.user.id);
-      }
-      
-      console.log('🔍 Debug - Login concluído com sucesso');
-      
-    } catch (error) {
-      console.error('🔍 Debug - Erro no login:', error);
-      
-      // Se já é um Error com mensagem personalizada, apenas relançar
-      if (error instanceof Error) {
-      throw error;
-      }
-      
-      // Para outros tipos de erro, criar uma mensagem genérica
-      throw new Error('Erro inesperado durante o login. Tente novamente.');
-    } finally {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
       setLoading(false);
+      throw error;
     }
+    // O listener onAuthStateChange cuidará do resto
   };
 
   const loginWithGoogle = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      console.log('🔍 Debug - Iniciando login com Google');
-      console.log('🔍 Debug - URL atual:', window.location.href);
-      console.log('🔍 Debug - Origin:', window.location.origin);
-      
-      // Determinar URL de redirecionamento baseada no ambiente
-      let redirectUrl = window.location.origin;
-      
-      // Se estiver no Vercel, usar a URL específica
-      if (window.location.hostname.includes('vercel.app')) {
-        redirectUrl = 'https://rsc-tae.vercel.app/dashboard';
-        console.log('🔍 Debug - Ambiente Vercel detectado');
-      } else if (window.location.hostname === 'localhost') {
-        redirectUrl = 'http://localhost:5000/dashboard';
-        console.log('🔍 Debug - Ambiente local detectado');
-      }
-      
-      console.log('🔍 Debug - URL de redirecionamento:', redirectUrl);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-      
-      console.log('🔍 Debug - Resposta do Supabase:', { data, error });
-      
-      if (error) {
-        console.error('🔍 Debug - Erro do Supabase:', error);
-        throw error;
-      }
-      
-      console.log('🔍 Debug - Login Google iniciado com sucesso');
-      
-    } catch (error) {
-      console.error('🔍 Debug - Erro no login com Google:', error);
-      
-      // Tratar erros específicos
-      if (error instanceof Error) {
-        if (error.message.includes('Invalid redirect URL')) {
-          throw new Error('URL de redirecionamento inválida. Verifique a configuração no Supabase.');
-        } else if (error.message.includes('Provider not configured')) {
-          throw new Error('Google OAuth não está configurado. Verifique a configuração no Supabase.');
-        } else if (error.message.includes('Client ID not found')) {
-          throw new Error('Client ID do Google não encontrado. Verifique a configuração no Supabase.');
-        } else {
-          throw new Error(`Erro no login com Google: ${error.message}`);
-        }
-      } else {
-        throw new Error('Erro desconhecido no login com Google');
-      }
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin, // Redirecionamento seguro
+      },
+    });
+    if (error) throw error;
   };
 
   const resendConfirmationEmail = async (email: string): Promise<void> => {
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error resending confirmation email:', error);
-      throw error;
-    }
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    if (error) throw error;
   };
 
-  const register = async (email: string, password: string, _profileData?: any): Promise<void> => {
-    setLoading(true);
-    try {
-      console.log('🔍 Debug - Iniciando registro de usuário:', email);
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      
-      if (error) {
-        console.error('🔍 Debug - Erro no signUp:', error);
-        throw error;
+  const register = async (email: string, password: string, profileData?: any): Promise<void> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: profileData // Passa os dados do perfil para os metadados
       }
-      
-      console.log('🔍 Debug - Usuário criado no auth:', data.user?.id);
-      
-      // NÃO tentar criar perfil aqui - será criado após confirmação do email
-      // As políticas RLS impedem a criação durante o registro
-      console.log('🔍 Debug - Usuário registrado. Perfil será criado após confirmação do email.');
-      
-      console.log('🔍 Debug - Registro concluído');
-    } catch (error) {
-      console.error('🔍 Debug - Erro no registro:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    });
+    if (error) throw error;
   };
 
   const logout = async (): Promise<void> => {
     setLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error logging out:', error);
-      throw error;
-    } finally {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
       setLoading(false);
+      throw error;
     }
+    // O listener onAuthStateChange cuidará de limpar o estado
   };
 
   const value: AuthContextType = {

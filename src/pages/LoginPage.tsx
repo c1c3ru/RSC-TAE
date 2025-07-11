@@ -78,7 +78,7 @@ const LoginPage = () => {
   //   autoplay: true,
   //   style: { width: 80, height: 80 }
   // });
-
+  
   // Animate component on mount
   useEffect(() => {
     setFadeIn(true);
@@ -638,14 +638,14 @@ const LoginPage = () => {
                     Senha
                   </label>
                   <div className="relative">
-                    <input
-                      id="register-password"
+                  <input
+                    id="register-password"
                       type={showPassword ? "text" : "password"}
                       className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         passwordError ? 'border-red-300' : 'border-gray-300'
                       }`}
-                      placeholder="********"
-                      value={registerPassword}
+                    placeholder="********"
+                    value={registerPassword}
                       onChange={handlePasswordChange}
                     />
                     <span
@@ -981,7 +981,7 @@ const LoginPage = () => {
                   <>
                     <svg className="h-5 w-5 mr-2 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 16l-2-2m0 0l2-2m-2 2h7a4 4 0 004-4V4a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2" />
-                    </svg>
+                </svg>
                     Conectar com Google
                   </>
                 )}
