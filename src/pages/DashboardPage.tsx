@@ -147,6 +147,8 @@ const DashboardPage = () => {
         color="yellow"
         maxValue={75} // Meta para nível VI (Doutorado)
         subtitle="pontos acumulados"
+        userActivities={userStats.totalActivities}
+        userCategories={uniqueCategories}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

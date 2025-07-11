@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
@@ -278,31 +279,30 @@ const LoginPage = () => {
       )}
 
       <div 
-        className={`max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+        className={`max-w-sm sm:max-w-md md:max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
       >
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
           <div className="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
           
-          <div className="flex items-center justify-center relative z-10">
-            {/* Remover o uso de {renderEditAnimation()} */}
-            <div className="w-16 h-16 mr-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center relative z-10">
+            <div className="w-16 h-16 mb-4 sm:mb-0 sm:mr-4">
               {/* Se houver uma animação de login, pode adicionar aqui:
               <Lottie animationData={loginAnimation} style={{ width: 64, height: 64 }} />
               */}
             </div>
-            <div>
-              <h1 className="text-white text-center text-3xl font-bold">
+            <div className="text-center sm:text-left">
+              <h1 className="text-white text-xl sm:text-2xl md:text-3xl font-bold">
                 Sistema de Cálculo de Pontuação
               </h1>
-              <p className="text-blue-100 text-center mt-2">
+              <p className="text-blue-100 text-sm sm:text-base mt-2">
                 Progressão Funcional
               </p>
             </div>
           </div>
         </div>
         
-        <div className="p-8">
+        <div className="p-6 sm:p-8">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
             {registerMode ? 'Cadastre-se' : 'Entrar'}
           </h2>
