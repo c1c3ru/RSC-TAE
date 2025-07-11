@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES, COMMON_TEXTS } from '../constants/texts';
+import { ERROR_MESSAGES } from '../constants/texts';
 import Lottie from 'lottie-react';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 
