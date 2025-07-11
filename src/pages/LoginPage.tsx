@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
 import GoogleLoginDebug from '../components/Debug/GoogleLoginDebug';
+import AuthDebug from '../components/Debug/AuthDebug';
 // import { useLottie } from 'lottie-react';
 // Remover as importações de animações de perfil
 // import saveAnimation from '../assets/lottie/save_profile_animation.json';
@@ -691,6 +692,8 @@ const LoginPage = () => {
       
       {/* Componente de debug apenas em desenvolvimento */}
       <GoogleLoginDebug onTestLogin={handleGoogleLogin} />
+      {/* Componente de debug temporário */}
+      <AuthDebug />
     </div>
   );
 };
