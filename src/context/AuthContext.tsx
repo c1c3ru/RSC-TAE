@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 
@@ -28,7 +28,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -56,23 +56,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔍 Debug - Tentando login com email:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      console.log('🔍 Debug - Resposta do Supabase:', { data, error });
+      
       if (error) {
-        // Tratar erros específicos
+        console.error('🔍 Debug - Erro detalhado:', error);
+        
+        // Tratar erros específicos com mensagens mais claras
         if (error.message.includes('Email not confirmed')) {
           throw new Error('Email não confirmado. Verifique sua caixa de entrada e confirme seu email antes de fazer login.');
-        } else if (error.message.includes('Invalid login credentials')) {
+        } else if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid email or password')) {
           throw new Error('Email ou senha incorretos. Verifique suas credenciais.');
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Muitas tentativas de login. Aguarde alguns minutos antes de tentar novamente.');
+        } else if (error.message.includes('User not found')) {
+          throw new Error('Usuário não encontrado. Verifique se o email está correto.');
+        } else if (error.message.includes('Password should be at least')) {
+          throw new Error('Senha muito curta. A senha deve ter pelo menos 6 caracteres.');
+        } else if (error.message.includes('Unable to validate email address')) {
+          throw new Error('Email inválido. Verifique se o formato está correto.');
+        } else if (error.message.includes('Signup not allowed')) {
+          throw new Error('Cadastro não permitido. Entre em contato com o administrador.');
+        } else if (error.message.includes('User is disabled')) {
+          throw new Error('Usuário desabilitado. Entre em contato com o administrador.');
+        } else if (error.message.includes('Invalid email')) {
+          throw new Error('Formato de email inválido. Verifique se o email está correto.');
         } else {
-          throw error;
+          // Para outros erros, usar a mensagem original mas com contexto
+          throw new Error(`Erro no login: ${error.message}`);
         }
       }
+      
+      console.log('🔍 Debug - Login bem-sucedido');
+      
     } catch (error) {
-      console.error('Error logging in:', error);
-      throw error;
+      console.error('🔍 Debug - Erro no login:', error);
+      
+      // Se já é um Error com mensagem personalizada, apenas relançar
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      // Para outros tipos de erro, criar uma mensagem genérica
+      throw new Error('Erro inesperado durante o login. Tente novamente.');
     } finally {
       setLoading(false);
     }
