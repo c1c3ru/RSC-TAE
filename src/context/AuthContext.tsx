@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setCurrentUser(session?.user ?? null);
       setLoading(false);
@@ -81,6 +81,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
           ]);
         
         if (createError) {
+          // Se for erro 409 (Conflict), o perfil já existe, então está tudo certo
+          if (createError.code === '409') {
+            console.log('🔍 Debug - Perfil já existia, prosseguindo normalmente.');
+            return;
+          }
           console.error('🔍 Debug - Erro ao criar perfil básico:', createError);
           
           // Se falhar, tentar com upsert
@@ -171,7 +176,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
       
       // Se já é um Error com mensagem personalizada, apenas relançar
       if (error instanceof Error) {
-        throw error;
+      throw error;
       }
       
       // Para outros tipos de erro, criar uma mensagem genérica
@@ -257,7 +262,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
     }
   };
 
-  const register = async (email: string, password: string, profileData?: any): Promise<void> => {
+  const register = async (email: string, password: string, _profileData?: any): Promise<void> => {
     setLoading(true);
     try {
       console.log('🔍 Debug - Iniciando registro de usuário:', email);
@@ -318,10 +323,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   );
 };
 
-export const useAuth = (): AuthContextType => {
+function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
+
+export { useAuth };

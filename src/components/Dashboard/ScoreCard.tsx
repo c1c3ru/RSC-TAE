@@ -72,7 +72,7 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
           const atingiuItens = itensDistintos >= nivel.itens;
           const atingiuEscolaridade = nivelEscolaridade >= (idx+1);
           const apto = atingiuPontuacao && atingiuItens && atingiuEscolaridade;
-          return (
+  return (
             <tr key={nivel.nivel} className={`${apto ? 'bg-green-50 border-l-4 border-l-green-400' : 'bg-red-50 border-l-4 border-l-red-400'} hover:bg-opacity-75 transition-colors`}>
               <td className="px-3 py-3 font-bold text-gray-800">
                 <div className="flex items-center">
@@ -89,16 +89,16 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
                 </div>
               </td>
               <td className="px-3 py-3">
-                <div className="flex items-center">
+        <div className="flex items-center">
                   <span className="font-medium">{nivel.itens} itens</span>
                   <span className={`ml-2 text-lg ${atingiuItens ? 'text-green-600' : 'text-red-600'}`}>{atingiuItens ? '✔️' : '❌'}</span>
-                </div>
+            </div>
               </td>
               <td className="px-3 py-3">
                 <div className="flex items-center">
                   <span className="text-xs text-gray-600 max-w-32">{nivel.escolaridade}</span>
                   <span className={`ml-2 text-lg ${atingiuEscolaridade ? 'text-green-600' : 'text-red-600'}`}>{atingiuEscolaridade ? '✔️' : '❌'}</span>
-                </div>
+          </div>
               </td>
               <td className="px-3 py-3">
                 <div className="flex items-center">
@@ -121,8 +121,8 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
             Por favor, atualize seu perfil com a escolaridade para validação completa dos requisitos.
           </span>
         </div>
-      </div>
-    )}
+                  </div>
+                )}
   </div>
 );
 
@@ -196,7 +196,7 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
             className="bg-white h-6 rounded-full transition-all duration-1000 ease-out shadow"
             style={{ width: `${Math.min((totalScore/100)*100, 100)}%` }}
           ></div>
-        </div>
+          </div>
         <div className="text-blue-100 text-lg font-semibold">
           {((totalScore/100)*100).toFixed(1)}% do objetivo
         </div>

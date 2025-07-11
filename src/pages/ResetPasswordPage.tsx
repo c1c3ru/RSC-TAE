@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES, COMMON_TEXTS } from '../constants/texts';
+import Lottie from 'lottie-react';
+import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 
 const ResetPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -87,9 +89,9 @@ const ResetPasswordPage: React.FC = () => {
             <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-6 animate-pulse" role="alert">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <div className="w-8 h-8">
+                    <Lottie animationData={saveProfileAnimation} style={{ width: 32, height: 32 }} />
+                  </div>
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-green-800">
@@ -162,7 +164,7 @@ const ResetPasswordPage: React.FC = () => {
                 </>
               )}
             </button>
-          </form>
+        </form>
           
           <div className="mt-6 text-center">
             <button

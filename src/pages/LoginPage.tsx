@@ -3,18 +3,14 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CARGOS_TAE } from '../constants/cargos';
+import { CARGOS_TAE, CATEGORIAS_CARGO } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
-import GoogleLoginDebug from '../components/Debug/GoogleLoginDebug';
-import AuthDebug from '../components/Debug/AuthDebug';
-import UserTest from '../components/Debug/UserTest';
-import RLSTest from '../components/Debug/RLSTest';
-// import { useLottie } from 'lottie-react';
-// Remover as importações de animações de perfil
-// import saveAnimation from '../assets/lottie/save_profile_animation.json';
-// import editAnimation from '../assets/lottie/edit_profile_animation.json';
-// Se houver uma animação genérica de login, importe aqui, exemplo:
-// import loginAnimation from '../assets/lottie/login_animation.json';
+// Lottie imports
+import { useLottie } from 'lottie-react';
+import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
+import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
+// import activitiesRegistrationAnimation from '../assets/lottie/activities_registration_animation.json';
+// import notFoundAnimation from '../assets/lottie/404_not_found_animation.json';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -32,10 +28,24 @@ const LoginPage = () => {
   const [registerName, setRegisterName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState('');
   const [registerMatricula, setRegisterMatricula] = useState('');
   const [registerCargo, setRegisterCargo] = useState('');
+  const [registerCategoriaFuncional, setRegisterCategoriaFuncional] = useState('');
   const [registerEscolaridade, setRegisterEscolaridade] = useState('');
+  
+  // Password visibility states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  
+  // Validation states
   const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [matriculaError, setMatriculaError] = useState('');
+  const [cargoError, setCargoError] = useState('');
+  const [categoriaError, setCategoriaError] = useState('');
   
   // Novo estado para loading do Google
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -43,27 +53,32 @@ const LoginPage = () => {
   const { login, loginWithGoogle, register, resendConfirmationEmail } = useAuth();
   const navigate = useNavigate();
   
-  // Remover configuração das animações de perfil
-  // const { View: SaveAnimationView } = useLottie({
-  //   animationData: saveAnimation,
-  //   loop: false,
-  //   autoplay: false
-  // });
-  // const { View: EditAnimationView } = useLottie({
-  //   animationData: editAnimation,
+  // Lottie imports
+  const { View: SaveProfileLottie } = useLottie({
+    animationData: saveProfileAnimation,
+    loop: true,
+    autoplay: true,
+    style: { width: 80, height: 80 }
+  });
+  const { View: DashboardLottie } = useLottie({
+    animationData: dashboardAnimation,
+    loop: true,
+    autoplay: true,
+    style: { width: 80, height: 80 }
+  });
+  // const { View: ActivitiesRegistrationLottie } = useLottie({
+  //   animationData: activitiesRegistrationAnimation,
   //   loop: true,
-  //   autoplay: true
+  //   autoplay: true,
+  //   style: { width: 80, height: 80 }
+  // });
+  // const { View: NotFoundLottie } = useLottie({
+  //   animationData: notFoundAnimation,
+  //   loop: true,
+  //   autoplay: true,
+  //   style: { width: 80, height: 80 }
   // });
 
-  // Remover funções renderSaveAnimation e renderEditAnimation
-  // Garantir que View é um elemento React
-  // const renderSaveAnimation = () => {
-  //   return saveAnimation && typeof saveAnimation === 'object' && React.isValidElement(SaveAnimationView) ? SaveAnimationView : null;
-  // };
-  // const renderEditAnimation = () => {
-  //   return editAnimation && typeof editAnimation === 'object' && React.isValidElement(EditAnimationView) ? EditAnimationView : null;
-  // };
-  
   // Animate component on mount
   useEffect(() => {
     setFadeIn(true);
@@ -92,10 +107,119 @@ const LoginPage = () => {
     return true;
   };
 
+  const validatePassword = (password: string) => {
+    if (!password) {
+      setPasswordError('');
+      return true;
+    }
+
+    if (password.length < 6) {
+      setPasswordError('A senha deve ter pelo menos 6 caracteres');
+      return false;
+    }
+
+    if (password.length > 50) {
+      setPasswordError('A senha deve ter no máximo 50 caracteres');
+      return false;
+    }
+
+    setPasswordError('');
+    return true;
+  };
+
+  const validateConfirmPassword = (confirmPassword: string) => {
+    if (!confirmPassword) {
+      setConfirmPasswordError('');
+      return true;
+    }
+
+    if (confirmPassword !== registerPassword) {
+      setConfirmPasswordError('As senhas não coincidem');
+      return false;
+    }
+
+    setConfirmPasswordError('');
+    return true;
+  };
+
+  const validateMatricula = (matricula: string) => {
+    if (!matricula) {
+      setMatriculaError('');
+      return true;
+    }
+
+    if (matricula.length < 3) {
+      setMatriculaError('A matrícula deve ter pelo menos 3 caracteres');
+      return false;
+    }
+
+    if (matricula.length > 20) {
+      setMatriculaError('A matrícula deve ter no máximo 20 caracteres');
+      return false;
+    }
+
+    setMatriculaError('');
+    return true;
+  };
+
+  const validateCargo = (cargo: string) => {
+    if (!cargo) {
+      setCargoError('');
+      return true;
+    }
+
+    setCargoError('');
+    return true;
+  };
+
+  const validateCategoria = (categoria: string) => {
+    if (!categoria) {
+      setCategoriaError('');
+      return true;
+    }
+
+    setCategoriaError('');
+    return true;
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setRegisterEmail(newEmail);
     validateEmail(newEmail);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setRegisterPassword(newPassword);
+    validatePassword(newPassword);
+    // Revalidar confirmação quando a senha muda
+    if (registerConfirmPassword) {
+      validateConfirmPassword(registerConfirmPassword);
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newConfirmPassword = e.target.value;
+    setRegisterConfirmPassword(newConfirmPassword);
+    validateConfirmPassword(newConfirmPassword);
+  };
+
+  const handleMatriculaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMatricula = e.target.value;
+    setRegisterMatricula(newMatricula);
+    validateMatricula(newMatricula);
+  };
+
+  const handleCargoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCargo = e.target.value;
+    setRegisterCargo(newCargo);
+    validateCargo(newCargo);
+  };
+
+  const handleCategoriaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategoria = e.target.value;
+    setRegisterCategoriaFuncional(newCategoria);
+    validateCategoria(newCategoria);
   };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -105,18 +229,30 @@ const LoginPage = () => {
     
     if (registerMode) {
       // Validação obrigatória dos campos
-      if (!registerName || !registerEmail || !registerPassword || !registerMatricula || !registerCargo || !registerEscolaridade) {
+      if (!registerName || !registerEmail || !registerPassword || !registerConfirmPassword || 
+          !registerMatricula || !registerCargo || !registerCategoriaFuncional || !registerEscolaridade) {
         console.error('[REGISTER] Falha na validação: campos obrigatórios não preenchidos', {
-          registerName, registerEmail, registerPassword, registerMatricula, registerCargo, registerEscolaridade
+          registerName, registerEmail, registerPassword, registerConfirmPassword, 
+          registerMatricula, registerCargo, registerCategoriaFuncional, registerEscolaridade
         });
         setError('Preencha todos os campos obrigatórios');
         return;
       }
-      // Validar email antes de prosseguir
-      if (!validateEmail(registerEmail)) {
-        setError('Corrija o email informado');
+
+      // Validar todos os campos antes de prosseguir
+      const isEmailValid = validateEmail(registerEmail);
+      const isPasswordValid = validatePassword(registerPassword);
+      const isConfirmPasswordValid = validateConfirmPassword(registerConfirmPassword);
+      const isMatriculaValid = validateMatricula(registerMatricula);
+      const isCargoValid = validateCargo(registerCargo);
+      const isCategoriaValid = validateCategoria(registerCategoriaFuncional);
+
+      if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid || 
+          !isMatriculaValid || !isCargoValid || !isCategoriaValid) {
+        setError('Corrija os erros nos campos antes de continuar');
         return;
       }
+
       try {
         setLoading(true);
         setShowAnimation(true);
@@ -128,6 +264,7 @@ const LoginPage = () => {
             email: registerEmail,
             matricula: registerMatricula,
             cargo: registerCargo,
+            categoria_funcional: registerCategoriaFuncional,
             escolaridade: registerEscolaridade
           }
         );
@@ -140,10 +277,17 @@ const LoginPage = () => {
           setRegisterName('');
           setRegisterEmail('');
           setRegisterPassword('');
+          setRegisterConfirmPassword('');
           setRegisterMatricula('');
           setRegisterCargo('');
+          setRegisterCategoriaFuncional('');
           setRegisterEscolaridade('');
           setEmailError('');
+          setPasswordError('');
+          setConfirmPasswordError('');
+          setMatriculaError('');
+          setCargoError('');
+          setCategoriaError('');
         } else {
           setError('Erro ao cadastrar usuário');
         }
@@ -193,7 +337,7 @@ const LoginPage = () => {
       // Se chegou aqui, o login foi bem-sucedido
       setMessage('Login realizado com sucesso! Redirecionando...');
       setTimeout(() => {
-        navigate('/dashboard');
+      navigate('/dashboard');
       }, 1500);
       
     } catch (err) {
@@ -289,16 +433,15 @@ const LoginPage = () => {
               </>
             ) : (
               <>
-                {/* Remover o uso de {renderSaveAnimation()} e {renderEditAnimation()} */}
+                <div className="flex flex-col items-center mb-4">
+                  {/* Animação Lottie de acordo com o contexto */}
+                  {registerMode ? SaveProfileLottie : DashboardLottie}
+                </div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  {registerMode
-                    ? 'Cadastrando...'
-                    : 'Processando...'}
+                  {registerMode ? 'Cadastrando...' : 'Processando...'}
                 </h3>
                 <p className="text-sm text-gray-600 text-center">
-                  {registerMode
-                    ? 'Seu cadastro está sendo criado...'
-                    : 'Aguarde um momento...'}
+                  {registerMode ? 'Seu cadastro está sendo criado...' : 'Aguarde um momento...'}
                 </p>
               </>
             )}
@@ -341,7 +484,7 @@ const LoginPage = () => {
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
+                </svg>
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">
@@ -360,8 +503,8 @@ const LoginPage = () => {
               <div className="flex items-start">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-green-800">
@@ -494,14 +637,92 @@ const LoginPage = () => {
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-password">
                     Senha
                   </label>
-                  <input
-                    id="register-password"
-                    type="password"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="********"
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        passwordError ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="********"
+                      value={registerPassword}
+                      onChange={handlePasswordChange}
+                    />
+                    <span
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <svg
+                        className="h-5 w-5 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={showPassword
+                            ? "M15 12a3 3 0 11-6 0 3 3 0 016 0zm-9 0c0 5.25 7.5 9 9 9s9-3.75 9-9-7.5-9-9-9-9 3.75-9 9z"
+                            : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a10.025 10.025 0 011.563-2.037M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.543-5.037A10.025 10.025 0 0121 12c0 2.042-.613 3.94-1.668 5.537M9.88 9.88a3 3 0 104.24 4.24"}
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                  {passwordError && (
+                    <div className="text-red-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {passwordError}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-confirm-password">
+                    Confirmar Senha
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="register-confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        confirmPasswordError ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="********"
+                      value={registerConfirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                    />
+                    <span
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <svg
+                        className="h-5 w-5 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={showConfirmPassword
+                            ? "M15 12a3 3 0 11-6 0 3 3 0 016 0zm-9 0c0 5.25 7.5 9 9 9s9-3.75 9-9-7.5-9-9-9-9 3.75-9 9z"
+                            : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a10.025 10.025 0 011.563-2.037M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.543-5.037A10.025 10.025 0 0121 12c0 2.042-.613 3.94-1.668 5.537M9.88 9.88a3 3 0 104.24 4.24"}
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                  {confirmPasswordError && (
+                    <div className="text-red-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {confirmPasswordError}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -512,11 +733,21 @@ const LoginPage = () => {
                     <input
                       id="register-matricula"
                       type="text"
-                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        matriculaError ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="IFCE12345"
                       value={registerMatricula}
-                      onChange={(e) => setRegisterMatricula(e.target.value)}
+                      onChange={handleMatriculaChange}
                     />
+                    {matriculaError && (
+                      <div className="text-red-600 text-sm mt-1 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {matriculaError}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-cargo">
@@ -524,16 +755,52 @@ const LoginPage = () => {
                     </label>
                     <select
                       id="register-cargo"
-                      className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        cargoError ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       value={registerCargo}
-                      onChange={(e) => setRegisterCargo(e.target.value)}
+                      onChange={handleCargoChange}
                     >
                       <option value="">Selecione o cargo</option>
                       {CARGOS_TAE.map(cargo => (
                         <option key={cargo.codigo} value={cargo.nome}>{cargo.nome}</option>
                       ))}
                     </select>
+                    {cargoError && (
+                      <div className="text-red-600 text-sm mt-1 flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {cargoError}
+                      </div>
+                    )}
                   </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-categoria-funcional">
+                    Categoria Funcional
+                  </label>
+                  <select
+                    id="register-categoria-funcional"
+                    className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                      categoriaError ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    value={registerCategoriaFuncional}
+                    onChange={handleCategoriaChange}
+                  >
+                    <option value="">Selecione a categoria funcional</option>
+                    {CATEGORIAS_CARGO.map(categoria => (
+                      <option key={categoria} value={categoria}>{categoria}</option>
+                    ))}
+                  </select>
+                  {categoriaError && (
+                    <div className="text-red-600 text-sm mt-1 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {categoriaError}
+                    </div>
+                  )}
                 </div>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="register-escolaridade">
@@ -564,17 +831,17 @@ const LoginPage = () => {
                     Email
                   </label>
                   <div className="relative">
-                    <input
-                      id="email"
-                      type="email"
+                  <input
+                    id="email"
+                    type="email"
                       className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         loading ? 'bg-gray-100 cursor-not-allowed' : ''
                       }`}
-                      placeholder="exemplo@ifce.edu.br"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                    placeholder="exemplo@ifce.edu.br"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
-                    />
+                  />
                     {loading && (
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -591,17 +858,17 @@ const LoginPage = () => {
                     Senha
                   </label>
                   <div className="relative">
-                    <input
-                      id="password"
-                      type="password"
-                      className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  <input
+                    id="password"
+                    type={showLoginPassword ? "text" : "password"}
+                    className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         loading ? 'bg-gray-100 cursor-not-allowed' : ''
                       }`}
-                      placeholder="********"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                    placeholder="********"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
-                    />
+                  />
                     {loading && (
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -610,6 +877,26 @@ const LoginPage = () => {
                         </svg>
                       </div>
                     )}
+                    <span
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    >
+                      <svg
+                        className="h-5 w-5 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={showLoginPassword
+                            ? "M15 12a3 3 0 11-6 0 3 3 0 016 0zm-9 0c0 5.25 7.5 9 9 9s9-3.75 9-9-7.5-9-9-9-9 3.75-9 9z"
+                            : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a10.025 10.025 0 011.563-2.037M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.543-5.037A10.025 10.025 0 0121 12c0 2.042-.613 3.94-1.668 5.537M9.88 9.88a3 3 0 104.24 4.24"}
+                        />
+                      </svg>
+                    </span>
                   </div>
                   {!registerMode && (
                     <div className="mt-2 text-right">
@@ -686,45 +973,23 @@ const LoginPage = () => {
                 disabled={loading || googleLoading}
               >
                 {googleLoading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Conectando...
-                  </>
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+                    <p className="text-sm text-gray-600">Conectando com Google...</p>
+                  </div>
                 ) : (
                   <>
-                    <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                        <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
-                        <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z" />
-                        <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z" />
-                        <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
-                      </g>
+                    <svg className="h-5 w-5 mr-2 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 16l-2-2m0 0l2-2m-2 2h7a4 4 0 004-4V4a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2" />
                     </svg>
-                    Continuar com Google
+                    Conectar com Google
                   </>
                 )}
               </button>
             </>
           )}
-          
-          <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-600 text-xs">
-            <p>© 2025 Sistema de Cálculo de Pontuação para Progressão Funcional</p>
-            <p className="mt-1">Versão 1.0 - Teste</p>
-          </div>
         </div>
       </div>
-      
-      {/* Componente de debug apenas em desenvolvimento */}
-      <GoogleLoginDebug onTestLogin={handleGoogleLogin} />
-      {/* Componente de debug temporário */}
-      <AuthDebug />
-      {/* Componente de teste de usuário */}
-      <UserTest />
-      
-      <RLSTest />
     </div>
   );
 };

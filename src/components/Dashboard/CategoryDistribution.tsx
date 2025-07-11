@@ -153,15 +153,15 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
             return (
               <div key={item.category} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div
+                <div className="flex items-center">
+                  <div
                       className="w-4 h-4 rounded-full mr-3 shadow-sm"
                       style={{ backgroundColor: categoryColors[index % categoryColors.length] }}
-                    />
+                  />
                     <span className="text-sm font-semibold text-gray-900">
                       {getCategoryName(item.category)}
-                    </span>
-                  </div>
+                  </span>
+                </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-gray-900">
                       {item.value.toFixed(1)} pts
@@ -194,11 +194,11 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
         {total > 0 && (
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-              <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-gray-900">Total de Pontos</span>
                 <span className="text-2xl font-bold text-blue-600">
                   {total.toFixed(1)} pontos
-                </span>
+              </span>
               </div>
               <div className="mt-2 text-sm text-gray-600">
                 Distribuídos em {data.length} categorias diferentes
