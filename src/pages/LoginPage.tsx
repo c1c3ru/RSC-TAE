@@ -8,6 +8,7 @@ import { LOGIN_TEXTS } from '../constants/texts';
 import GoogleLoginDebug from '../components/Debug/GoogleLoginDebug';
 import AuthDebug from '../components/Debug/AuthDebug';
 import UserTest from '../components/Debug/UserTest';
+import RLSTest from '../components/Debug/RLSTest';
 // import { useLottie } from 'lottie-react';
 // Remover as importações de animações de perfil
 // import saveAnimation from '../assets/lottie/save_profile_animation.json';
@@ -148,11 +149,26 @@ const LoginPage = () => {
         }
       } catch (err) {
         console.error('[REGISTER] Registration error in component:', err);
-        setError(
-          err && typeof err === 'object' && 'message' in err
-            ? (err as { message: string }).message
-            : 'Erro ao cadastrar usuário'
-        );
+        
+        let errorMessage = 'Erro ao cadastrar usuário';
+        
+        if (err instanceof Error) {
+          if (err.message.includes('User already registered')) {
+            errorMessage = 'Este email já está cadastrado. Tente fazer login ou use outro email.';
+          } else if (err.message.includes('Password should be at least')) {
+            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+          } else if (err.message.includes('Unable to validate email address')) {
+            errorMessage = 'Email inválido. Verifique se o formato está correto.';
+          } else if (err.message.includes('Signup not allowed')) {
+            errorMessage = 'Cadastro não permitido. Entre em contato com o administrador.';
+          } else if (err.message.includes('Email not confirmed')) {
+            errorMessage = 'Email não confirmado. Verifique sua caixa de entrada e confirme seu email.';
+          } else {
+            errorMessage = err.message;
+          }
+        }
+        
+        setError(errorMessage);
       } finally {
         setTimeout(() => {
           setShowAnimation(false);
@@ -169,15 +185,25 @@ const LoginPage = () => {
     
     try {
       setLoading(true);
+      setError(''); // Limpar erros anteriores
+      setMessage(''); // Limpar mensagens anteriores
+      
       await login(email, password);
-      navigate('/dashboard');
+      
+      // Se chegou aqui, o login foi bem-sucedido
+      setMessage('Login realizado com sucesso! Redirecionando...');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
       setError(errorMessage);
       
       // Se o erro for de email não confirmado, mostrar opção de reenvio
-      if (errorMessage.includes('Email não confirmado')) {
+      if (errorMessage.includes('Email não confirmado') || errorMessage.includes('Email not confirmed')) {
         setShowResendEmail(true);
+        setShowEmailValidation(true); // Mostrar instruções de verificação
       }
       setLoading(false);
     }
@@ -697,6 +723,8 @@ const LoginPage = () => {
       <AuthDebug />
       {/* Componente de teste de usuário */}
       <UserTest />
+      
+      <RLSTest />
     </div>
   );
 };

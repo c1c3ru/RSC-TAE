@@ -58,18 +58,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
       
       if (checkError) {
         console.error('🔍 Debug - Erro ao verificar perfil:', checkError);
+        return; // Não tentar criar se não conseguir verificar
       }
       
       if (!existingProfile) {
-        console.log('🔍 Debug - Usuário não tem perfil, criando...');
+        console.log('🔍 Debug - Usuário não tem perfil, criando perfil básico...');
         
-        // Tentar criar o perfil
+        // Criar perfil básico para o usuário
         const { error: createError } = await supabase
           .from('user_profile')
-          .upsert([
+          .insert([
             {
               id: userId,
-              email: null,
+              email: currentUser?.email || null,
               name: null,
               employee_number: null,
               job: null,
@@ -77,15 +78,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
               date_singin: new Date().toISOString(),
               education: null
             }
-          ], {
-            onConflict: 'id',
-            ignoreDuplicates: true
-          });
+          ]);
         
         if (createError) {
-          console.error('🔍 Debug - Erro ao criar perfil para usuário existente:', createError);
+          console.error('🔍 Debug - Erro ao criar perfil básico:', createError);
+          
+          // Se falhar, tentar com upsert
+          const { error: upsertError } = await supabase
+            .from('user_profile')
+            .upsert([
+              {
+                id: userId,
+                email: currentUser?.email || null,
+                name: null,
+                employee_number: null,
+                job: null,
+                functional_category: null,
+                date_singin: new Date().toISOString(),
+                education: null
+              }
+            ], {
+              onConflict: 'id'
+            });
+          
+          if (upsertError) {
+            console.error('🔍 Debug - Erro ao criar perfil com upsert:', upsertError);
+            console.log('🔍 Debug - Perfil não foi criado. Usuário pode continuar usando o sistema.');
+          } else {
+            console.log('🔍 Debug - Perfil criado com upsert');
+          }
         } else {
-          console.log('🔍 Debug - Perfil criado para usuário existente');
+          console.log('🔍 Debug - Perfil básico criado com sucesso');
         }
       } else {
         console.log('🔍 Debug - Usuário já tem perfil');
@@ -137,10 +160,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
       
       // Se o login foi bem-sucedido, verificar se o usuário tem perfil
       if (data.user) {
+        console.log('🔍 Debug - Login bem-sucedido, verificando perfil...');
         await ensureUserProfileExists(data.user.id);
       }
       
-      console.log('🔍 Debug - Login bem-sucedido');
+      console.log('🔍 Debug - Login concluído com sucesso');
       
     } catch (error) {
       console.error('🔍 Debug - Erro no login:', error);
@@ -250,89 +274,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
       
       console.log('🔍 Debug - Usuário criado no auth:', data.user?.id);
       
-      // Criar perfil do usuário na tabela user_profile
-      if (data.user) {
-        console.log('🔍 Debug - Tentando criar perfil do usuário...');
-        
-        try {
-          const { error: profileError } = await supabase
-            .from('user_profile')
-            .upsert([
-              {
-                id: data.user.id,
-                email: data.user.email,
-                name: profileData?.nome || profileData?.name || null,
-                employee_number: profileData?.matricula || null,
-                job: profileData?.cargo || null,
-                functional_category: profileData?.functionalCategory || null,
-                date_singin: new Date().toISOString(),
-                education: profileData?.escolaridade || null
-              }
-            ], {
-              onConflict: 'id',
-              ignoreDuplicates: true
-            });
-          
-          if (profileError) {
-            console.error('🔍 Debug - Erro ao criar perfil completo:', profileError);
-            
-            // Tentar criar um perfil básico se falhar
-            console.log('🔍 Debug - Tentando criar perfil básico...');
-            const { error: basicProfileError } = await supabase
-              .from('user_profile')
-              .upsert([
-                {
-                  id: data.user.id,
-                  email: data.user.email,
-                  name: null,
-                  employee_number: null,
-                  job: null,
-                  functional_category: null,
-                  date_singin: new Date().toISOString(),
-                  education: null
-                }
-              ], {
-                onConflict: 'id',
-                ignoreDuplicates: true
-              });
-            
-            if (basicProfileError) {
-              console.error('🔍 Debug - Erro ao criar perfil básico:', basicProfileError);
-              
-              // Tentar uma abordagem mais simples
-              console.log('🔍 Debug - Tentando inserção simples...');
-              const { error: simpleError } = await supabase
-                .from('user_profile')
-                .insert([
-                  {
-                    id: data.user.id,
-                    email: data.user.email,
-                    name: null,
-                    employee_number: null,
-                    job: null,
-                    functional_category: null,
-                    date_singin: new Date().toISOString(),
-                    education: null
-                  }
-                ]);
-              
-              if (simpleError) {
-                console.error('🔍 Debug - Erro na inserção simples:', simpleError);
-                console.log('🔍 Debug - Perfil não foi criado, mas o usuário foi registrado');
-              } else {
-                console.log('🔍 Debug - Perfil criado com inserção simples');
-              }
-            } else {
-              console.log('🔍 Debug - Perfil básico criado com sucesso');
-            }
-          } else {
-            console.log('🔍 Debug - Perfil completo criado com sucesso');
-          }
-        } catch (profileException) {
-          console.error('🔍 Debug - Exceção ao criar perfil:', profileException);
-          console.log('🔍 Debug - Usuário registrado, mas perfil não foi criado');
-        }
-      }
+      // NÃO tentar criar perfil aqui - será criado após confirmação do email
+      // As políticas RLS impedem a criação durante o registro
+      console.log('🔍 Debug - Usuário registrado. Perfil será criado após confirmação do email.');
       
       console.log('🔍 Debug - Registro concluído');
     } catch (error) {
