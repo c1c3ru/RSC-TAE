@@ -28,13 +28,30 @@ const ensureUserProfile = async (userId: string): Promise<void> => {
   try {
     console.log('🔍 Debug - Verificando perfil do usuário:', userId);
     
-    // Tentar criar o perfil diretamente, ignorando se já existe
+    // Primeiro, verificar se o perfil já existe
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('user_profile')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('Error checking user profile:', checkError);
+      return;
+    }
+    
+    if (existingProfile) {
+      console.log('🔍 Debug - Perfil já existe, continuando...');
+      return;
+    }
+    
+    // Se não existe, tentar criar o perfil
     const { error: createError } = await supabase
       .from('user_profile')
-      .upsert([
+      .insert([
         {
           id: userId,
-          email: null,
+          email: `user_${userId}@temp.com`, // Email temporário para evitar constraint
           name: null,
           employee_number: null,
           job: null,
@@ -42,10 +59,7 @@ const ensureUserProfile = async (userId: string): Promise<void> => {
           date_singin: new Date().toISOString(),
           education: null
         }
-      ], {
-        onConflict: 'id',
-        ignoreDuplicates: true
-      });
+      ]);
 
     if (createError) {
       console.error('Error creating/updating user profile:', createError);
@@ -75,10 +89,37 @@ const ensureUserProfile = async (userId: string): Promise<void> => {
         if (insertError) {
           console.error('Error inserting user profile:', insertError);
           
-          // Se ainda falhar, vamos tentar uma abordagem mais simples
+          // Se o erro for de duplicação, o perfil já existe
           if (insertError.code === '23505') {
             console.log('User profile already exists, continuing...');
             return;
+          }
+          
+          // Se o erro for de constraint de email, tentar com email diferente
+          if (insertError.code === '23505' && insertError.message.includes('user_email_key')) {
+            console.log('Email constraint violation, trying with different email...');
+            
+            const { error: retryError } = await supabase
+              .from('user_profile')
+              .insert([
+                {
+                  id: userId,
+                  email: `user_${userId}_${Date.now()}@temp.com`, // Email único
+                  name: null,
+                  employee_number: null,
+                  job: null,
+                  functional_category: null,
+                  date_singin: new Date().toISOString(),
+                  education: null
+                }
+              ]);
+            
+            if (retryError) {
+              console.error('Error with retry email:', retryError);
+            } else {
+              console.log('Profile created with unique email');
+              return;
+            }
           }
           
           console.log('Continuing without user profile creation...');
@@ -128,10 +169,10 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
         
         const { error: profileCreateError } = await supabase
           .from('user_profile')
-          .upsert([
+          .insert([
             {
               id: activityData.user_id,
-              email: null,
+              email: `user_${activityData.user_id}@temp.com`, // Email temporário para evitar constraint
               name: null,
               employee_number: null,
               job: null,
@@ -139,10 +180,7 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
               date_singin: new Date().toISOString(),
               education: null
             }
-          ], {
-            onConflict: 'id',
-            ignoreDuplicates: true
-          });
+          ]);
         
         if (profileCreateError) {
           console.error('Error creating profile for foreign key:', profileCreateError);
