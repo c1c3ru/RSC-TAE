@@ -16,14 +16,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -125,7 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
         redirectUrl = 'https://rsc-tae.vercel.app/dashboard';
         console.log('🔍 Debug - Ambiente Vercel detectado');
       } else if (window.location.hostname === 'localhost') {
-        redirectUrl = 'http://localhost:5173/dashboard';
+        redirectUrl = 'http://localhost:5000/dashboard';
         console.log('🔍 Debug - Ambiente local detectado');
       }
       
@@ -274,4 +266,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
