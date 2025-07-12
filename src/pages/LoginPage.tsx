@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE, CATEGORIAS_CARGO } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
-import { sanitizeEmail, sanitizeFormData, RateLimiter } from '../utils/security';
+import { sanitizeEmail, RateLimiter } from '../utils/security';
 // Lottie imports
 import { useLottie } from 'lottie-react';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
