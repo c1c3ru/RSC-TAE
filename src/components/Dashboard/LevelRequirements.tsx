@@ -144,27 +144,27 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 break-words">
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 break-words">
         Requisitos por Nível RSC-TAE
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {levels.map((level) => {
           const eligibility = checkLevelEligibility(level);
           
           return (
             <div 
               key={level.level}
-              className={`relative rounded-lg p-6 border-2 transition-all duration-300 ${
+              className={`relative rounded-lg p-4 sm:p-6 border-2 transition-all duration-300 ${
                 eligibility.isEligible 
                   ? 'border-green-200 bg-green-50' 
                   : 'border-gray-200 bg-gray-50'
               }`}
             >
               {/* Status Badge */}
-              <div className="absolute -top-3 -right-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+              <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold ${
                   eligibility.isEligible ? 'bg-green-500' : 'bg-gray-400'
                 }`}>
                   {eligibility.isEligible ? '✓' : '?'}
@@ -172,15 +172,15 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
               </div>
 
               {/* Header */}
-              <div className="flex items-center mb-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl mr-3 ${level.color}`}>
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl mr-2 sm:mr-3 ${level.color}`}>
                   {level.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-lg font-bold text-gray-900 break-words">
+                  <h4 className="text-base sm:text-lg font-bold text-gray-900 break-words">
                     Nível {level.level}
                   </h4>
-                  <p className="text-sm text-gray-600 break-words">{level.name}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 break-words">{level.name}</p>
                 </div>
               </div>
 

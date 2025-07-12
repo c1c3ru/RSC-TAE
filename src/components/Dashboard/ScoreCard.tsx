@@ -56,14 +56,14 @@ const RSCLevelBadge: React.FC<{ rsc: any; idx: number; arr: any[]; totalScore: n
 // Subcomponente: Tabela de requisitos
 const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; nivelEscolaridade: number; escolaridade: string | null }> = ({ totalScore, itensDistintos, nivelEscolaridade, escolaridade }) => (
   <div className="overflow-x-auto">
-    <table className="min-w-full text-sm">
+    <table className="min-w-full text-xs sm:text-sm">
       <thead>
         <tr className="bg-blue-50">
-          <th className="px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200">Nível RSC</th>
-          <th className="px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200">Pontuação Mínima</th>
-          <th className="px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200">Itens Distintos</th>
-          <th className="px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200">Escolaridade Exigida</th>
-          <th className="px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200">Status</th>
+          <th className="px-2 sm:px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200 break-words">Nível RSC</th>
+          <th className="px-2 sm:px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200 break-words">Pontuação Mínima</th>
+          <th className="px-2 sm:px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200 break-words">Itens Distintos</th>
+          <th className="px-2 sm:px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200 break-words">Escolaridade Exigida</th>
+          <th className="px-2 sm:px-3 py-2 text-left font-semibold text-blue-800 border-b border-blue-200 break-words">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -74,35 +74,35 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
           const apto = atingiuPontuacao && atingiuItens && atingiuEscolaridade;
   return (
             <tr key={nivel.nivel} className={`${apto ? 'bg-green-50 border-l-4 border-l-green-400' : 'bg-red-50 border-l-4 border-l-red-400'} hover:bg-opacity-75 transition-colors`}>
-              <td className="px-3 py-3 font-bold text-gray-800">
+              <td className="px-2 sm:px-3 py-2 sm:py-3 font-bold text-gray-800">
                 <div className="flex items-center">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-2">
+                  <span className="bg-blue-100 text-blue-800 px-1 sm:px-2 py-1 rounded-full text-xs mr-1 sm:mr-2">
                     RSC {nivel.nivel}
                   </span>
                   <span className="text-xs text-gray-500">(Nível {idx + 1})</span>
                 </div>
               </td>
-              <td className="px-3 py-3">
+              <td className="px-2 sm:px-3 py-2 sm:py-3">
                 <div className="flex items-center">
-                  <span className="font-medium">{nivel.pontos} pontos</span>
-                  <span className={`ml-2 text-lg ${atingiuPontuacao ? 'text-green-600' : 'text-red-600'}`}>{atingiuPontuacao ? '✔️' : '❌'}</span>
+                  <span className="font-medium text-xs sm:text-sm">{nivel.pontos} pontos</span>
+                  <span className={`ml-1 sm:ml-2 text-sm sm:text-lg ${atingiuPontuacao ? 'text-green-600' : 'text-red-600'}`}>{atingiuPontuacao ? '✔️' : '❌'}</span>
                 </div>
               </td>
-              <td className="px-3 py-3">
+              <td className="px-2 sm:px-3 py-2 sm:py-3">
         <div className="flex items-center">
-                  <span className="font-medium">{nivel.itens} itens</span>
-                  <span className={`ml-2 text-lg ${atingiuItens ? 'text-green-600' : 'text-red-600'}`}>{atingiuItens ? '✔️' : '❌'}</span>
+                  <span className="font-medium text-xs sm:text-sm">{nivel.itens} itens</span>
+                  <span className={`ml-1 sm:ml-2 text-sm sm:text-lg ${atingiuItens ? 'text-green-600' : 'text-red-600'}`}>{atingiuItens ? '✔️' : '❌'}</span>
             </div>
               </td>
-              <td className="px-3 py-3">
+              <td className="px-2 sm:px-3 py-2 sm:py-3">
                 <div className="flex items-center">
-                  <span className="text-xs text-gray-600 max-w-32 break-words leading-tight">{nivel.escolaridade}</span>
-                  <span className={`ml-2 text-lg flex-shrink-0 ${atingiuEscolaridade ? 'text-green-600' : 'text-red-600'}`}>{atingiuEscolaridade ? '✔️' : '❌'}</span>
+                  <span className="text-xs text-gray-600 max-w-24 sm:max-w-32 break-words leading-tight">{nivel.escolaridade}</span>
+                  <span className={`ml-1 sm:ml-2 text-sm sm:text-lg flex-shrink-0 ${atingiuEscolaridade ? 'text-green-600' : 'text-red-600'}`}>{atingiuEscolaridade ? '✔️' : '❌'}</span>
           </div>
               </td>
-              <td className="px-3 py-3">
+              <td className="px-2 sm:px-3 py-2 sm:py-3">
                 <div className="flex items-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${apto ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{apto ? 'APTO' : 'INAPTO'}</span>
+                  <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${apto ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{apto ? 'APTO' : 'INAPTO'}</span>
                 </div>
               </td>
             </tr>
@@ -164,36 +164,36 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
   return (
     <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-10 text-white transform transition-all duration-300 hover:scale-105 mb-10">
       <div className="text-center space-y-6">
-        <h2 className="text-3xl font-bold mb-6">Pontuação Total</h2>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 break-words">Pontuação Total</h2>
         
         {/* Percentual em destaque */}
-        <div className="text-8xl font-extrabold mb-4 animate-pulse drop-shadow-lg text-yellow-300">
+        <div className="text-4xl sm:text-6xl md:text-8xl font-extrabold mb-2 sm:mb-4 animate-pulse drop-shadow-lg text-yellow-300">
           {Math.round((totalScore/100)*100 * 10) / 10}%
         </div>
         
         {/* Pontuação total logo abaixo */}
-        <div className="text-4xl font-bold mb-6 text-white">
+        <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-white">
           {Math.round(totalScore * 10) / 10} pontos
         </div>
         
-        <div className="text-blue-100 mb-8 text-lg font-medium">de 100 pontos</div>
+        <div className="text-blue-100 mb-6 sm:mb-8 text-sm sm:text-lg font-medium break-words">de 100 pontos</div>
         
         {/* Explicação do sistema RSC */}
-        <div className="mb-10 p-6 bg-blue-50 bg-opacity-60 rounded-lg shadow-inner">
-          <p className="text-blue-900 text-base mb-2 font-semibold break-words leading-tight">
+        <div className="mb-6 sm:mb-10 p-4 sm:p-6 bg-blue-50 bg-opacity-60 rounded-lg shadow-inner">
+          <p className="text-blue-900 text-sm sm:text-base mb-2 font-semibold break-words leading-tight">
             <strong>Sistema de Classificação RSC (Registro de Saberes e Competências)</strong>
           </p>
-          <p className="text-blue-800 text-sm break-words leading-tight">
+          <p className="text-blue-800 text-xs sm:text-sm break-words leading-tight">
             O sistema RSC classifica servidores em 6 níveis (I a VI) baseado em pontuação, quantidade de atividades distintas e escolaridade. Veja abaixo seus requisitos:
           </p>
         </div>
         
         {/* Níveis de RSC */}
-        <div className="mt-6 flex flex-wrap justify-center items-center gap-4 text-base">
+        <div className="mt-4 sm:mt-6 flex flex-wrap justify-center items-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base">
           {RSC_LEVELS.map((rsc, idx, arr) => (
             <React.Fragment key={rsc.nivel}>
               <RSCLevelBadge rsc={rsc} idx={idx} arr={arr} totalScore={totalScore} />
-              {idx < arr.length-1 && <span className="text-blue-200 text-2xl">→</span>}
+              {idx < arr.length-1 && <span className="text-blue-200 text-lg sm:text-xl md:text-2xl">→</span>}
             </React.Fragment>
           ))}
         </div>
@@ -202,9 +202,9 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
       </div>
       
       {/* Quadro de requisitos automáticos */}
-      <div className="mt-12 bg-white bg-opacity-95 rounded-2xl p-8 text-gray-800 shadow-xl space-y-8">
-        <h3 className="text-2xl font-bold mb-6 text-blue-700 flex items-center">
-          <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+      <div className="mt-8 sm:mt-12 bg-white bg-opacity-95 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-gray-800 shadow-xl space-y-6 sm:space-y-8">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 text-blue-700 flex items-center break-words">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
           </svg>
           Requisitos para Classificação RSC

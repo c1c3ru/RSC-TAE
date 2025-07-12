@@ -36,32 +36,32 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   const { bg, text, icon } = getCategoryColor(category);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 min-w-0">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 min-w-0">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className="flex items-center min-w-0 flex-1">
-          <div className={`p-3 rounded-full ${bg} mr-4 flex-shrink-0`}>
-            <span className="text-2xl">{icon}</span>
+          <div className={`p-2 sm:p-3 rounded-full ${bg} mr-3 sm:mr-4 flex-shrink-0`}>
+            <span className="text-xl sm:text-2xl">{icon}</span>
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className={`text-lg font-semibold ${text} break-words leading-tight`}>
+            <h3 className={`text-base sm:text-lg font-semibold ${text} break-words leading-tight`}>
               {categoryName}
             </h3>
-            <p className="text-sm text-gray-500 break-words leading-tight">
+            <p className="text-xs sm:text-sm text-gray-500 break-words leading-tight">
               {category}
             </p>
           </div>
         </div>
       </div>
       
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-600 break-words">Atividades</span>
-          <span className="text-lg font-bold text-gray-900 flex-shrink-0">{activityCount}</span>
+          <span className="text-xs sm:text-sm font-medium text-gray-600 break-words">Atividades</span>
+          <span className="text-base sm:text-lg font-bold text-gray-900 flex-shrink-0">{activityCount}</span>
         </div>
         
         <div className="flex justify-between items-center">
-          <span className="text-sm font-medium text-gray-600 break-words">Pontos</span>
-          <span className="text-lg font-bold text-gray-900 flex-shrink-0">
+          <span className="text-xs sm:text-sm font-medium text-gray-600 break-words">Pontos</span>
+          <span className="text-base sm:text-lg font-bold text-gray-900 flex-shrink-0">
             {Math.round(totalPoints * 10) / 10} / {maxPoints}
           </span>
         </div>

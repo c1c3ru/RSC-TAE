@@ -121,44 +121,44 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
 
   return (
     <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 min-w-0">
-      <div className="px-6 py-6 sm:px-8 sm:py-8">
-        <div className="flex items-center justify-between mb-6 min-w-0">
-          <h3 className="text-xl font-bold text-gray-900 break-words">{title}</h3>
+      <div className="px-4 sm:px-6 py-4 sm:py-6 lg:px-8 lg:py-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 min-w-0">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words">{title}</h3>
         </div>
         
         {/* Gráfico Radar */}
         {total > 0 && data.length > 0 ? (
-          <div className="mb-8" style={{ height: '350px' }}>
+          <div className="mb-6 sm:mb-8" style={{ height: '300px', minHeight: '250px' }}>
             <Radar data={radarData} options={radarOptions} />
           </div>
         ) : (
-          <div className="mb-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-200">
+          <div className="mb-6 sm:mb-8 p-4 sm:p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-200">
             <div className="text-center text-gray-500">
-              <div className="text-4xl mb-4">📊</div>
-              <div className="text-lg font-medium mb-2">Nenhuma atividade registrada</div>
-              <div className="text-sm">Registre atividades para ver o gráfico de distribuição</div>
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">📊</div>
+              <div className="text-base sm:text-lg font-medium mb-2 break-words">Nenhuma atividade registrada</div>
+              <div className="text-xs sm:text-sm break-words">Registre atividades para ver o gráfico de distribuição</div>
             </div>
           </div>
         )}
         
         {/* Legendas com melhor design */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {data.map((item: CategoryData, index: number) => {
             const percentage = total > 0 ? (item.value / total) * 100 : 0;
             return (
-              <div key={item.category} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 min-w-0">
+              <div key={item.category} className="bg-gray-50 rounded-lg p-3 sm:p-4 hover:bg-gray-100 transition-colors duration-200 min-w-0">
                 <div className="flex items-center justify-between min-w-0">
                 <div className="flex items-center min-w-0">
                   <div
-                      className="w-4 h-4 rounded-full mr-3 shadow-sm flex-shrink-0"
+                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 shadow-sm flex-shrink-0"
                       style={{ backgroundColor: categoryColors[index % categoryColors.length] }}
                   />
-                    <span className="text-sm font-semibold text-gray-900 break-words min-w-0">
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 break-words min-w-0">
                       {getCategoryName(item.category)}
                   </span>
                 </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-sm sm:text-lg font-bold text-gray-900">
                       {Math.round(item.value * 10) / 10} pts
                     </div>
                     <div className="text-xs text-gray-500">
