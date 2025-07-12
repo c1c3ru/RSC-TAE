@@ -25,6 +25,21 @@ export interface CreateActivityData {
 // Função para criar uma atividade (agora muito mais simples)
 export const createActivity = async (activityData: CreateActivityData): Promise<Activity> => {
   try {
+    // Tratar datas vazias - converter strings vazias para null
+    const dataInicio = activityData.data_inicio && activityData.data_inicio.trim() !== '' 
+      ? activityData.data_inicio 
+      : null;
+    const dataFim = activityData.data_fim && activityData.data_fim.trim() !== '' 
+      ? activityData.data_fim 
+      : null;
+
+    console.log('🔍 Debug - Datas tratadas:', { 
+      original_inicio: activityData.data_inicio, 
+      original_fim: activityData.data_fim,
+      tratada_inicio: dataInicio,
+      tratada_fim: dataFim
+    });
+
     // A criação do perfil do usuário agora é responsabilidade do AuthProvider.
     // Nós apenas tentamos inserir a atividade diretamente.
     const { data, error } = await supabase
@@ -34,8 +49,8 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
         competence_id: activityData.competence_id,
         quantity: activityData.quantity,
         value: activityData.value,
-        data_inicio: activityData.data_inicio,
-        data_fim: activityData.data_fim,
+        data_inicio: dataInicio,
+        data_fim: dataFim,
         date_awarded: new Date().toISOString(),
         data_atualizacao: new Date().toISOString(),
       }])
