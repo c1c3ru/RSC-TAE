@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CARGOS_TAE, CATEGORIAS_CARGO } from '../constants/cargos';
 import { LOGIN_TEXTS } from '../constants/texts';
+import { sanitizeEmail, sanitizeFormData, RateLimiter } from '../utils/security';
 // Lottie imports
 import { useLottie } from 'lottie-react';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
@@ -55,6 +56,9 @@ const LoginPage = () => {
   const { login, loginWithGoogle, register, resendConfirmationEmail } = useAuth();
   const navigate = useNavigate();
   
+  // Rate limiter para tentativas de login
+  const rateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 tentativas em 15 minutos
+  
   // Lottie imports
   const { View: SaveProfileLottie } = useLottie({
     animationData: saveProfileAnimation,
@@ -104,21 +108,23 @@ const LoginPage = () => {
       return true;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    try {
+      // Sanitiza e valida o email
+      const sanitizedEmail = sanitizeEmail(email);
+      
+      // Verificar se é um domínio .edu
+      const domain = sanitizedEmail.split('@')[1];
+      if (!domain || !domain.includes('.edu')) {
+        setEmailError(LOGIN_TEXTS.emailNaoEdu);
+        return false;
+      }
+
+      setEmailError('');
+      return true;
+    } catch (error) {
       setEmailError(LOGIN_TEXTS.emailInvalido);
       return false;
     }
-
-    // Verificar se é um domínio .edu
-    const domain = email.split('@')[1];
-    if (!domain || !domain.includes('.edu')) {
-      setEmailError(LOGIN_TEXTS.emailNaoEdu);
-      return false;
-    }
-
-    setEmailError('');
-    return true;
   };
 
   const validatePassword = (password: string) => {
@@ -336,6 +342,13 @@ const LoginPage = () => {
       return;
     }
     
+    // Rate limiting para tentativas de login
+    const clientKey = `${email}-${navigator.userAgent}`;
+    if (!rateLimiter.isAllowed(clientKey)) {
+      setError('Muitas tentativas de login. Tente novamente em 15 minutos.');
+      return;
+    }
+    
     if (email === '' || password === '') {
       setError('Preencha todos os campos obrigatórios');
       return;
@@ -346,7 +359,10 @@ const LoginPage = () => {
       setError(''); // Limpar erros anteriores
       setMessage(''); // Limpar mensagens anteriores
       
-      await login(email, password);
+      // Sanitizar dados antes do login
+      const sanitizedEmail = sanitizeEmail(email);
+      
+      await login(sanitizedEmail, password);
       
       // Se chegou aqui, o login foi bem-sucedido
       setMessage('Login realizado com sucesso! Redirecionando...');
@@ -637,7 +653,7 @@ const LoginPage = () => {
                     className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       emailError ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="exemplo@ifce.edu.br"
+                    placeholder="exemplo@sua.instituição.edu.br"
                     value={registerEmail}
                     onChange={handleEmailChange}
                   />
@@ -757,7 +773,7 @@ const LoginPage = () => {
                       className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         matriculaError ? 'border-red-300' : 'border-gray-300'
                       }`}
-                      placeholder="IFCE12345"
+                      placeholder="Matrícula"
                       value={registerMatricula}
                       onChange={handleMatriculaChange}
                     />
@@ -858,7 +874,7 @@ const LoginPage = () => {
                       className={`shadow-sm border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                         loading ? 'bg-gray-100 cursor-not-allowed' : ''
                       }`}
-                    placeholder="exemplo@ifce.edu.br"
+                    placeholder="exemplo@sua.instituição.edu.br"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}

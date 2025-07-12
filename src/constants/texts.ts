@@ -1,6 +1,6 @@
 
 export const LOGIN_TEXTS = {
-  titulo: 'Sistema RSC - IFCE',
+  titulo: 'Sistema RSC-TAE',
   subtitulo: 'Reconhecimento de Saberes e Competências',
   emailPlaceholder: 'Email institucional (@*.edu)',
   senhaPlaceholder: 'Senha',
