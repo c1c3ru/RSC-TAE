@@ -9,6 +9,8 @@ import { LOGIN_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
 import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
+import loginPageAnimation from '../assets/lottie/login_page_animation.json';
+import loginGoogleAnimation from '../assets/lottie/login_google_animation.json';
 // import activitiesRegistrationAnimation from '../assets/lottie/activities_registration_animation.json';
 // import notFoundAnimation from '../assets/lottie/404_not_found_animation.json';
 
@@ -65,6 +67,18 @@ const LoginPage = () => {
     loop: true,
     autoplay: true,
     style: { width: 80, height: 80 }
+  });
+  const { View: LoginPageLottie } = useLottie({
+    animationData: loginPageAnimation,
+    loop: true,
+    autoplay: true,
+    style: { width: 120, height: 120 }
+  });
+  const { View: LoginGoogleLottie } = useLottie({
+    animationData: loginGoogleAnimation,
+    loop: true,
+    autoplay: true,
+    style: { width: 44, height: 44 }
   });
   // const { View: ActivitiesRegistrationLottie } = useLottie({
   //   animationData: activitiesRegistrationAnimation,
@@ -478,6 +492,13 @@ const LoginPage = () => {
             {registerMode ? 'Cadastre-se' : 'Entrar'}
           </h2>
           
+          {/* Animação de Login */}
+          <div className="flex justify-center mb-6">
+            <div className="w-24 h-24">
+              {LoginPageLottie}
+            </div>
+          </div>
+
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 animate-bounce" role="alert">
               <div className="flex items-start">
@@ -979,9 +1000,9 @@ const LoginPage = () => {
                   </div>
                 ) : (
                   <>
-                    <svg className="h-5 w-5 mr-2 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 16l-2-2m0 0l2-2m-2 2h7a4 4 0 004-4V4a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h2" />
-                </svg>
+                    <div className="w-11 h-11 mr-2">
+                      {LoginGoogleLottie}
+                    </div>
                     Conectar com Google
                   </>
                 )}
