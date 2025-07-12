@@ -2,9 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../utils/supabaseClient';
 
+// Declaração de tipos para import.meta.env
+declare global {
+  interface ImportMeta {
+    readonly env: {
+      readonly PROD: boolean;
+      readonly DEV: boolean;
+    };
+  }
+}
+
 const AuthDebug: React.FC = () => {
   const { currentUser, session, loading } = useAuth();
   const [debugInfo, setDebugInfo] = useState<any>({});
+
+  // Só exibe o debug em ambiente de desenvolvimento
+  if (import.meta.env.PROD) {
+    return null;
+  }
 
   useEffect(() => {
     const checkAuthState = async () => {
