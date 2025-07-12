@@ -399,13 +399,13 @@ const LoginPage = () => {
       setError('');
       setMessage('');
       
-      console.log('🔍 Debug - Iniciando processo de login Google');
+      // console.log('🔍 Debug - Iniciando processo de login Google');
       
       // Garante pelo menos 1 segundo de spinner
       const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
       await Promise.all([loginWithGoogle(), minDelay]);
       
-      console.log('🔍 Debug - Login Google concluído com sucesso');
+      // console.log('🔍 Debug - Login Google concluído com sucesso');
       // O redirecionamento será feito automaticamente pelo Supabase
       
     } catch (error) {

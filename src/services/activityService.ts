@@ -33,12 +33,12 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
       ? activityData.data_fim 
       : null;
 
-    console.log('🔍 Debug - Datas tratadas:', { 
-      original_inicio: activityData.data_inicio, 
-      original_fim: activityData.data_fim,
-      tratada_inicio: dataInicio,
-      tratada_fim: dataFim
-    });
+    // console.log('🔍 Debug - Datas tratadas:', { 
+    //   original_inicio: activityData.data_inicio, 
+    //   original_fim: activityData.data_fim,
+    //   tratada_inicio: dataInicio,
+    //   tratada_fim: dataFim
+    // });
 
     // A criação do perfil do usuário agora é responsabilidade do AuthProvider.
     // Nós apenas tentamos inserir a atividade diretamente.

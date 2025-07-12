@@ -26,11 +26,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
 
   useEffect(() => {
     // Busca a sessão inicial ao carregar o app
-    console.log('🔍 Debug - Iniciando busca da sessão inicial...');
+    // console.log('🔍 Debug - Iniciando busca da sessão inicial...');
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Debug - Sessão inicial encontrada:', session ? 'Sim' : 'Não');
+      // console.log('🔍 Debug - Sessão inicial encontrada:', session ? 'Sim' : 'Não');
       if (session?.user) {
-        console.log('🔍 Debug - Usuário da sessão inicial:', session.user.email);
+        // console.log('🔍 Debug - Usuário da sessão inicial:', session.user.email);
       }
       setSession(session);
       setCurrentUser(session?.user ?? null);
@@ -41,14 +41,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔍 Debug - Auth state change:', event, session?.user?.email);
+      // console.log('🔍 Debug - Auth state change:', event, session?.user?.email);
       setSession(session);
       const user = session?.user;
       setCurrentUser(user ?? null);
       
       // Se o usuário acabou de fazer login, garanta que o perfil exista
       if (event === 'SIGNED_IN' && user) {
-        console.log('🔍 Debug - Usuário logado, garantindo perfil:', user.email);
+        // console.log('🔍 Debug - Usuário logado, garantindo perfil:', user.email);
         ensureUserProfileExists(user);
       }
       

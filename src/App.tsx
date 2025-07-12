@@ -125,8 +125,8 @@ const NotFoundPage: React.FC = () => {
 const AppContent: React.FC = () => {
   const { currentUser, loading } = useAuth();
 
-  // Adiciona log para debug
-  console.log('🔍 Debug - AppContent - currentUser:', currentUser?.email, 'loading:', loading);
+  // Debug log (comentado para produção)
+  // console.log('🔍 Debug - AppContent - currentUser:', currentUser?.email, 'loading:', loading);
 
   return (
     <Routes>

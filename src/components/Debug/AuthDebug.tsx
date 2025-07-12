@@ -49,17 +49,17 @@ const AuthDebug: React.FC = () => {
           hasErrorDescription: urlParams.get('error_description'),
         });
         
-        console.log('🔍 Debug - AuthDebug - Estado completo:', {
-          contextUser: currentUser?.email,
-          contextSession: session ? 'Ativa' : 'Nenhuma',
-          contextLoading: loading,
-          directSession: directSession ? 'Ativa' : 'Nenhuma',
-          directUser: directUser?.email,
-          currentUrl,
-          hasAccessToken: urlParams.has('access_token'),
-          hasRefreshToken: urlParams.has('refresh_token'),
-          hasError: urlParams.has('error'),
-        });
+        // console.log('🔍 Debug - AuthDebug - Estado completo:', {
+        //   contextUser: currentUser?.email,
+        //   contextSession: session ? 'Ativa' : 'Nenhuma',
+        //   contextLoading: loading,
+        //   directSession: directSession ? 'Ativa' : 'Nenhuma',
+        //   directUser: directUser?.email,
+        //   currentUrl,
+        //   hasAccessToken: urlParams.has('access_token'),
+        //   hasRefreshToken: urlParams.has('refresh_token'),
+        //   hasError: urlParams.has('error'),
+        // });
         
              } catch (error) {
          console.error('🔍 Debug - Erro ao verificar estado de auth:', error);
