@@ -1,4 +1,5 @@
 import React from 'react';
+import { PROCESS_STEPS_TEXTS } from '../../constants/texts';
 
 interface ProcessStep {
   id: number;
@@ -6,7 +7,7 @@ interface ProcessStep {
   description: string;
   icon: string;
   status: 'completed' | 'current' | 'pending';
-  details: string[];
+  details: readonly string[];
 }
 
 interface ProcessStepsProps {
@@ -23,43 +24,27 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
   const steps: ProcessStep[] = [
     {
       id: 1,
-      title: 'Cadastro e Perfil',
-      description: 'Criar conta e completar perfil com dados pessoais',
+      title: PROCESS_STEPS_TEXTS.etapas.cadastro.titulo,
+      description: PROCESS_STEPS_TEXTS.etapas.cadastro.descricao,
       icon: '👤',
       status: userActivities > 0 ? 'completed' : 'current',
-      details: [
-        'Cadastro com email institucional',
-        'Preenchimento de dados pessoais',
-        'Confirmação de email',
-        'Configuração inicial do perfil'
-      ]
+      details: PROCESS_STEPS_TEXTS.etapas.cadastro.detalhes
     },
     {
       id: 2,
-      title: 'Registro de Atividades',
-      description: 'Cadastrar atividades acadêmicas e profissionais',
+      title: PROCESS_STEPS_TEXTS.etapas.registro.titulo,
+      description: PROCESS_STEPS_TEXTS.etapas.registro.descricao,
       icon: '📝',
       status: userActivities > 0 ? 'completed' : 'pending',
-      details: [
-        'Seleção de categoria de atividade',
-        'Escolha da competência específica',
-        'Preenchimento de dados da atividade',
-        'Upload de documentos comprobatórios',
-        'Cálculo automático de pontuação'
-      ]
+      details: PROCESS_STEPS_TEXTS.etapas.registro.detalhes
     },
     {
       id: 3,
-      title: 'Classificação Final',
-      description: 'Receber classificação baseada na pontuação total',
+      title: PROCESS_STEPS_TEXTS.etapas.classificacao.titulo,
+      description: PROCESS_STEPS_TEXTS.etapas.classificacao.descricao,
       icon: '🏆',
       status: 'pending',
-      details: [
-        'Cálculo da pontuação final',
-        'Verificação de requisitos mínimos',
-        'Determinação do nível de classificação',
-        'Emissão do certificado RSC-TAE'
-      ]
+      details: PROCESS_STEPS_TEXTS.etapas.classificacao.detalhes
     }
   ];
 
@@ -83,21 +68,21 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
   const getStatusText = (status: 'completed' | 'current' | 'pending') => {
     switch (status) {
       case 'completed':
-        return 'Concluído';
+        return PROCESS_STEPS_TEXTS.status.concluido;
       case 'current':
-        return 'Em andamento';
+        return PROCESS_STEPS_TEXTS.status.emAndamento;
       case 'pending':
-        return 'Pendente';
+        return PROCESS_STEPS_TEXTS.status.pendente;
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 break-words">
-        Etapas do Processo RSC-TAE
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 break-words">
+        {PROCESS_STEPS_TEXTS.titulo}
       </h3>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {steps.map((step, index) => {
           const status = getStepStatus(step);
           
@@ -105,12 +90,12 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
             <div key={step.id} className="relative">
               {/* Connection Line */}
               {index < steps.length - 1 && (
-                <div className={`absolute left-6 top-12 w-0.5 h-16 ${
+                <div className={`absolute left-5 sm:left-6 top-10 sm:top-12 w-0.5 h-12 sm:h-16 ${
                   status === 'completed' ? 'bg-green-500' : 'bg-gray-300'
                 }`}></div>
               )}
 
-              <div className={`flex items-start space-x-4 p-4 rounded-lg border-2 transition-all duration-300 ${
+              <div className={`flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg border-2 transition-all duration-300 ${
                 status === 'completed' 
                   ? 'border-green-200 bg-green-50' 
                   : status === 'current'
@@ -118,18 +103,18 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                   : 'border-gray-200 bg-gray-50'
               }`}>
                 {/* Step Number */}
-                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${getStatusColor(status)}`}>
+                <div className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg ${getStatusColor(status)}`}>
                   {status === 'completed' ? '✓' : step.id}
                 </div>
 
                 {/* Step Content */}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900 flex items-center break-words">
-                      <span className="mr-2 text-2xl flex-shrink-0">{step.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center break-words">
+                      <span className="mr-2 text-xl sm:text-2xl flex-shrink-0">{step.icon}</span>
                       {step.title}
                     </h4>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium self-start sm:self-auto ${
                       status === 'completed'
                         ? 'bg-green-100 text-green-800'
                         : status === 'current'
@@ -140,11 +125,11 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                     </span>
                   </div>
 
-                  <p className="text-gray-600 mb-3 break-words">{step.description}</p>
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 break-words">{step.description}</p>
 
                   {/* Step Details */}
                   <div className="space-y-2">
-                    <h5 className="text-sm font-semibold text-gray-800">Detalhes:</h5>
+                    <h5 className="text-xs sm:text-sm font-semibold text-gray-800">Detalhes:</h5>
                     <ul className="space-y-1">
                       {step.details.map((detail, detailIndex) => (
                         <li key={detailIndex} className="text-xs text-gray-600 flex items-start">
@@ -160,11 +145,11 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                   {/* Progress Info */}
                   {step.id === 2 && userActivities > 0 && (
                     <div className="mt-3 p-3 bg-green-100 rounded-lg">
-                      <div className="text-sm font-medium text-green-800">
-                        ✅ {userActivities} atividade(s) registrada(s)
+                      <div className="text-xs sm:text-sm font-medium text-green-800">
+                        ✅ {userActivities} {PROCESS_STEPS_TEXTS.progresso.atividadesRegistradas}
                       </div>
                       <div className="text-xs text-green-700">
-                        Total de pontos: {Math.round(userPoints * 10) / 10}
+                        {PROCESS_STEPS_TEXTS.progresso.totalPontos}: {Math.round(userPoints * 10) / 10}
                       </div>
                     </div>
                   )}
@@ -178,13 +163,14 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
 
 
       {/* Tips */}
-      <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-        <h4 className="text-sm font-semibold text-yellow-800 mb-2">💡 Dicas Importantes</h4>
+      <div className="mt-4 p-3 sm:p-4 bg-yellow-50 rounded-lg">
+        <h4 className="text-xs sm:text-sm font-semibold text-yellow-800 mb-2 break-words">
+          {PROCESS_STEPS_TEXTS.dicas.titulo}
+        </h4>
         <ul className="text-xs text-yellow-700 space-y-1">
-          <li>• Mantenha seus documentos organizados para facilitar o upload</li>
-          <li>• Registre atividades assim que forem concluídas</li>
-          <li>• Verifique os requisitos mínimos para cada nível</li>
-          <li>• O processo pode levar algumas semanas para aprovação</li>
+          {PROCESS_STEPS_TEXTS.dicas.itens.map((dica, index) => (
+            <li key={index} className="break-words">• {dica}</li>
+          ))}
         </ul>
       </div>
     </div>

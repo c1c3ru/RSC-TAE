@@ -138,3 +138,58 @@ export const ESCOLARIDADES = [
   'Doutorado',
   'Outro'
 ] as const;
+
+export const PROCESS_STEPS_TEXTS = {
+  titulo: 'Etapas do Processo RSC-TAE',
+  etapas: {
+    cadastro: {
+      titulo: 'Cadastro e Perfil',
+      descricao: 'Criar conta e completar perfil com dados pessoais',
+      detalhes: [
+        'Cadastro com email institucional',
+        'Preenchimento de dados pessoais',
+        'Confirmação de email',
+        'Configuração inicial do perfil'
+      ]
+    },
+    registro: {
+      titulo: 'Registro de Atividades',
+      descricao: 'Cadastrar atividades acadêmicas e profissionais',
+      detalhes: [
+        'Seleção de categoria de atividade',
+        'Escolha da competência específica',
+        'Preenchimento de dados da atividade',
+        'Upload de documentos comprobatórios',
+        'Cálculo automático de pontuação'
+      ]
+    },
+    classificacao: {
+      titulo: 'Classificação Final',
+      descricao: 'Receber classificação baseada na pontuação total',
+      detalhes: [
+        'Cálculo da pontuação final',
+        'Verificação de requisitos mínimos',
+        'Determinação do nível de classificação',
+        'Emissão do certificado RSC-TAE'
+      ]
+    }
+  },
+  status: {
+    concluido: 'Concluído',
+    emAndamento: 'Em andamento',
+    pendente: 'Pendente'
+  },
+  progresso: {
+    atividadesRegistradas: 'atividade(s) registrada(s)',
+    totalPontos: 'Total de pontos'
+  },
+  dicas: {
+    titulo: '💡 Dicas Importantes',
+    itens: [
+      'Mantenha seus documentos organizados para facilitar o upload',
+      'Registre atividades assim que forem concluídas',
+      'Verifique os requisitos mínimos para cada nível',
+      'O processo pode levar algumas semanas para aprovação'
+    ]
+  }
+} as const;
