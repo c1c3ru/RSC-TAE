@@ -28,11 +28,11 @@ const ActivityRegistrationPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center">
         <Lottie animationData={activitiesAnimation} style={{ width: 180, height: 180 }} />
-        <h1 className="text-2xl font-bold text-gray-900">Cadastro de Atividades</h1>
-        <p className="text-gray-600">Registre suas atividades de Reconhecimento de Saberes e Competências</p>
+        <h1 className="text-2xl font-bold text-gray-900 break-words text-center">Cadastro de Atividades</h1>
+        <p className="text-gray-600 break-words text-center">Registre suas atividades de Reconhecimento de Saberes e Competências</p>
       </div>
 
       {/* Success/Error Messages */}

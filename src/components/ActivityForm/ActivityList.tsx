@@ -124,9 +124,9 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="bg-white shadow rounded-lg min-w-0">
       <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4 break-words">
           Atividades Cadastradas
         </h3>
         
@@ -143,7 +143,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
             </div>
             
             {/* Desktop Table - Hidden on mobile */}
-            <div className="hidden lg:block overflow-x-auto">
+            <div className="hidden lg:block overflow-x-auto min-w-0">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -209,14 +209,14 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
             {/* Mobile Cards - Visible on mobile and tablet */}
             <div className="lg:hidden space-y-4">
               {activities.map((activity) => (
-                <div key={activity.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div key={activity.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 min-w-0">
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-1 break-words">
                           Competência
                         </h4>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-700 break-words">
                           {getCompetencyTitle(activity.competence_id)}
                         </p>
                       </div>
@@ -280,10 +280,10 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
 
       {/* Modal de confirmação de exclusão */}
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4 animate-fadeIn">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Confirmar exclusão</h3>
-            <p className="mb-6 text-gray-600">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full animate-fadeIn min-w-0">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 break-words">Confirmar exclusão</h3>
+            <p className="mb-6 text-gray-600 break-words">
               Tem certeza que deseja excluir a atividade <b>{activityToDelete && getCompetencyTitle(activityToDelete.competence_id)}</b>?
             </p>
             <div className="flex justify-end gap-2">

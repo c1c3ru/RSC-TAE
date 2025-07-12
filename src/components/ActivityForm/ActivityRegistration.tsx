@@ -121,8 +121,8 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-6">Cadastrar Nova Atividade</h2>
+    <div className="bg-white shadow rounded-lg p-6 min-w-0">
+      <h2 className="text-lg font-medium text-gray-900 mb-6 break-words">Cadastrar Nova Atividade</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Filtro de Categoria - Mini Cards */}
@@ -130,7 +130,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Categoria
           </label>
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex flex-wrap gap-2 mb-2 overflow-x-auto">
             {getAllCategories().map((category) => (
               <button
                 key={category}

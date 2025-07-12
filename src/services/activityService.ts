@@ -117,16 +117,20 @@ export const getUserActivityStats = async (userId: string) => {
 
   // Calcula atividades por categoria
   const activitiesByCategory: Record<string, number> = {};
+  const pointsByCategory: Record<string, number> = {};
+  
   if (data) {
     data.forEach((activity: any) => {
       const category = activity.competence_id || 'Desconhecida';
       activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
+      pointsByCategory[category] = (pointsByCategory[category] || 0) + (activity.quantity * activity.value);
     });
   }
 
   return {
     totalActivities,
     totalPoints,
-    activitiesByCategory
+    activitiesByCategory,
+    pointsByCategory
   };
 };

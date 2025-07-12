@@ -7,10 +7,12 @@ import ActivityList from '../components/ActivityForm/ActivityList';
 import LevelRequirements from '../components/Dashboard/LevelRequirements';
 import ProcessSteps from '../components/Dashboard/ProcessSteps';
 import EducationValidation from '../components/Dashboard/EducationValidation';
+import CategoryCard from '../components/Dashboard/CategoryCard';
 import { DASHBOARD_TEXTS } from '../constants/texts';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { getUserActivityStats } from '../services/activityService';
+import { getMaxPointsByCategory } from '../data/competencyItems';
 import Lottie from 'lottie-react';
 import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
 
@@ -20,7 +22,8 @@ const DashboardPage = () => {
   const [userStats, setUserStats] = useState({
     totalPoints: 0,
     totalActivities: 0,
-    activitiesByCategory: {} as Record<string, number>
+    activitiesByCategory: {} as Record<string, number>,
+    pointsByCategory: {} as Record<string, number>
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const [userEducation, setUserEducation] = useState<string>('');
@@ -114,9 +117,9 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="min-w-0 space-y-6 animate-fadeIn px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">{DASHBOARD_TEXTS.titulo}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{DASHBOARD_TEXTS.titulo}</h1>
       </div>
 
       {/* Process Steps */}
@@ -150,53 +153,32 @@ const DashboardPage = () => {
         userCategories={uniqueCategories}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 mr-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total de Itens</p>
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 mr-4">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Progresso</p>
-              <p className="text-2xl font-bold text-gray-900">{progressPercentage.toFixed(1)}%</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 mr-4">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Pontos por Item</p>
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalActivities > 0 ? (userStats.totalPoints / userStats.totalActivities).toFixed(1) : '0.0'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {userStats.totalActivities === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-          Nenhum item encontrado
+      {/* Cards Dinâmicos por Categoria */}
+      {Object.keys(userStats.activitiesByCategory).length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {Object.entries(userStats.activitiesByCategory).map(([category, activityCount]) => {
+            const totalPoints = userStats.pointsByCategory[category] || 0;
+            const maxPoints = getMaxPointsByCategory(category);
+            
+            return (
+              <CategoryCard
+                key={category}
+                category={category}
+                activityCount={activityCount}
+                totalPoints={totalPoints}
+                maxPoints={maxPoints}
+              />
+            );
+          })}
         </div>
       ) : (
+        <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500 break-words">
+          <p className="text-lg font-medium mb-2">Nenhuma atividade cadastrada</p>
+          <p className="text-sm">Comece cadastrando suas primeiras atividades para ver as estatísticas por categoria.</p>
+        </div>
+      )}
+
+      {userStats.totalActivities > 0 && (
         <CategoryDistribution
           data={Object.entries(userStats.activitiesByCategory).map(([category, value]) => ({
             category,

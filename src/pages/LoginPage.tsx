@@ -418,7 +418,7 @@ const LoginPage = () => {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4 min-w-0">
       {/* Animação de salvamento */}
       {(showAnimation || googleLoading) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -450,7 +450,7 @@ const LoginPage = () => {
       )}
 
       <div 
-        className={`max-w-sm sm:max-w-md md:max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+        className={`max-w-sm sm:max-w-md md:max-w-lg w-full bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-500 ${fadeIn ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} min-w-0`}
       >
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 sm:p-6 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
