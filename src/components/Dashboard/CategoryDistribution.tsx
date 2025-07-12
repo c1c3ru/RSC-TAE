@@ -120,10 +120,10 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
   }), [data]);
 
   return (
-    <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100">
+    <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 min-w-0">
       <div className="px-6 py-6 sm:px-8 sm:py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between mb-6 min-w-0">
+          <h3 className="text-xl font-bold text-gray-900 break-words">{title}</h3>
           {total > 0 && (
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
               Total: {total.toFixed(1)} pts
@@ -151,14 +151,14 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
           {data.map((item: CategoryData, index: number) => {
             const percentage = total > 0 ? (item.value / total) * 100 : 0;
             return (
-              <div key={item.category} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
-                <div className="flex items-center justify-between">
-                <div className="flex items-center">
+              <div key={item.category} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200 min-w-0">
+                <div className="flex items-center justify-between min-w-0">
+                <div className="flex items-center min-w-0">
                   <div
-                      className="w-4 h-4 rounded-full mr-3 shadow-sm"
+                      className="w-4 h-4 rounded-full mr-3 shadow-sm flex-shrink-0"
                       style={{ backgroundColor: categoryColors[index % categoryColors.length] }}
                   />
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-gray-900 break-words min-w-0">
                       {getCategoryName(item.category)}
                   </span>
                 </div>

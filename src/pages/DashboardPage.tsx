@@ -23,7 +23,8 @@ const DashboardPage = () => {
     totalPoints: 0,
     totalActivities: 0,
     activitiesByCategory: {} as Record<string, number>,
-    pointsByCategory: {} as Record<string, number>
+    pointsByCategory: {} as Record<string, number>,
+    categoryNames: {} as Record<string, string>
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const [userEducation, setUserEducation] = useState<string>('');
@@ -159,11 +160,13 @@ const DashboardPage = () => {
           {Object.entries(userStats.activitiesByCategory).map(([category, activityCount]) => {
             const totalPoints = userStats.pointsByCategory[category] || 0;
             const maxPoints = getMaxPointsByCategory(category);
+            const categoryName = userStats.categoryNames[category] || category;
             
             return (
               <CategoryCard
                 key={category}
                 category={category}
+                categoryName={categoryName}
                 activityCount={activityCount}
                 totalPoints={totalPoints}
                 maxPoints={maxPoints}
@@ -182,6 +185,7 @@ const DashboardPage = () => {
         <CategoryDistribution
           data={Object.entries(userStats.activitiesByCategory).map(([category, value]) => ({
             category,
+            categoryName: userStats.categoryNames[category] || category,
             value,
             color: `hsl(${Math.random() * 360}, 70%, 50%)`
           }))}

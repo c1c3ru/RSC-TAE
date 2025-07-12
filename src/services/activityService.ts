@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { getCategoryName } from '../data/competencyItems';
 
 export interface Activity {
   id?: number;
@@ -66,15 +67,34 @@ export const getUserActivities = async (userId: string): Promise<Activity[]> => 
       throw new Error('ID do usuário é obrigatório');
     }
 
-    const { data, error } = await supabase
+    // Busca atividades com join para a tabela competences
+    let { data, error } = await supabase
       .from('user_rsc')
-      .select('*')
+      .select(`
+        *,
+        competences(
+          category,
+          title
+        )
+      `)
       .eq('user_id', userId)
       .order('date_awarded', { ascending: false });
 
     if (error) {
-      console.error('Supabase error:', error);
-      throw new Error(`Erro ao buscar atividades: ${error.message}`);
+      console.error('Erro no join, tentando busca simples:', error);
+      // Se falhar, tenta buscar apenas as atividades
+      const { data: simpleData, error: simpleError } = await supabase
+        .from('user_rsc')
+        .select('*')
+        .eq('user_id', userId)
+        .order('date_awarded', { ascending: false });
+
+      if (simpleError) {
+        console.error('Erro ao buscar atividades:', simpleError);
+        throw new Error(`Erro ao buscar atividades: ${simpleError.message}`);
+      }
+
+      data = simpleData;
     }
 
     return data || [];
@@ -100,37 +120,65 @@ export const deleteActivity = async (id: number): Promise<void> => {
 };
 
 export const getUserActivityStats = async (userId: string) => {
-  // Busca todas as atividades do usuário
-  const { data, error } = await supabase
-    .from('user_rsc')
-    .select('*')
-    .eq('user_id', userId);
+  try {
+    // Busca atividades com join para a tabela competences
+    let { data, error } = await supabase
+      .from('user_rsc')
+      .select(`
+        *,
+        competences(
+          category,
+          title
+        )
+      `)
+      .eq('user_id', userId);
 
-  if (error) {
-    console.error('Erro ao buscar estatísticas de atividades:', error);
-    throw new Error(`Erro ao buscar estatísticas: ${error.message}`);
+    if (error) {
+      console.error('Erro no join, tentando busca simples:', error);
+      // Se falhar, tenta buscar apenas as atividades
+      const { data: simpleData, error: simpleError } = await supabase
+        .from('user_rsc')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (simpleError) {
+        console.error('Erro ao buscar estatísticas de atividades:', simpleError);
+        throw new Error(`Erro ao buscar estatísticas: ${simpleError.message}`);
+      }
+
+      data = simpleData;
+    }
+
+    // Calcula estatísticas básicas
+    const totalActivities = data ? data.length : 0;
+    const totalPoints = data ? data.reduce((sum: number, activity: any) => sum + (activity.quantity * activity.value), 0) : 0;
+
+    // Calcula atividades por categoria usando o campo category do banco
+    const activitiesByCategory: Record<string, number> = {};
+    const pointsByCategory: Record<string, number> = {};
+    const categoryNames: Record<string, string> = {};
+    
+    if (data) {
+      data.forEach((activity: any) => {
+        // Se temos dados do join, usa a categoria do banco, senão usa o competence_id
+        const category = activity.competences?.category || activity.competence_id || 'Desconhecida';
+        const categoryName = getCategoryName(category);
+        
+        activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
+        pointsByCategory[category] = (pointsByCategory[category] || 0) + (activity.quantity * activity.value);
+        categoryNames[category] = categoryName;
+      });
+    }
+
+    return {
+      totalActivities,
+      totalPoints,
+      activitiesByCategory,
+      pointsByCategory,
+      categoryNames
+    };
+  } catch (error) {
+    console.error('Erro na função getUserActivityStats:', error);
+    throw error;
   }
-
-  // Calcula estatísticas básicas
-  const totalActivities = data ? data.length : 0;
-  const totalPoints = data ? data.reduce((sum: number, activity: any) => sum + (activity.quantity * activity.value), 0) : 0;
-
-  // Calcula atividades por categoria
-  const activitiesByCategory: Record<string, number> = {};
-  const pointsByCategory: Record<string, number> = {};
-  
-  if (data) {
-    data.forEach((activity: any) => {
-      const category = activity.competence_id || 'Desconhecida';
-      activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
-      pointsByCategory[category] = (pointsByCategory[category] || 0) + (activity.quantity * activity.value);
-    });
-  }
-
-  return {
-    totalActivities,
-    totalPoints,
-    activitiesByCategory,
-    pointsByCategory
-  };
 };

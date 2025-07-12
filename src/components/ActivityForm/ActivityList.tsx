@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getUserActivities, deleteActivity } from '../../services/activityService';
-import { competencyItems } from '../../data/competencyItems';
+import { competencyItems, getCategoryName } from '../../data/competencyItems';
 
 interface Activity {
   id?: number;
@@ -13,6 +13,10 @@ interface Activity {
   data_fim: string;
   date_awarded?: string;
   description?: string;
+  competences?: {
+    category: string;
+    title: string;
+  };
 }
 
 interface ActivityListProps {
@@ -67,6 +71,11 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
   const getCompetencyTitle = (competenceId: string): string => {
     const competency = competencyItems.find(item => item.id === competenceId);
     return competency ? competency.title : competenceId;
+  };
+
+  const getCategoryFromCompetenceId = (competenceId: string): string => {
+    const competency = competencyItems.find(item => item.id === competenceId);
+    return competency ? competency.category : 'Desconhecida';
   };
 
   const handleDeleteClick = (activity: Activity) => {
@@ -151,6 +160,9 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
                       Competência
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoria
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Quantidade
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -177,6 +189,9 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
                         {getCompetencyTitle(activity.competence_id)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {getCategoryName(getCategoryFromCompetenceId(activity.competence_id))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {activity.quantity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -194,7 +209,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
                           onClick={() => handleDeleteClick(activity)}
-                          className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded transition-colors"
+                          className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded transition-colors bg-red-50 hover:bg-red-100 border border-red-200"
                           aria-label={`Excluir atividade ${getCompetencyTitle(activity.competence_id)}`}
                         >
                           🗑️
@@ -219,10 +234,13 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
                         <p className="text-sm text-gray-700 break-words">
                           {getCompetencyTitle(activity.competence_id)}
                         </p>
+                        <p className="text-xs text-gray-500 break-words mt-1">
+                          Categoria: {getCategoryName(getCategoryFromCompetenceId(activity.competence_id))}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleDeleteClick(activity)}
-                        className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded transition-colors ml-2"
+                        className="text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded transition-colors ml-2 bg-red-50 hover:bg-red-100 border border-red-200"
                         aria-label={`Excluir atividade ${getCompetencyTitle(activity.competence_id)}`}
                       >
                         🗑️

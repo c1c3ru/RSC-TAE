@@ -3,6 +3,7 @@ import { getCategoryName, getMaxPointsByCategory } from '../../data/competencyIt
 
 interface CategoryCardProps {
   category: string;
+  categoryName?: string;
   activityCount: number;
   totalPoints: number;
   maxPoints: number;
@@ -10,11 +11,12 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ 
   category, 
+  categoryName: propCategoryName,
   activityCount, 
   totalPoints, 
   maxPoints 
 }) => {
-  const categoryName = getCategoryName(category);
+  const categoryName = propCategoryName || getCategoryName(category);
   const progressPercentage = maxPoints > 0 ? Math.min((totalPoints / maxPoints) * 100, 100) : 0;
   
   const getCategoryColor = (category: string) => {
