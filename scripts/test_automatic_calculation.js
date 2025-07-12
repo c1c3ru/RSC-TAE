@@ -10,14 +10,14 @@ function calculateQuantityFromDates(dataInicio, dataFim, type) {
   if (startDate > endDate) return 0;
 
   const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = diffTime / (1000 * 60 * 60 * 24); // Usar divisão exata, não Math.ceil
   
   if (type === 'MONTHS') {
-    // Calcular meses (aproximado)
+    // Calcular meses de forma mais precisa
     const months = diffDays / 30.44; // Média de dias por mês
     return Math.round(months * 100) / 100; // Arredondar para 2 casas decimais
   } else if (type === 'YEARS') {
-    // Calcular anos (aproximado)
+    // Calcular anos de forma mais precisa
     const years = diffDays / 365.25; // Média de dias por ano
     return Math.round(years * 100) / 100; // Arredondar para 2 casas decimais
   }
