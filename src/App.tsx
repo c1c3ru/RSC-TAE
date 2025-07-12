@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import './index.css';
 import SupabaseTest from './utils/SupabaseTest';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import AuthDebug from './components/Debug/AuthDebug';
 
 // Error Boundary Component
 interface ErrorBoundaryState {
@@ -122,7 +123,10 @@ const NotFoundPage: React.FC = () => {
 
 // App Content Component
 const AppContent: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
+
+  // Adiciona log para debug
+  console.log('🔍 Debug - AppContent - currentUser:', currentUser?.email, 'loading:', loading);
 
   return (
     <Routes>
@@ -170,6 +174,7 @@ const App: React.FC = () => {
           <CompetencyProvider>
             <LayoutProvider>
               <AppContent />
+              <AuthDebug />
             </LayoutProvider>
           </CompetencyProvider>
         </AuthProvider>

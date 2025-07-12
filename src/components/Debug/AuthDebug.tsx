@@ -1,130 +1,87 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../utils/supabaseClient';
 
 const AuthDebug: React.FC = () => {
   const { currentUser, session, loading } = useAuth();
-  const [debugInfo, setDebugInfo] = useState<string>('');
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [debugInfo, setDebugInfo] = useState<any>({});
 
-  const runDebug = async () => {
-    let info = '=== DEBUG DE AUTENTICAÇÃO ===\n\n';
-    
-    // Informações básicas
-    // @ts-expect-error: import.meta.env é suportado pelo Vite
-    info += `URL do Supabase: ${import.meta.env.VITE_SUPABASE_URL}\n`;
-    // @ts-expect-error: import.meta.env é suportado pelo Vite
-    info += `Chave Anônima configurada: ${!!import.meta.env.VITE_SUPABASE_ANON_KEY}\n`;
-    info += `URL atual: ${window.location.href}\n`;
-    info += `Origin: ${window.location.origin}\n\n`;
-    
-    // Status da sessão
-    info += `Status do usuário: ${currentUser ? 'Logado' : 'Não logado'}\n`;
-    info += `Loading: ${loading}\n`;
-    info += `Sessão ativa: ${!!session}\n\n`;
-    
-    if (currentUser) {
-      info += `ID do usuário: ${currentUser.id}\n`;
-      info += `Email: ${currentUser.email}\n`;
-      info += `Email confirmado: ${currentUser.email_confirmed_at ? 'Sim' : 'Não'}\n`;
-      info += `Criado em: ${currentUser.created_at}\n`;
-      info += `Último login: ${currentUser.last_sign_in_at}\n\n`;
-    }
-    
-    // Testar conexão com Supabase
-    try {
-      info += 'Testando conexão com Supabase...\n';
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        info += `❌ Erro na conexão: ${error.message}\n`;
-      } else {
-        info += `✅ Conexão OK\n`;
-        info += `Sessão do Supabase: ${data.session ? 'Ativa' : 'Inativa'}\n`;
-      }
-    } catch (err) {
-      info += `❌ Erro ao testar conexão: ${err}\n`;
-    }
-    
-    // Testar se o email existe no sistema
-    info += '\n=== TESTE DE USUÁRIO ===\n';
-    const testEmail = 'cicero.silva@ifce.edu.br';
-    info += `Testando email: ${testEmail}\n`;
-    
-    try {
-      // Tentar buscar usuário por email (isso pode não funcionar devido a permissões)
-      const { data: users, error } = await supabase
-        .from('auth.users')
-        .select('id, email, created_at')
-        .eq('email', testEmail)
-        .limit(1);
-      
-      if (error) {
-        info += `❌ Erro ao verificar usuário: ${error.message}\n`;
-        info += `💡 Isso é normal - a tabela auth.users pode não estar acessível\n`;
-      } else {
-        if (users && users.length > 0) {
-          info += `✅ Usuário encontrado: ${users[0].email}\n`;
-          info += `ID: ${users[0].id}\n`;
-          info += `Criado em: ${users[0].created_at}\n`;
-        } else {
-          info += `❌ Usuário não encontrado no sistema\n`;
-          info += `💡 Sugestão: Criar novo usuário com este email\n`;
-        }
-      }
-    } catch (err) {
-      info += `❌ Erro ao verificar usuário: ${err}\n`;
-    }
-    
-    // Verificar configurações de autenticação
-    info += '\n=== CONFIGURAÇÕES ===\n';
-    info += `Email deve ser .edu: ${testEmail.includes('.edu') ? '✅' : '❌'}\n`;
-    info += `Formato de email válido: ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail) ? '✅' : '❌'}\n`;
-    
-    setDebugInfo(info);
-  };
+  useEffect(() => {
+    const checkAuthState = async () => {
+      try {
+        // Verificar sessão diretamente do Supabase
+        const { data: { session: directSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        // Verificar usuário diretamente do Supabase
+        const { data: { user: directUser }, error: userError } = await supabase.auth.getUser();
+        
+        // Verificar URL atual
+        const currentUrl = window.location.href;
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        setDebugInfo({
+          contextUser: currentUser,
+          contextSession: session,
+          contextLoading: loading,
+          directSession: directSession,
+          directUser: directUser,
+          sessionError: sessionError?.message,
+          userError: userError?.message,
+          currentUrl,
+          hasAccessToken: urlParams.has('access_token'),
+          hasRefreshToken: urlParams.has('refresh_token'),
+          hasError: urlParams.has('error'),
+          hasErrorDescription: urlParams.get('error_description'),
+        });
+        
+        console.log('🔍 Debug - AuthDebug - Estado completo:', {
+          contextUser: currentUser?.email,
+          contextSession: session ? 'Ativa' : 'Nenhuma',
+          contextLoading: loading,
+          directSession: directSession ? 'Ativa' : 'Nenhuma',
+          directUser: directUser?.email,
+          currentUrl,
+          hasAccessToken: urlParams.has('access_token'),
+          hasRefreshToken: urlParams.has('refresh_token'),
+          hasError: urlParams.has('error'),
+        });
+        
+             } catch (error) {
+         console.error('🔍 Debug - Erro ao verificar estado de auth:', error);
+         setDebugInfo({ error: error instanceof Error ? error.message : String(error) });
+       }
+    };
 
-  if (!isVisible) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setIsVisible(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg"
-        >
-          🔍 Debug Auth
-        </button>
-      </div>
-    );
-  }
+    checkAuthState();
+    
+    // Verificar a cada 2 segundos
+    const interval = setInterval(checkAuthState, 2000);
+    
+    return () => clearInterval(interval);
+  }, [currentUser, session, loading]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="text-lg font-semibold">Debug de Autenticação</h3>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        </div>
-        
-        <div className="p-4">
-          <button
-            onClick={runDebug}
-            className="mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          >
-            Executar Debug
-          </button>
-          
-          {debugInfo && (
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <pre className="text-xs whitespace-pre-wrap overflow-auto max-h-96">
-                {debugInfo}
-              </pre>
-            </div>
-          )}
-        </div>
+    <div className="fixed bottom-4 right-4 bg-black bg-opacity-90 text-white p-4 rounded-lg text-xs max-w-md z-50">
+      <h3 className="font-bold mb-2">🔍 Debug Auth</h3>
+      <div className="space-y-1">
+        <div><strong>Context User:</strong> {currentUser?.email || 'Nenhum'}</div>
+        <div><strong>Context Session:</strong> {session ? 'Ativa' : 'Nenhuma'}</div>
+        <div><strong>Context Loading:</strong> {loading ? 'Sim' : 'Não'}</div>
+        <div><strong>Direct Session:</strong> {debugInfo.directSession ? 'Ativa' : 'Nenhuma'}</div>
+        <div><strong>Direct User:</strong> {debugInfo.directUser?.email || 'Nenhum'}</div>
+        <div><strong>URL:</strong> {debugInfo.currentUrl}</div>
+        <div><strong>Access Token:</strong> {debugInfo.hasAccessToken ? 'Sim' : 'Não'}</div>
+        <div><strong>Refresh Token:</strong> {debugInfo.hasRefreshToken ? 'Sim' : 'Não'}</div>
+        <div><strong>Error:</strong> {debugInfo.hasError ? 'Sim' : 'Não'}</div>
+        {debugInfo.hasErrorDescription && (
+          <div><strong>Error Desc:</strong> {debugInfo.hasErrorDescription}</div>
+        )}
+        {debugInfo.sessionError && (
+          <div><strong>Session Error:</strong> {debugInfo.sessionError}</div>
+        )}
+        {debugInfo.userError && (
+          <div><strong>User Error:</strong> {debugInfo.userError}</div>
+        )}
       </div>
     </div>
   );
