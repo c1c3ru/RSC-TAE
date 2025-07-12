@@ -96,8 +96,8 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
               </td>
               <td className="px-3 py-3">
                 <div className="flex items-center">
-                  <span className="text-xs text-gray-600 max-w-32">{nivel.escolaridade}</span>
-                  <span className={`ml-2 text-lg ${atingiuEscolaridade ? 'text-green-600' : 'text-red-600'}`}>{atingiuEscolaridade ? '✔️' : '❌'}</span>
+                  <span className="text-xs text-gray-600 max-w-32 break-words leading-tight">{nivel.escolaridade}</span>
+                  <span className={`ml-2 text-lg flex-shrink-0 ${atingiuEscolaridade ? 'text-green-600' : 'text-red-600'}`}>{atingiuEscolaridade ? '✔️' : '❌'}</span>
           </div>
               </td>
               <td className="px-3 py-3">
@@ -117,7 +117,7 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
           <svg className="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
-          <span className="text-yellow-800 font-semibold">
+          <span className="text-yellow-800 font-semibold break-words leading-tight">
             Por favor, atualize seu perfil com a escolaridade para validação completa dos requisitos.
           </span>
         </div>
@@ -129,7 +129,7 @@ const RequisitosTable: React.FC<{ totalScore: number; itensDistintos: number; ni
 // Subcomponente: Legenda
 const Legenda: React.FC = () => (
   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-    <p className="text-sm text-blue-800">
+    <p className="text-sm text-blue-800 break-words leading-tight">
       <strong>📋 Legenda:</strong> Para ser classificado em um nível RSC, você deve atender TODOS os requisitos: pontuação mínima, quantidade de itens distintos e escolaridade exigida.
     </p>
   </div>
@@ -165,17 +165,25 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
     <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-10 text-white transform transition-all duration-300 hover:scale-105 mb-10">
       <div className="text-center space-y-6">
         <h2 className="text-3xl font-bold mb-6">Pontuação Total</h2>
-        <div className="text-7xl font-extrabold mb-6 animate-pulse drop-shadow-lg">
-          {totalScore.toFixed(1)}
+        
+        {/* Percentual em destaque */}
+        <div className="text-8xl font-extrabold mb-4 animate-pulse drop-shadow-lg text-yellow-300">
+          {Math.round((totalScore/100)*100 * 10) / 10}%
         </div>
+        
+        {/* Pontuação total logo abaixo */}
+        <div className="text-4xl font-bold mb-6 text-white">
+          {Math.round(totalScore * 10) / 10} pontos
+        </div>
+        
         <div className="text-blue-100 mb-8 text-lg font-medium">de 100 pontos</div>
         
         {/* Explicação do sistema RSC */}
         <div className="mb-10 p-6 bg-blue-50 bg-opacity-60 rounded-lg shadow-inner">
-          <p className="text-blue-900 text-base mb-2 font-semibold">
+          <p className="text-blue-900 text-base mb-2 font-semibold break-words leading-tight">
             <strong>Sistema de Classificação RSC (Registro de Saberes e Competências)</strong>
           </p>
-          <p className="text-blue-800 text-sm">
+          <p className="text-blue-800 text-sm break-words leading-tight">
             O sistema RSC classifica servidores em 6 níveis (I a VI) baseado em pontuação, quantidade de atividades distintas e escolaridade. Veja abaixo seus requisitos:
           </p>
         </div>
@@ -190,16 +198,7 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
           ))}
         </div>
         
-        {/* Progress Bar */}
-        <div className="w-full bg-blue-300 bg-opacity-30 rounded-full h-6 mt-10 mb-6">
-          <div 
-            className="bg-white h-6 rounded-full transition-all duration-1000 ease-out shadow"
-            style={{ width: `${Math.min((totalScore/100)*100, 100)}%` }}
-          ></div>
-          </div>
-        <div className="text-blue-100 text-lg font-semibold">
-          {((totalScore/100)*100).toFixed(1)}% do objetivo
-        </div>
+
       </div>
       
       {/* Quadro de requisitos automáticos */}

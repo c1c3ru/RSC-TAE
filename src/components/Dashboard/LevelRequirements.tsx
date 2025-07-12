@@ -123,7 +123,8 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
     if (userPoints >= level.minPoints) {
       progress++;
     } else {
-      missingRequirements.push(`Pontos insuficientes (${userPoints}/${level.minPoints})`);
+      const pointsPercentage = Math.round((userPoints / level.minPoints) * 100 * 10) / 10;
+      missingRequirements.push(`Pontos insuficientes (${pointsPercentage}%)`);
     }
 
     // Verificar itens mínimos (atividades)
@@ -131,7 +132,8 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
     if (userActivities >= level.minItems) {
       progress++;
     } else {
-      missingRequirements.push(`Itens insuficientes (${userActivities}/${level.minItems})`);
+      const itemsPercentage = Math.round((userActivities / level.minItems) * 100 * 10) / 10;
+      missingRequirements.push(`Itens insuficientes (${itemsPercentage}%)`);
     }
 
     return {
@@ -143,7 +145,7 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6">
+      <h3 className="text-xl font-bold text-gray-900 mb-6 break-words">
         Requisitos por Nível RSC-TAE
       </h3>
       
@@ -174,11 +176,11 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl mr-3 ${level.color}`}>
                   {level.icon}
                 </div>
-                <div>
-                  <h4 className="text-lg font-bold text-gray-900">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-lg font-bold text-gray-900 break-words">
                     Nível {level.level}
                   </h4>
-                  <p className="text-sm text-gray-600">{level.name}</p>
+                  <p className="text-sm text-gray-600 break-words">{level.name}</p>
                 </div>
               </div>
 
@@ -204,21 +206,14 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
                 <ul className="space-y-1">
                   {level.requirements.map((req, index) => (
                     <li key={index} className="text-xs text-gray-600 flex items-start">
-                      <span className="text-green-500 mr-1">•</span>
-                      {req}
+                      <span className="text-green-500 mr-1 flex-shrink-0">•</span>
+                      <span className="break-words">{req}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Current Status */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="text-xs text-gray-600 space-y-1">
-                  <div>Seus pontos: <span className="font-semibold">{userPoints}</span></div>
-                  <div>Seus itens: <span className="font-semibold">{userActivities}</span></div>
-                  <div>Suas categorias: <span className="font-semibold">{userCategories}</span></div>
-                </div>
-              </div>
+
 
               {/* Missing Requirements */}
               {!eligibility.isEligible && eligibility.missingRequirements.length > 0 && (
@@ -227,8 +222,8 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
                   <ul className="space-y-1">
                     {eligibility.missingRequirements.map((req, index) => (
                       <li key={index} className="text-xs text-red-600 flex items-start">
-                        <span className="text-red-500 mr-1">⚠</span>
-                        {req}
+                        <span className="text-red-500 mr-1 flex-shrink-0">⚠</span>
+                        <span className="break-words">{req}</span>
                       </li>
                     ))}
                   </ul>

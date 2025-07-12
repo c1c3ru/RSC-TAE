@@ -6,13 +6,12 @@ import ScoreCard from '../components/Dashboard/ScoreCard';
 import ActivityList from '../components/ActivityForm/ActivityList';
 import LevelRequirements from '../components/Dashboard/LevelRequirements';
 import ProcessSteps from '../components/Dashboard/ProcessSteps';
-import EducationValidation from '../components/Dashboard/EducationValidation';
-import CategoryCard from '../components/Dashboard/CategoryCard';
+
 import { DASHBOARD_TEXTS } from '../constants/texts';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { getUserActivityStats } from '../services/activityService';
-import { getMaxPointsByCategory } from '../data/competencyItems';
+
 import Lottie from 'lottie-react';
 import dashboardAnimation from '../assets/lottie/dashboard_animation.json';
 
@@ -27,7 +26,7 @@ const DashboardPage = () => {
     categoryNames: {} as Record<string, string>
   });
   const [loadingStats, setLoadingStats] = useState(true);
-  const [userEducation, setUserEducation] = useState<string>('');
+
 
   useEffect(() => {
     supabase.auth.getSession().then(() => {
@@ -130,11 +129,7 @@ const DashboardPage = () => {
         userActivities={userStats.totalActivities}
       />
 
-      {/* Education Validation */}
-      <EducationValidation 
-        userEducation={userEducation}
-        onEducationChange={setUserEducation}
-      />
+
 
       {/* Level Requirements */}
       <LevelRequirements 
@@ -154,32 +149,7 @@ const DashboardPage = () => {
         userCategories={uniqueCategories}
       />
 
-      {/* Cards Dinâmicos por Categoria */}
-      {Object.keys(userStats.activitiesByCategory).length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {Object.entries(userStats.activitiesByCategory).map(([category, activityCount]) => {
-            const totalPoints = userStats.pointsByCategory[category] || 0;
-            const maxPoints = getMaxPointsByCategory(category);
-            const categoryName = userStats.categoryNames[category] || category;
-            
-            return (
-              <CategoryCard
-                key={category}
-                category={category}
-                categoryName={categoryName}
-                activityCount={activityCount}
-                totalPoints={totalPoints}
-                maxPoints={maxPoints}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500 break-words">
-          <p className="text-lg font-medium mb-2">Nenhuma atividade cadastrada</p>
-          <p className="text-sm">Comece cadastrando suas primeiras atividades para ver as estatísticas por categoria.</p>
-        </div>
-      )}
+
 
       {userStats.totalActivities > 0 && (
         <CategoryDistribution

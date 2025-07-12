@@ -83,7 +83,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
-          label: (context: any) => `${context.label}: ${context.parsed.r.toFixed(1)} pontos`,
+          label: (context: any) => `${context.label}: ${Math.round(context.parsed.r * 10) / 10} pontos`,
         },
       },
     },
@@ -124,11 +124,6 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
       <div className="px-6 py-6 sm:px-8 sm:py-8">
         <div className="flex items-center justify-between mb-6 min-w-0">
           <h3 className="text-xl font-bold text-gray-900 break-words">{title}</h3>
-          {total > 0 && (
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
-              Total: {total.toFixed(1)} pts
-            </div>
-          )}
         </div>
         
         {/* Gráfico Radar */}
@@ -162,12 +157,12 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                       {getCategoryName(item.category)}
                   </span>
                 </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <div className="text-lg font-bold text-gray-900">
-                      {item.value.toFixed(1)} pts
+                      {Math.round(item.value * 10) / 10} pts
                     </div>
                     <div className="text-xs text-gray-500">
-                      {percentage.toFixed(1)}%
+                      {Math.round(percentage * 10) / 10}%
                     </div>
                   </div>
                 </div>
@@ -190,22 +185,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
           })}
         </div>
         
-        {/* Resumo total com design melhorado */}
-        {total > 0 && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-gray-900">Total de Pontos</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  {total.toFixed(1)} pontos
-              </span>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                Distribuídos em {data.length} categorias diferentes
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   );

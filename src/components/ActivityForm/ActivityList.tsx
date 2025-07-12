@@ -146,7 +146,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ refreshTrigger }: ActivityL
         ) : (
           <>
             <div className="mb-4 p-3 bg-blue-50 rounded-md">
-              <p className="text-sm font-medium text-blue-900">
+              <p className="text-sm font-medium text-blue-900 break-words">
                 Total de pontos: {calculateTotalPoints()}
               </p>
             </div>

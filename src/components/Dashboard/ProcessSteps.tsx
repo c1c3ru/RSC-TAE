@@ -93,7 +93,7 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6">
+      <h3 className="text-xl font-bold text-gray-900 mb-6 break-words">
         Etapas do Processo RSC-TAE
       </h3>
 
@@ -125,8 +125,8 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                 {/* Step Content */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900 flex items-center">
-                      <span className="mr-2 text-2xl">{step.icon}</span>
+                    <h4 className="text-lg font-semibold text-gray-900 flex items-center break-words">
+                      <span className="mr-2 text-2xl flex-shrink-0">{step.icon}</span>
                       {step.title}
                     </h4>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -140,7 +140,7 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                     </span>
                   </div>
 
-                  <p className="text-gray-600 mb-3">{step.description}</p>
+                  <p className="text-gray-600 mb-3 break-words">{step.description}</p>
 
                   {/* Step Details */}
                   <div className="space-y-2">
@@ -148,10 +148,10 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                     <ul className="space-y-1">
                       {step.details.map((detail, detailIndex) => (
                         <li key={detailIndex} className="text-xs text-gray-600 flex items-start">
-                          <span className={`mr-1 ${
+                          <span className={`mr-1 flex-shrink-0 ${
                             status === 'completed' ? 'text-green-500' : 'text-gray-400'
                           }`}>•</span>
-                          {detail}
+                          <span className="break-words">{detail}</span>
                         </li>
                       ))}
                     </ul>
@@ -164,7 +164,7 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
                         ✅ {userActivities} atividade(s) registrada(s)
                       </div>
                       <div className="text-xs text-green-700">
-                        Total de pontos: {userPoints.toFixed(1)}
+                        Total de pontos: {Math.round(userPoints * 10) / 10}
                       </div>
                     </div>
                   )}
@@ -175,24 +175,7 @@ const ProcessSteps: React.FC<ProcessStepsProps> = ({
         })}
       </div>
 
-      {/* Progress Summary */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h4 className="text-sm font-semibold text-blue-800 mb-2">📊 Resumo do Progresso</h4>
-        <div className="grid grid-cols-2 gap-4 text-xs text-blue-700">
-          <div>
-            <span className="font-medium">Atividades registradas:</span> {userActivities}
-          </div>
-          <div>
-            <span className="font-medium">Pontos acumulados:</span> {userPoints.toFixed(1)}
-          </div>
-          <div>
-            <span className="font-medium">Etapa atual:</span> {currentStep} de {steps.length}
-          </div>
-          <div>
-            <span className="font-medium">Progresso geral:</span> {Math.round((currentStep / steps.length) * 100)}%
-          </div>
-        </div>
-      </div>
+
 
       {/* Tips */}
       <div className="mt-4 p-4 bg-yellow-50 rounded-lg">

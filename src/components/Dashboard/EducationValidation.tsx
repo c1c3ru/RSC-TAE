@@ -87,7 +87,7 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6">
+      <h3 className="text-xl font-bold text-gray-900 mb-6 break-words">
         Validação de Escolaridade
       </h3>
 
@@ -115,11 +115,11 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
             <h4 className="text-sm font-semibold text-blue-800 mb-2">
               📋 Documentação Necessária
             </h4>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 break-words">
               Para validar sua escolaridade, você precisa anexar o documento correspondente:
             </p>
             <div className="mt-3 p-3 bg-blue-100 rounded">
-              <p className="text-sm font-medium text-blue-800">
+              <p className="text-sm font-medium text-blue-800 break-words">
                 {educationLevels.find(l => l.id === userEducation)?.description}
               </p>
             </div>
@@ -133,7 +133,7 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
               {getAvailableLevels().map((level) => (
                 <div key={level.id} className="flex items-center">
                   <span className="text-green-600 mr-2">✓</span>
-                  <span className="text-sm text-green-700">{level.name}</span>
+                  <span className="text-sm text-green-700 break-words">{level.name}</span>
                 </div>
               ))}
             </div>
@@ -144,10 +144,10 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
               ⚠️ Importante
             </h4>
             <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• A escolaridade é um requisito obrigatório para cada nível RSC-TAE</li>
-              <li>• Você só pode pleitear níveis compatíveis com sua escolaridade</li>
-              <li>• Documentos devem ser legíveis e autenticados quando necessário</li>
-              <li>• A validação é feita pela comissão responsável</li>
+              <li className="break-words">• A escolaridade é um requisito obrigatório para cada nível RSC-TAE</li>
+              <li className="break-words">• Você só pode pleitear níveis compatíveis com sua escolaridade</li>
+              <li className="break-words">• Documentos devem ser legíveis e autenticados quando necessário</li>
+              <li className="break-words">• A validação é feita pela comissão responsável</li>
             </ul>
           </div>
         </div>
@@ -155,7 +155,7 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
 
       {!userEducation && (
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 break-words">
             Selecione sua escolaridade para ver os níveis RSC-TAE disponíveis e os documentos necessários.
           </p>
         </div>

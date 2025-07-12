@@ -151,7 +151,10 @@ export const getUserActivityStats = async (userId: string) => {
 
     // Calcula estatísticas básicas
     const totalActivities = data ? data.length : 0;
-    const totalPoints = data ? data.reduce((sum: number, activity: any) => sum + (activity.quantity * activity.value), 0) : 0;
+    const totalPoints = data ? Math.round(data.reduce((sum: number, activity: any) => {
+      const points = activity.quantity * activity.value;
+      return sum + Math.round(points * 100) / 100; // Arredonda para 2 casas decimais
+    }, 0) * 10) / 10 : 0; // Arredondamento final para 1 casa decimal
 
     // Calcula atividades por categoria usando o campo category do banco
     const activitiesByCategory: Record<string, number> = {};
@@ -165,7 +168,10 @@ export const getUserActivityStats = async (userId: string) => {
         const categoryName = getCategoryName(category);
         
         activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
-        pointsByCategory[category] = (pointsByCategory[category] || 0) + (activity.quantity * activity.value);
+        const categoryPoints = activity.quantity * activity.value;
+        const currentPoints = pointsByCategory[category] || 0;
+        const newPoints = currentPoints + Math.round(categoryPoints * 100) / 100;
+        pointsByCategory[category] = Math.round(newPoints * 10) / 10;
         categoryNames[category] = categoryName;
       });
     }
