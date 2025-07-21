@@ -14,13 +14,11 @@ interface LevelRequirement {
 interface LevelRequirementsProps {
   userPoints: number;
   userActivities: number;
-  userCategories: number;
 }
 
 const LevelRequirements: React.FC<LevelRequirementsProps> = ({ 
   userPoints, 
-  userActivities, 
-  userCategories 
+  userActivities 
 }) => {
   const levels: LevelRequirement[] = [
     {
@@ -42,9 +40,9 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       name: 'RSC-TAE V (Mestrado)',
       minPoints: 52,
       minItems: 8,
-      educationRequirement: 'Certificado de pós-graduação lato sensu',
+      educationRequirement: 'Diploma de graduação',
       requirements: [
-        'Certificado de pós-graduação lato sensu',
+        'Diploma de graduação',
         'Mínimo de 52 pontos',
         'Distribuídos em no mínimo 8 itens do rol de saberes e competências'
       ],
@@ -56,9 +54,9 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       name: 'RSC-TAE IV (Graduação)',
       minPoints: 30,
       minItems: 5,
-      educationRequirement: 'Diploma de graduação',
+      educationRequirement: 'Diploma de ensino médio ou técnico de nível médio',
       requirements: [
-        'Diploma de graduação',
+        'Diploma de ensino médio ou técnico de nível médio',
         'Mínimo de 30 pontos',
         'Distribuídos em no mínimo 5 itens do rol de saberes e competências'
       ],
@@ -70,9 +68,9 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       name: 'RSC-TAE III (Ensino Médio)',
       minPoints: 25,
       minItems: 4,
-      educationRequirement: 'Diploma de ensino médio ou técnico de nível médio',
+      educationRequirement: 'Diploma de ensino fundamental completo',
       requirements: [
-        'Diploma de ensino médio ou técnico de nível médio',
+        'Diploma de ensino fundamental completo',
         'Mínimo de 25 pontos',
         'Distribuídos em no mínimo 4 itens do rol de saberes e competências'
       ],
@@ -98,9 +96,9 @@ const LevelRequirements: React.FC<LevelRequirementsProps> = ({
       name: 'RSC-TAE I (Fundamental Incompleto)',
       minPoints: 10,
       minItems: 2,
-      educationRequirement: 'Comprovante de ensino fundamental incompleto',
+      educationRequirement: 'Diploma de ensino fundamental completo',
       requirements: [
-        'Comprovante de ensino fundamental incompleto',
+        'Diploma de ensino fundamental completo',
         'Mínimo de 10 pontos',
         'Distribuídos em no mínimo 2 itens do rol de saberes e competências'
       ],

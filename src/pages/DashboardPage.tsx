@@ -55,27 +55,8 @@ const DashboardPage = () => {
   // Calcular número de categorias únicas
   const uniqueCategories = Object.keys(userStats.activitiesByCategory || {}).length;
   
-  // Calcular progresso geral baseado nos dados reais
-  const calculateProgress = (): number => {
-    if (userStats.totalActivities === 0) return 0;
-    
-    // Progresso baseado em múltiplos fatores:
-    // 1. Número de itens (máximo 12 itens = 100%)
-    // 2. Pontuação total (máximo 75 pontos = 100%)
-    // 3. Diversidade de categorias (máximo 5 categorias = 100%)
-    
-    const itemProgress = Math.min((userStats.totalActivities / 12) * 100, 100);
-    const pointsProgress = Math.min((userStats.totalPoints / 75) * 100, 100);
-    const categoryProgress = Math.min((uniqueCategories / 5) * 100, 100);
-    
-    // Média ponderada dos três fatores
-    const totalProgress = (itemProgress * 0.4 + pointsProgress * 0.4 + categoryProgress * 0.2);
-    
-    return Math.round(totalProgress * 10) / 10; // Arredondar para 1 casa decimal
-  };
-  
-  const progressPercentage = calculateProgress();
-  
+
+
   // Determinar etapa atual
   const getCurrentStep = (): number => {
     if (userStats.totalActivities === 0) return 1;
@@ -135,7 +116,6 @@ const DashboardPage = () => {
       <LevelRequirements 
         userPoints={userStats.totalPoints}
         userActivities={userStats.totalActivities}
-        userCategories={uniqueCategories}
       />
 
       <ScoreCard
