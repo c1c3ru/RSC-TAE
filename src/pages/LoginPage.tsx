@@ -16,6 +16,11 @@ import loginGoogleAnimation from '../assets/lottie/login_google_animation.json';
 // import notFoundAnimation from '../assets/lottie/404_not_found_animation.json';
 import ifceLogo from '../assets/images/ifce.png';
 
+declare module '*.png' {
+  const value: string;
+  export default value;
+}
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
