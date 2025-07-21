@@ -159,7 +159,6 @@ export const PROCESS_STEPS_TEXTS = {
         'Seleção de categoria de atividade',
         'Escolha da competência específica',
         'Preenchimento de dados da atividade',
-        'Upload de documentos comprobatórios',
         'Cálculo automático de pontuação'
       ]
     },
@@ -169,8 +168,7 @@ export const PROCESS_STEPS_TEXTS = {
       detalhes: [
         'Cálculo da pontuação final',
         'Verificação de requisitos mínimos',
-        'Determinação do nível de classificação',
-        'Emissão do certificado RSC-TAE'
+        'Determinação do nível de classificação',       
       ]
     }
   },
