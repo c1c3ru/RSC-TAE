@@ -86,7 +86,7 @@ O **RSC-TAE** é uma plataforma digital desenvolvida para facilitar o processo d
 Pull requests são bem-vindos! Sinta-se à vontade para abrir issues ou sugerir melhorias.
 
 ## Licença
-Este projeto é open-source e está sob a licença MIT.
+Este projeto é open-source e está sob a licença GNU.
 
 ---
 
