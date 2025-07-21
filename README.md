@@ -1,31 +1,31 @@
 # Sistema de Competências RSC-TAE
 
-Sistema web para registro, pontuação e acompanhamento de atividades para Reconhecimento de Saberes e Competências dos Técnico-Administrativos em Educação (RSC-TAE).
+Sistema web para registro, pontuação e acompanhamento de atividades para o Reconhecimento de Saberes e Competências dos Técnico-Administrativos em Educação (RSC-TAE).
 
-## Funcionalidades
+![Logo IFCE](src/assets/images/ifce.png)
 
-- **Cadastro de usuário** com campos obrigatórios: nome, e-mail, matrícula, cargo e escolaridade.
-- **Login seguro** (e-mail/senha ou Google).
-- **Edição de perfil**: usuário pode atualizar nome, cargo e escolaridade a qualquer momento.
-- **Registro de atividades** por categoria, com seleção de competência, quantidade, datas e upload obrigatório de documento comprobatório.
-- **Upload de documentos** para o Supabase Storage, com visualização e remoção.
-- **Dashboard**:
-  - Exibe pontuação total, média por atividade, distribuição por categoria (gráfico radar) e lista de atividades.
-  - Checagem automática dos requisitos para cada nível do RSC-TAE (pontuação, itens distintos e escolaridade), mostrando se o usuário está apto para cada nível.
-- **Exclusão de atividades** com confirmação e feedback visual.
-- **Navegação moderna** com menu lateral (Sidebar), responsivo e intuitivo.
-- **Experiência de usuário aprimorada**: feedbacks visuais, loaders, mensagens de sucesso/erro, skeleton loaders.
+## Visão Geral
+
+O **RSC-TAE** é uma plataforma digital desenvolvida para facilitar o processo de progressão funcional dos servidores técnico-administrativos em educação, conforme as diretrizes do RSC-TAE. O sistema permite o cadastro, acompanhamento e validação de atividades, pontuação e requisitos para cada nível, tornando o processo mais transparente, ágil e seguro.
+
+## Funcionalidades Principais
+
+- **Cadastro e autenticação de usuários** (e-mail institucional ou Google)
+- **Edição de perfil**: atualização de dados pessoais, cargo e escolaridade
+- **Registro de atividades**: seleção de categoria, competência, datas, quantidade e upload obrigatório de documentos comprobatórios
+- **Upload seguro de documentos** para o Supabase Storage
+- **Dashboard completo**:
+  - Pontuação total e média
+  - Distribuição por categoria (gráfico)
+  - Lista de atividades cadastradas
+  - Checagem automática dos requisitos para cada nível do RSC-TAE (pontuação, itens distintos e escolaridade)
+  - Indicação visual de aptidão para cada nível
+- **Exclusão de atividades** com confirmação
+- **Navegação moderna e responsiva** (menu lateral, mobile first)
+- **Feedback visual**: loaders, mensagens de sucesso/erro, skeleton loaders
+- **Segurança**: autenticação Supabase, validação de email, rate limiting
 
 ## Estrutura do Projeto
-
-graph TD
-    A[Usuário autenticado] --> B[Buscar perfil com maybeSingle]
-    B --> C{Perfil existe?}
-    C -->|Não| D[Criar novo perfil]
-    C -->|Sim| E[Atualizar estado]
-    D --> F{Sucesso?}
-    F -->|Sim| E
-    F -->|Não| G[Erro + Logout]
 
 ```
 ├── src/
@@ -37,40 +37,62 @@ graph TD
 │   ├── pages/                 # Páginas principais (Login, Dashboard, Cadastro, Perfil)
 │   ├── services/              # Integração com Supabase
 │   ├── utils/                 # Utilitários
-│   └── constants/             # Textos centralizados
+│   └── constants/             # Textos centralizados, cargos, etc.
 ├── public/                    # Assets estáticos
 ├── database/                  # Scripts SQL do banco
 ├── README.md                  # Documentação
 ```
 
-## Como rodar o projeto
+## Instalação e Execução
 
-1. Instale as dependências:
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/c1c3ru/RSC-TAE.git
+   cd RSC-TAE
+   ```
+2. **Instale as dependências:**
    ```bash
    pnpm install
    # ou npm install
    ```
-2. Configure o Supabase e o banco de dados conforme o arquivo `database/setup.sql`.
-3. Inicie o servidor de desenvolvimento:
+3. **Configure o Supabase:**
+   - Crie um projeto no [Supabase](https://supabase.com/)
+   - Configure as variáveis de ambiente conforme o exemplo em `ENV_CONFIG_EXAMPLE.md`
+   - Execute o script SQL em `database/setup.sql` para criar as tabelas necessárias
+4. **Inicie o servidor de desenvolvimento:**
    ```bash
    pnpm run dev
    # ou npm run dev
    ```
-4. Acesse em [http://localhost:5173](http://localhost:5173)
+5. **Acesse o sistema:**
+   [http://localhost:5173](http://localhost:5173)
 
-## Tecnologias
-- React 18
-- Vite
-- TailwindCSS
-- Supabase (Auth, Storage, Database)
-- ESLint
-- Javascript
+## Tecnologias Utilizadas
+- [React 18](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Supabase (Auth, Storage, Database)](https://supabase.com/)
+- [ESLint](https://eslint.org/)
+- Javascript/Typescript
 
-## Observações
-- O sistema segue a metodologia do RSC-TAE, com checagem automática dos requisitos para cada nível.
-- O campo escolaridade é obrigatório e pode ser editado no perfil.
-- O upload de documentos é obrigatório para registro de atividades.
-- O sistema é responsivo e preparado para uso em dispositivos móveis e desktop.
+## Diferenciais
+- **Integração total com Supabase** (auth, storage, banco)
+- **UX moderna e responsiva**
+- **Validação automática dos requisitos do RSC-TAE**
+- **Código limpo, modular e documentado**
+- **Pronto para deploy em Vercel, Netlify ou similar**
+
+## Contribuição
+Pull requests são bem-vindos! Sinta-se à vontade para abrir issues ou sugerir melhorias.
+
+## Licença
+Este projeto é open-source e está sob a licença MIT.
 
 ---
-Para dúvidas ou sugestões, entre em contato com a equipe de desenvolvimento.
+
+### Autoria & Contato
+Desenvolvido por **c1c3ru** (<a href="mailto:cicero.silva@ifce.edu.br">cicero.silva@ifce.edu.br</a>)
+
+<img src="src/assets/images/ifce.png" alt="Logo IFCE" width="60" />
+
+Sistema desenvolvido no âmbito do IFCE — Instituto Federal do Ceará.

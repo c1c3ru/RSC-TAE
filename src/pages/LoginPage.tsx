@@ -14,6 +14,7 @@ import loginPageAnimation from '../assets/lottie/login_page_animation.json';
 import loginGoogleAnimation from '../assets/lottie/login_google_animation.json';
 // import activitiesRegistrationAnimation from '../assets/lottie/activities_registration_animation.json';
 // import notFoundAnimation from '../assets/lottie/404_not_found_animation.json';
+import ifceLogo from '../assets/images/ifce.png';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -121,7 +122,7 @@ const LoginPage = () => {
 
       setEmailError('');
       return true;
-    } catch (error) {
+    } catch {
       setEmailError(LOGIN_TEXTS.emailInvalido);
       return false;
     }
@@ -1023,6 +1024,14 @@ const LoginPage = () => {
                   </>
                 )}
               </button>
+
+              {/* Bloco de autoria e logo IFCE dentro do card */}
+              <div className="flex flex-col items-center justify-center mt-4 mb-2">
+                <span className="text-xs text-gray-500 text-center mb-2">
+                  Desenvolvido por <strong>c1c3ru</strong> — contato: <a href="mailto:cicero.silva@ifce.edu.br" className="underline hover:text-blue-700">cicero.silva@ifce.edu.br</a>
+                </span>
+                <img src={ifceLogo} alt="Logo IFCE" style={{ width: 36, height: 36, maxWidth: '20vw' }} className="mb-1" />
+              </div>
             </>
           )}
         </div>
