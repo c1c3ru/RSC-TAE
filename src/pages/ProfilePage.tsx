@@ -63,8 +63,7 @@ const ProfilePage = () => {
       if (updateError) throw updateError;
       setSuccess(true);
       setShowSaveAnimation(true);
-      // refreshUser?.(); // Removido conforme instrução
-      // Reset animation after 3 seconds
+    
       setTimeout(() => {
         setShowSaveAnimation(false);
       }, 3000);
@@ -78,9 +77,10 @@ const ProfilePage = () => {
 
   // Corrigir agrupamento de cargos:
   // Agrupar CARGOS_TAE por nivel e categoria
-  const cargosAgrupados = [
+  const groupedCargos = [
     { label: 'Nível E - Superior', options: CARGOS_TAE.filter(c => c.nivel === 'E').map(c => c.nome) },
-    { label: 'Nível D - Técnico', options: CARGOS_TAE.filter(c => c.nivel === 'D' && c.categoria === 'Técnico').map(c => c.nome) },
+    { label: 'Nível D - Técnico', options: CARGOS_TAE.filter(c => c.nivel === 'D').map(c => c.nome) },
+    { label: 'Nível C - Apoio', options: CARGOS_TAE.filter(c => c.nivel === 'C').map(c => c.nome) },
   ];
 
   if (!currentUser) return null;
@@ -125,7 +125,7 @@ const ProfilePage = () => {
             required
           >
             <option value="">Selecione</option>
-            {cargosAgrupados.map(group => (
+            {groupedCargos.map(group => (
               <optgroup key={group.label} label={group.label}>
                 {group.options.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
