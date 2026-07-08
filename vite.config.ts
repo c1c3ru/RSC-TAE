@@ -39,7 +39,6 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          supabase: ['@supabase/supabase-js'],
           ui: ['@mui/material', '@emotion/react', '@emotion/styled'],
           charts: ['chart.js'],
           utils: ['date-fns', 'file-saver', 'jspdf', 'lottie-react']
@@ -49,6 +48,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js']
+    include: ['react', 'react-dom', 'react-router-dom']
   }
 })
