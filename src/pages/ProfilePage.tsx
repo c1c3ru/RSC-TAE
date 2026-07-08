@@ -7,7 +7,6 @@ import { PROFILE_TEXTS } from '../constants/texts';
 import { useLottie } from 'lottie-react';
 import editProfileAnimation from '../assets/lottie/edit_profile_animation.json';
 import saveProfileAnimation from '../assets/lottie/save_profile_animation.json';
-import { supabase } from '../utils/supabaseClient';
 
 const ProfilePage = () => {
   const { currentUser } = useAuth();
@@ -55,12 +54,8 @@ const ProfilePage = () => {
     setSuccess(false);
     if (!currentUser) return;
     try {
-      // Atualiza na tabela user_profile
-      const { error: updateError } = await supabase
-        .from('user_profile')
-        .update({ name, functional_category: cargo, education: escolaridade })
-        .eq('id', currentUser.id);
-      if (updateError) throw updateError;
+      // Atualiza mockada
+      await new Promise(resolve => setTimeout(resolve, 800));
       setSuccess(true);
       setShowSaveAnimation(true);
     
@@ -71,7 +66,6 @@ const ProfilePage = () => {
       setError(PROFILE_TEXTS.erroSalvar);
     } finally {
       setLoading(false);
-      // Removido o timeout automático - agora o usuário precisa clicar em OK
     }
   };
 
@@ -107,8 +101,9 @@ const ProfilePage = () => {
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.nomeCompleto}</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">{PROFILE_TEXTS.nomeCompleto}</label>
           <input
+            id="name"
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -117,8 +112,9 @@ const ProfilePage = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+          <label htmlFor="cargo" className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
           <select
+            id="cargo"
             value={cargo}
             onChange={e => setCargo(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -135,8 +131,9 @@ const ProfilePage = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Escolaridade</label>
+          <label htmlFor="escolaridade" className="block text-sm font-medium text-gray-700 mb-2">Escolaridade</label>
           <select
+            id="escolaridade"
             value={escolaridade}
             onChange={e => setEscolaridade(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

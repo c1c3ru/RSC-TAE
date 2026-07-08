@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+export interface User {
+  id: string;
+  app_metadata: Record<string, any>;
+  user_metadata: Record<string, any>;
+  aud: string;
+  created_at: string;
+  email?: string;
+}
 
+export interface Session {
+  user: User | null;
+}
 interface AuthContextType {
   currentUser: User | null;
   session: Session | null;

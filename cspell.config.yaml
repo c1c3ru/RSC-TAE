@@ -1,0 +1,46 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - acumulados
+  - agrupamento
+  - Agrupar
+  - Alterações
+  - atual
+  - Atualiza
+  - atualizado
+  - Botão
+  - Calcular
+  - categorias
+  - completo
+  - Completo
+  - Corrigir
+  - Determinar
+  - Distribuição
+  - Doutorado
+  - elemento
+  - escolaridade
+  - Escolaridade
+  - especialização
+  - etapa
+  - Garantir
+  - graduação
+  - Graduação
+  - incompleto
+  - médio
+  - Mestrado
+  - mockada
+  - nível
+  - número
+  - Perfil
+  - pontos
+  - Pontos
+  - Salvando
+  - Salvar
+  - Selecione
+  - sucesso
+  - titulo
+  - únicas
+ignoreWords: []
+import: []

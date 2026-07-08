@@ -8,7 +8,6 @@ import LevelRequirements from '../components/Dashboard/LevelRequirements';
 import ProcessSteps from '../components/Dashboard/ProcessSteps';
 
 import { DASHBOARD_TEXTS } from '../constants/texts';
-import { supabase } from '../utils/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { getUserActivityStats } from '../services/activityService';
 
@@ -26,13 +25,6 @@ const DashboardPage = () => {
     categoryNames: {} as Record<string, string>
   });
   const [loadingStats, setLoadingStats] = useState(true);
-
-
-  useEffect(() => {
-    supabase.auth.getSession().then(() => {
-      // JWT do usuário pode ser usado aqui se necessário
-    });
-  }, []);
 
   useEffect(() => {
     const loadUserStats = async () => {
