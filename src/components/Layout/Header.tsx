@@ -2,9 +2,7 @@ import * as React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLayout } from '../../context/LayoutContext';
 
-interface HeaderProps {}
-
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC = () => {
   const { currentUser } = useAuth();
   const { toggleSidebar } = useLayout();
 

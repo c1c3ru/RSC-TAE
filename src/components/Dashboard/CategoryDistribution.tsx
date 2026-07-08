@@ -83,7 +83,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
-          label: (context: any) => `${context.label}: ${Math.round(context.parsed.r * 10) / 10} pontos`,
+          label: (context: { label: string; parsed: { r: number } }) => `${context.label}: ${Math.round(context.parsed.r * 10) / 10} pontos`,
         },
       },
     },
@@ -128,7 +128,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
         
         {/* Gráfico Radar */}
         {total > 0 && data.length > 0 ? (
-          <div className="mb-6 sm:mb-8" style={{ height: '300px', minHeight: '250px' }}>
+          <div className="mb-6 sm:mb-8 h-[300px] min-h-[250px]">
             <Radar data={radarData} options={radarOptions} />
           </div>
         ) : (
@@ -151,7 +151,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                 <div className="flex items-center min-w-0">
                   <div
                       className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 shadow-sm flex-shrink-0"
-                      style={{ backgroundColor: categoryColors[index % categoryColors.length] }}
+                      style={Object.assign({}, { backgroundColor: categoryColors[index % categoryColors.length] })}
                   />
                     <span className="text-xs sm:text-sm font-semibold text-gray-900 break-words min-w-0">
                       {getCategoryName(item.category)}
@@ -172,10 +172,10 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
                         className="h-2 rounded-full transition-all duration-300"
-                        style={{ 
+                        style={Object.assign({}, { 
                           width: `${percentage}%`,
                           backgroundColor: categoryColors[index % categoryColors.length]
-                        }}
+                        })}
                       ></div>
                     </div>
                   </div>

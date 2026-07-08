@@ -1,5 +1,5 @@
 
-export interface ValidationRule<T = any> {
+export interface ValidationRule<T = unknown> {
   required?: boolean;
   minLength?: number;
   maxLength?: number;
@@ -15,7 +15,7 @@ export interface ValidationErrors {
   [key: string]: string;
 }
 
-export const validateField = (value: any, rules: ValidationRule): string | null => {
+export const validateField = (value: unknown, rules: ValidationRule): string | null => {
   if (rules.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
     return 'Este campo é obrigatório';
   }
@@ -41,7 +41,7 @@ export const validateField = (value: any, rules: ValidationRule): string | null 
   return null;
 };
 
-export const validateForm = (data: Record<string, any>, rules: ValidationRules): ValidationErrors => {
+export const validateForm = (data: Record<string, unknown>, rules: ValidationRules): ValidationErrors => {
   const errors: ValidationErrors = {};
 
   Object.keys(rules).forEach(field => {
@@ -58,8 +58,8 @@ export const validateForm = (data: Record<string, any>, rules: ValidationRules):
 export const emailValidation: ValidationRule = {
   required: true,
   pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  custom: (value: string) => {
-    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+  custom: (value: unknown) => {
+    if (typeof value === 'string' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       return 'Email inválido';
     }
     return null;
@@ -69,8 +69,8 @@ export const emailValidation: ValidationRule = {
 export const passwordValidation: ValidationRule = {
   required: true,
   minLength: 6,
-  custom: (value: string) => {
-    if (value && value.length < 6) {
+  custom: (value: unknown) => {
+    if (typeof value === 'string' && value && value.length < 6) {
       return 'Senha deve ter pelo menos 6 caracteres';
     }
     return null;

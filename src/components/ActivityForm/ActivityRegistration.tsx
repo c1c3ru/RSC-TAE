@@ -144,7 +144,7 @@ const ActivityRegistration: React.FC<ActivityRegistrationProps> = ({ onSuccess, 
       try {
         // Tentar criar atividade normalmente primeiro
         await createActivity(activityData);
-      } catch (error) {
+      } catch {
         // console.log('🔍 Debug - Falha na criação normal, tentando criação direta...');
         // Se falhar, tentar criação direta
         // await createActivityDirect(activityData); // This line was removed

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface EducationLevel {
   id: string;
@@ -17,7 +17,7 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
   userEducation,
   onEducationChange
 }) => {
-  const [showUpload, setShowUpload] = useState(false);
+  // Estado showUpload foi removido
 
   const educationLevels: EducationLevel[] = [
     {
@@ -92,10 +92,13 @@ const EducationValidation: React.FC<EducationValidationProps> = ({
       </h3>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="education-select" className="block text-sm font-medium text-gray-700 mb-2">
           Nível de Escolaridade Atual
         </label>
         <select
+          id="education-select"
+          title="Nível de Escolaridade"
+          aria-label="Nível de Escolaridade Atual"
           value={userEducation}
           onChange={(e) => onEducationChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

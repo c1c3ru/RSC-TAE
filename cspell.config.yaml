@@ -3,6 +3,7 @@ ignorePaths: []
 dictionaryDefinitions: []
 dictionaries: []
 words:
+  - abaixo
   - acadêmicas
   - aceitos
   - Aceitos
@@ -10,29 +11,53 @@ words:
   - acumulados
   - agrupamento
   - Agrupar
+  - Aguarda
   - ainda
+  - Ajustar
+  - Alerta
   - algumas
   - Alterações
   - alterado
   - Alteravel
+  - Amarelo
   - andamento
   - Andamento
+  - anexar
   - apenas
   - Apenas
+  - apto
+  - APTO
   - arquivo
   - Arquivo
+  - Arredonda
+  - Arredondar
   - assim
+  - ataques
+  - atender
+  - atingiu
   - atual
   - Atualiza
   - atualização
   - atualizada
   - Atualizada
   - atualizado
+  - Atualizar
+  - atualize
+  - ausente
   - autenticado
   - Autenticado
+  - autenticados
+  - automaticamente
   - automático
+  - automáticos
+  - Azul
+  - azulado
+  - Barra
   - baseada
+  - baseado
+  - básica
   - Botão
+  - busca
   - cada
   - cadastrada
   - Cadastradas
@@ -41,6 +66,9 @@ words:
   - cadastrar
   - Cadastrar
   - Cadastro
+  - calculada
+  - Calculada
+  - Calculado
   - Calcular
   - Cálculo
   - cancelar
@@ -49,120 +77,234 @@ words:
   - carregando
   - Carregando
   - categorias
+  - certificado
+  - Certificado
+  - chamado
+  - chartjs
+  - classifica
   - classificacao
   - classificação
   - Classificação
+  - classificado
+  - Clica
   - coincidem
   - Coluna
+  - compatíveis
   - competencia
   - Competencia
   - competência
   - Competência
   - Competências
+  - completa
   - completo
   - Completo
   - Complto
+  - Componente
+  - componentes
+  - comprovante
+  - Comprovante
+  - comuns
   - concluídas
   - concluido
   - Concluído
+  - Condicional
   - conexao
   - conexão
   - Configuração
+  - configurações
   - confirmar
   - Confirmar
+  - Constantes
+  - contabilização
+  - converte
+  - correspondente
+  - corretamente
   - Corrigir
   - credenciais
+  - criação
+  - datas
+  - Datas
+  - decimais
   - Descreva
   - descricao
   - Descrição
+  - desejar
+  - destaque
   - detalhes
   - Determinação
   - Determinar
   - deve
+  - devem
   - dicas
   - Dicas
   - digite
   - Digite
+  - direta
+  - disponíveis
+  - Disponíveis
+  - distintas
+  - distintos
+  - Distintos
   - Distribuição
+  - divisão
+  - Documentação
+  - documento
   - documentos
+  - doutor
   - Doutorado
   - elemento
   - Entrar
+  - ERROS
   - escolaridade
   - Escolaridade
   - ESCOLARIDADES
   - Escolha
+  - escuro
+  - espaços
   - especialidade
   - especialização
   - específica
+  - específicas
+  - está
+  - estado
+  - Estado
+  - estar
   - etapa
   - etapas
   - Etapas
+  - evitar
+  - exata
+  - exige
+  - exigida
+  - Exigida
+  - Explicação
+  - explicativo
   - facilitar
   - Falha
+  - falhar
   - Falhou
   - fazer
   - fechar
   - Fechar
+  - feita
+  - Filtrar
+  - filtro
+  - Filtro
   - forem
+  - Formato
+  - formulário
+  - fornecido
+  - Funções
   - Garantir
   - geral
+  - GERENCIAMENTO
   - Gerencie
   - graduação
   - Graduação
+  - gráfico
+  - Gráfico
+  - houver
   - imediato
+  - Importante
   - Importantes
+  - INAPTO
   - incompleto
   - informações
   - inicial
+  - inicialização
+  - INICIALIZAÇÃO
   - Início
   - Instituicao
+  - INTEGRAÇÃO
   - Invalido
   - inválido
   - itens
   - joao
   - João
+  - Laranja
+  - Legenda
+  - Legendas
+  - legíveis
   - levar
+  - Limpa
+  - mais
   - Mantenha
+  - manualmente
+  - mapear
   - matricula
   - Matrícula
+  - Máximo
+  - Média
   - médio
+  - melhor
+  - melhorado
+  - Melhorado
   - menos
   - Mestrado
+  - mestre
+  - Mínimo
   - mínimos
+  - minúsculas
+  - minutos
   - mockada
+  - mudança
+  - mudar
+  - mudarem
   - muito
   - Muito
+  - Necessária
+  - necessário
+  - necessários
   - necessidade
   - negada
   - Negada
   - nenhuma
   - Nenhuma
+  - níveis
+  - Níveis
   - nível
+  - normalmente
+  - NOSONAR
   - número
   - Obrigatoria
   - obrigatória
+  - obter
   - Opcional
   - organizados
+  - pela
   - pendente
   - Pendente
+  - percentual
+  - Percentual
   - Perfil
   - periodo
   - Período
   - permissao
   - Permissão
   - pessoais
+  - pleitear
   - pode
   - pontos
   - Pontos
   - Pontuacao
   - Pontuação
+  - precisa
+  - Preencha
   - preenchimento
   - Preenchimento
+  - Preparar
+  - prevenir
+  - Previne
+  - primeiro
+  - Primeiro
+  - problemas
   - profissionais
   - profissional
   - progresso
+  - proteger
+  - protocolo
   - Próximo
+  - Quadro
   - quantidade
   - Quantidade
   - realizada
@@ -171,6 +313,7 @@ words:
   - Receber
   - Recentes
   - Reconhecimento
+  - refletir
   - registrada
   - Registradas
   - Registre
@@ -178,36 +321,76 @@ words:
   - Registro
   - removida
   - Removida
+  - removido
   - requisitos
+  - Resetar
   - resumo
   - Resumo
+  - Roxo
   - Saberes
   - sair
   - Sair
   - Salvando
   - Salvar
+  - sanitiza
+  - Sanitiza
+  - Seção
+  - segura
+  - selecionada
   - Selecione
   - semanas
   - senha
   - Senha
   - senhas
   - servidor
+  - servidores
+  - sessão
   - seus
+  - Simula
+  - simular
+  - Subcomponente
   - subtitulo
+  - sucedido
   - sucesso
+  - Suprime
+  - Tabela
   - Tecnólogo
+  - tentando
+  - tentar
+  - Tentar
+  - termos
+  - teste
+  - Texto
   - tipo
   - Tipo
   - titulo
+  - totais
   - Última
   - únicas
   - Unitario
   - Unitário
+  - Unitários
+  - usar
+  - utilitária
+  - Utilitários
+  - Valida
+  - válida
   - Validacao
   - validação
+  - Validações
+  - Validando
+  - validar
   - válido
+  - vamos
+  - vazia
+  - Veja
+  - Verifica
   - Verificação
+  - verificada
+  - Verificar
   - Verifique
+  - vibrantes
+  - viria
   - Visão
 ignoreWords: []
 import: []

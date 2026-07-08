@@ -4,7 +4,7 @@ import { competencyItems as defaultCompetencyItems } from '../data/competencyIte
 
 export interface ValidationRules {
   docs?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Ajustar interface Competency para refletir o banco
@@ -30,6 +30,7 @@ interface CompetencyContextType {
 
 const CompetencyContext = createContext<CompetencyContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCompetency = (): CompetencyContextType => {
   const context = useContext(CompetencyContext);
   if (context === undefined) {

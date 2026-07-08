@@ -144,7 +144,7 @@ export const getUserActivityStats = async (userId: string) => {
         let categoryName = category;
         try {
            categoryName = getCategoryName ? getCategoryName(category) : category;
-        } catch(e) {}
+        } catch { }
         
         activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
         const categoryPoints = activity.quantity * activity.value;

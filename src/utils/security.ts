@@ -39,8 +39,8 @@ export const sanitizeEmail = (email: string): string => {
 /**
  * Sanitiza dados de formulário
  */
-export const sanitizeFormData = (data: Record<string, any>): Record<string, any> => {
-  const sanitized: Record<string, any> = {};
+export const sanitizeFormData = (data: Record<string, unknown>): Record<string, unknown> => {
+  const sanitized: Record<string, unknown> = {};
   
   for (const [key, value] of Object.entries(data)) {
     if (typeof value === 'string') {

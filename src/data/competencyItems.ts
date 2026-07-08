@@ -549,6 +549,7 @@ export const getCategoryName = (categoryCode: string): string => {
   return categoryCode;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getMaxPointsByCategory = (_category: string): number => {
   return 100;
 };

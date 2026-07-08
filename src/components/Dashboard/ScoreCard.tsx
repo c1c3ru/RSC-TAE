@@ -14,17 +14,13 @@ const RSC_LEVELS = [
 interface ScoreCardProps {
   title: string;
   value: number | string;
-  icon: React.ReactNode;
-  color: string;
-  subtitle?: string;
   percentage?: number;
   maxValue?: number;
   userActivities?: number;
-  userCategories?: number;
 }
 
 // Função utilitária para obter escolaridade do usuário
-const getEscolaridadeUsuario = (user: any) => {
+const getEscolaridadeUsuario = (user: { user_metadata?: { escolaridade?: string, cargo?: string } } | null) => {
   return user?.user_metadata?.escolaridade || user?.user_metadata?.cargo || null;
 };
 
@@ -46,8 +42,16 @@ const escolaridadeParaNivel = (escolaridade: string | null): number => {
   return 0;
 };
 
+// Interface para o nível RSC
+interface RSCLevel {
+  nivel: string;
+  pontos: number;
+  itens: number;
+  escolaridade: string;
+}
+
 // Subcomponente: Badge de nível RSC
-const RSCLevelBadge: React.FC<{ rsc: any; idx: number; arr: any[]; totalScore: number }> = ({ rsc, idx, arr, totalScore }) => (
+const RSCLevelBadge: React.FC<{ rsc: RSCLevel; idx: number; arr: RSCLevel[]; totalScore: number }> = ({ rsc, idx, arr, totalScore }) => (
   <span className={`px-2 py-1 rounded font-semibold ${totalScore >= rsc.pontos && (idx === arr.length-1 || totalScore < arr[idx+1].pontos) ? 'bg-white text-blue-800 border border-blue-400' : 'bg-blue-200 bg-opacity-30 text-white border border-blue-300'}`}>
     RSC {rsc.nivel} <span className="font-normal">({rsc.pontos})</span>
   </span>
@@ -138,13 +142,9 @@ const Legenda: React.FC = () => (
 const ScoreCard: React.FC<ScoreCardProps> = React.memo(({ 
   title, 
   value, 
-  icon, 
-  color, 
-  subtitle,
   percentage,
   maxValue,
-  userActivities = 0,
-  userCategories = 0
+  userActivities = 0
 }) => {
   const { currentUser } = useAuth();
   
@@ -164,11 +164,11 @@ const ScoreCard: React.FC<ScoreCardProps> = React.memo(({
   return (
     <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-10 text-white transform transition-all duration-300 hover:scale-105 mb-10">
       <div className="text-center space-y-6">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 break-words">Pontuação Total</h2>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 break-words">{title}</h2>
         
         {/* Percentual em destaque */}
         <div className="text-4xl sm:text-6xl md:text-8xl font-extrabold mb-2 sm:mb-4 animate-pulse drop-shadow-lg text-yellow-300">
-          {Math.round((totalScore/100)*100 * 10) / 10}%
+          {calculatedPercentage !== undefined ? `${Math.round(calculatedPercentage * 10) / 10}%` : `${Math.round((totalScore/100)*100 * 10) / 10}%`}
         </div>
         
         {/* Pontuação total logo abaixo */}

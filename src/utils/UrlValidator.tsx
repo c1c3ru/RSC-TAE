@@ -34,7 +34,7 @@ const UrlValidator: React.FC<UrlValidatorProps> = ({ onValidUrl, className = '' 
       setIsValidating(true);
       
       try {
-        const response = await fetch(urlToValidate, { 
+        await fetch(urlToValidate, { 
           method: 'HEAD',
           mode: 'no-cors' // Para evitar problemas de CORS
         });
@@ -44,7 +44,7 @@ const UrlValidator: React.FC<UrlValidatorProps> = ({ onValidUrl, className = '' 
           message: 'URL válida e acessível',
           url: urlToValidate 
         };
-      } catch (fetchError) {
+      } catch {
         // If HEAD request fails, the URL might still be valid but not accessible
         return { 
           isValid: true, 
@@ -53,7 +53,7 @@ const UrlValidator: React.FC<UrlValidatorProps> = ({ onValidUrl, className = '' 
         };
       }
       
-    } catch (error) {
+    } catch {
       return { isValid: false, message: 'Formato de URL inválido' };
     } finally {
       setIsValidating(false);

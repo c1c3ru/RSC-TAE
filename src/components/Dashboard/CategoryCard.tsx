@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCategoryName, getMaxPointsByCategory } from '../../data/competencyItems';
+import { getCategoryName } from '../../data/competencyItems';
 
 interface CategoryCardProps {
   category: string;
@@ -74,7 +74,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${text.replace('text-', 'bg-')}`}
-              style={{ width: `${progressPercentage}%` }}
+              style={Object.assign({}, { width: `${progressPercentage}%` })}
             ></div>
           </div>
         </div>

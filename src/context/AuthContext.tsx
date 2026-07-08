@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 export interface User {
   id: string;
-  app_metadata: Record<string, any>;
-  user_metadata: Record<string, any>;
+  app_metadata: Record<string, unknown>;
+  user_metadata: Record<string, unknown>;
   aud: string;
   created_at: string;
   email?: string;
@@ -18,7 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string, profileData?: any) => Promise<void>;
+  register: (email: string, password: string, profileData?: Record<string, unknown>) => Promise<void>;
   resendConfirmationEmail: (email: string) => Promise<void>;
 }
 
@@ -33,14 +33,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   const mockUser: User = {
     id: 'mock-user-123',
     app_metadata: {},
+    // cspell:disable-next-line
     user_metadata: { name: 'Visitante (TAE)' },
     aud: 'authenticated',
     created_at: new Date().toISOString(),
     email: 'visitante@rsc.local',
-  } as User;
+  };
 
   const [currentUser] = useState<User | null>(mockUser);
-  const [session] = useState<Session | null>({ user: mockUser } as Session);
+  const [session] = useState<Session | null>({ user: mockUser });
   const [loading] = useState<boolean>(false);
 
   const login = async (): Promise<void> => {};
@@ -67,6 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
