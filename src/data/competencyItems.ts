@@ -549,6 +549,6 @@ export const getCategoryName = (categoryCode: string): string => {
   return categoryCode;
 };
 
-export const getMaxPointsByCategory = (category: string): number => {
+export const getMaxPointsByCategory = (_category: string): number => {
   return 100;
 };

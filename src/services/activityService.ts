@@ -84,13 +84,16 @@ export const getUserActivities = async (userId: string): Promise<Activity[]> => 
     // Simulate join with competences
     const joinedActivities = activities.map(activity => {
       const comp = competencyItems.find(c => c.id === activity.competence_id);
-      return {
-        ...activity,
-        competences: comp ? {
-          category: comp.category,
-          title: comp.title,
-        } : undefined
-      };
+      if (comp) {
+        return {
+          ...activity,
+          competences: {
+            category: comp.category,
+            title: comp.title,
+          }
+        };
+      }
+      return activity;
     });
 
     return joinedActivities.sort((a, b) => {
