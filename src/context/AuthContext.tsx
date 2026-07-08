@@ -33,10 +33,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   const mockUser: User = {
     id: 'mock-user-123',
     app_metadata: {},
-    user_metadata: { name: 'Usuário Temporário' },
+    user_metadata: { name: 'Visitante (TAE)' },
     aud: 'authenticated',
     created_at: new Date().toISOString(),
-    email: 'user@example.com',
+    email: 'visitante@rsc.local',
   } as User;
 
   const [currentUser] = useState<User | null>(mockUser);

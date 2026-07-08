@@ -143,13 +143,12 @@ export const PROCESS_STEPS_TEXTS = {
   titulo: 'Etapas do Processo RSC-TAE',
   etapas: {
     cadastro: {
-      titulo: 'Cadastro e Perfil',
-      descricao: 'Criar conta e completar perfil com dados pessoais',
+      titulo: 'Acesso e Perfil',
+      descricao: 'Acesso livre ao sistema e preenchimento de perfil profissional',
       detalhes: [
-        'Cadastro com email institucional',
-        'Preenchimento de dados pessoais',
-        'Confirmação de email',
-        'Configuração inicial do perfil'
+        'Acesso imediato sem necessidade de login',
+        'Preenchimento opcional de dados e especialidade',
+        'Configuração inicial do cargo'
       ]
     },
     registro: {
