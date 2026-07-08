@@ -119,8 +119,17 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
     },
   }), [data]);
 
+  const dynamicStyles = data.map((item, index) => {
+    const percentage = total > 0 ? (item.value / total) * 100 : 0;
+    return `
+      .cat-bg-${index} { background-color: ${categoryColors[index % categoryColors.length]} !important; }
+      .cat-w-${index} { width: ${percentage}%; }
+    `;
+  }).join('\n');
+
   return (
     <div className="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 min-w-0">
+      <style>{dynamicStyles}</style>
       <div className="px-4 sm:px-6 py-4 sm:py-6 lg:px-8 lg:py-8">
         <div className="flex items-center justify-between mb-4 sm:mb-6 min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words">{title}</h3>
