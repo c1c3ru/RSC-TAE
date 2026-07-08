@@ -35,8 +35,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
   const { bg, text, icon } = getCategoryColor(category);
 
+  const uniqueClass = `progress-width-${category.replace(/[^a-zA-Z0-9]/g, '-')}`;
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 min-w-0">
+    <>
+      <style>{`.${uniqueClass} { width: ${progressPercentage}%; }`}</style>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 min-w-0">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className="flex items-center min-w-0 flex-1">
           <div className={`p-2 sm:p-3 rounded-full ${bg} mr-3 sm:mr-4 flex-shrink-0`}>
@@ -73,13 +77,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className={`h-2 rounded-full transition-all duration-300 ${text.replace('text-', 'bg-')}`}
-              style={Object.assign({}, { width: `${progressPercentage}%` })}
+              className={`h-2 rounded-full transition-all duration-300 ${text.replace('text-', 'bg-')} ${uniqueClass}`}
             ></div>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

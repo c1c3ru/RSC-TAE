@@ -150,8 +150,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                 <div className="flex items-center justify-between min-w-0">
                 <div className="flex items-center min-w-0">
                   <div
-                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 shadow-sm flex-shrink-0"
-                      style={Object.assign({}, { backgroundColor: categoryColors[index % categoryColors.length] })}
+                      className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 shadow-sm flex-shrink-0 cat-bg-${index}`}
                   />
                     <span className="text-xs sm:text-sm font-semibold text-gray-900 break-words min-w-0">
                       {getCategoryName(item.category)}
@@ -171,11 +170,7 @@ const CategoryDistribution: React.FC<CategoryDistributionProps> = ({ data, title
                   <div className="mt-3">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className="h-2 rounded-full transition-all duration-300"
-                        style={Object.assign({}, { 
-                          width: `${percentage}%`,
-                          backgroundColor: categoryColors[index % categoryColors.length]
-                        })}
+                        className={`h-2 rounded-full transition-all duration-300 cat-bg-${index} cat-w-${index}`}
                       ></div>
                     </div>
                   </div>
