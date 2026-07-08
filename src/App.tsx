@@ -1,20 +1,15 @@
-
 import * as React from 'react';
 import { Component } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { CompetencyProvider } from './context/CompetencyContext';
-import { LayoutProvider } from './context/LayoutContext'; 
+import { LayoutProvider, useLayout } from './context/LayoutContext'; 
 import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
-import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivityRegistrationPage from './pages/ActivityRegistrationPage';
 import ProfilePage from './pages/ProfilePage';
 import './index.css';
-import SupabaseTest from './utils/SupabaseTest';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import AuthDebug from './components/Debug/AuthDebug';
 
 // Error Boundary Component
 interface ErrorBoundaryState {
@@ -62,26 +57,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-// Protected Route Component
+// Protected Route Component (Now always allows access)
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }: ProtectedRouteProps) => {
-  const { currentUser, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  return currentUser ? <>{children}</> : <Navigate to="/login" replace />;
+  return <>{children}</>;
 };
-
-import { useLayout } from './context/LayoutContext';
 
 // Main Layout Component
 interface MainLayoutProps {
@@ -123,17 +106,8 @@ const NotFoundPage: React.FC = () => {
 
 // App Content Component
 const AppContent: React.FC = () => {
-  const { currentUser, loading } = useAuth();
-
-  // Debug log (comentado para produção)
-  // console.log('🔍 Debug - AppContent - currentUser:', currentUser?.email, 'loading:', loading);
-
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={currentUser ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
-      />
       <Route 
         path="/dashboard" 
         element={
@@ -154,12 +128,7 @@ const AppContent: React.FC = () => {
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/reset-password" 
-        element={<ResetPasswordPage />} 
-      />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/supabase-test" element={<SupabaseTest />} />      
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -174,7 +143,6 @@ const App: React.FC = () => {
           <CompetencyProvider>
             <LayoutProvider>
               <AppContent />
-              <AuthDebug />
             </LayoutProvider>
           </CompetencyProvider>
         </AuthProvider>
