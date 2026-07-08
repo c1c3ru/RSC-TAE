@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -20,132 +19,25 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProviderProps) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Always logged in mock user
+  const mockUser: User = {
+    id: 'mock-user-123',
+    app_metadata: {},
+    user_metadata: { name: 'Usuário Temporário' },
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+    email: 'user@example.com',
+  } as User;
 
-  useEffect(() => {
-    // Busca a sessão inicial ao carregar o app
-    // console.log('🔍 Debug - Iniciando busca da sessão inicial...');
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      // console.log('🔍 Debug - Sessão inicial encontrada:', session ? 'Sim' : 'Não');
-      if (session?.user) {
-        // console.log('🔍 Debug - Usuário da sessão inicial:', session.user.email);
-      }
-      setSession(session);
-      setCurrentUser(session?.user ?? null);
-      setLoading(false);
-    });
+  const [currentUser] = useState<User | null>(mockUser);
+  const [session] = useState<Session | null>({ user: mockUser } as Session);
+  const [loading] = useState<boolean>(false);
 
-    // Listener para mudanças no estado de autenticação
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // console.log('🔍 Debug - Auth state change:', event, session?.user?.email);
-      setSession(session);
-      const user = session?.user;
-      setCurrentUser(user ?? null);
-      
-      // Se o usuário acabou de fazer login, garanta que o perfil exista
-      if (event === 'SIGNED_IN' && user) {
-        // console.log('🔍 Debug - Usuário logado, garantindo perfil:', user.email);
-        ensureUserProfileExists(user);
-      }
-      
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Função centralizada para garantir a criação do perfil
-  const ensureUserProfileExists = async (user: User): Promise<void> => {
-    try {
-      // 1. Verifica se o perfil já existe
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('user_profile')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Erro ao verificar perfil:', checkError);
-        return;
-      }
-
-      // 2. Se não existe, cria um novo
-      if (!existingProfile) {
-        // console.log('Perfil não encontrado para o usuário, criando um novo...');
-        const { error: createError } = await supabase
-          .from('user_profile')
-          .insert([
-            {
-              id: user.id,
-              email: user.email, // Usa o e-mail real do usuário
-              name: user.user_metadata?.name || user.email, // Usa o nome dos metadados ou o e-mail
-              // Outros campos podem ser nulos ou ter valores padrão
-            }
-          ]);
-        
-        if (createError) {
-          // Se o erro for de duplicidade (outro usuário com mesmo email), ignore silenciosamente
-          if (createError.code !== '23505') {
-             console.error('Erro CRÍTICO ao criar perfil básico:', createError);
-          }
-        } else {
-          // console.log('Perfil básico criado com sucesso para o usuário:', user.id);
-        }
-      }
-    } catch (error) {
-      console.error('Erro inesperado na função ensureUserProfileExists:', error);
-    }
-  };
-
-  const login = async (email: string, password: string): Promise<void> => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setLoading(false);
-      throw error;
-    }
-    // O listener onAuthStateChange cuidará do resto
-  };
-
-  const loginWithGoogle = async (): Promise<void> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`, // Redirecionamento para o dashboard
-      },
-    });
-    if (error) throw error;
-  };
-
-  const resendConfirmationEmail = async (email: string): Promise<void> => {
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
-    if (error) throw error;
-  };
-
-  const register = async (email: string, password: string, profileData?: any): Promise<void> => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: profileData // Passa os dados do perfil para os metadados
-      }
-    });
-    if (error) throw error;
-  };
-
-  const logout = async (): Promise<void> => {
-    setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      setLoading(false);
-      throw error;
-    }
-    // O listener onAuthStateChange cuidará de limpar o estado
-  };
+  const login = async (): Promise<void> => {};
+  const loginWithGoogle = async (): Promise<void> => {};
+  const logout = async (): Promise<void> => {};
+  const register = async (): Promise<void> => {};
+  const resendConfirmationEmail = async (): Promise<void> => {};
 
   const value: AuthContextType = {
     currentUser,
@@ -165,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }: AuthProv
   );
 };
 
-function useAuth(): AuthContextType {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
@@ -173,4 +65,3 @@ function useAuth(): AuthContextType {
   return context;
 }
 
-export { useAuth };

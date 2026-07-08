@@ -1,5 +1,4 @@
-import { supabase } from '../utils/supabaseClient';
-import { getCategoryName } from '../data/competencyItems';
+import { getCategoryName, competencyItems } from '../data/competencyItems';
 
 export interface Activity {
   id?: number;
@@ -7,10 +6,14 @@ export interface Activity {
   competence_id: string;
   quantity: number;
   value: number;
-  data_inicio: string;
-  data_fim: string;
+  data_inicio: string | null;
+  data_fim: string | null;
   date_awarded?: string;
   data_atualizacao?: string;
+  competences?: {
+    category: string;
+    title: string;
+  };
 }
 
 export interface CreateActivityData {
@@ -22,10 +25,19 @@ export interface CreateActivityData {
   data_fim: string;
 }
 
-// Função para criar uma atividade (agora muito mais simples)
+const LOCAL_STORAGE_KEY = 'rsc_activities';
+
+const getActivitiesFromStorage = (): Activity[] => {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+};
+
+const saveActivitiesToStorage = (activities: Activity[]) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(activities));
+};
+
 export const createActivity = async (activityData: CreateActivityData): Promise<Activity> => {
   try {
-    // Tratar datas vazias - converter strings vazias para null
     const dataInicio = activityData.data_inicio && activityData.data_inicio.trim() !== '' 
       ? activityData.data_inicio 
       : null;
@@ -33,38 +45,25 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
       ? activityData.data_fim 
       : null;
 
-    // console.log('🔍 Debug - Datas tratadas:', { 
-    //   original_inicio: activityData.data_inicio, 
-    //   original_fim: activityData.data_fim,
-    //   tratada_inicio: dataInicio,
-    //   tratada_fim: dataFim
-    // });
+    const activities = getActivitiesFromStorage();
+    const newId = activities.length > 0 ? Math.max(...activities.map(a => a.id || 0)) + 1 : 1;
 
-    // A criação do perfil do usuário agora é responsabilidade do AuthProvider.
-    // Nós apenas tentamos inserir a atividade diretamente.
-    const { data, error } = await supabase
-      .from('user_rsc')
-      .insert([{
-        user_id: activityData.user_id,
-        competence_id: activityData.competence_id,
-        quantity: activityData.quantity,
-        value: activityData.value,
-        data_inicio: dataInicio,
-        data_fim: dataFim,
-        date_awarded: new Date().toISOString(),
-        data_atualizacao: new Date().toISOString(),
-      }])
-      .select()
-      .single();
+    const newActivity: Activity = {
+      id: newId,
+      user_id: activityData.user_id,
+      competence_id: activityData.competence_id,
+      quantity: activityData.quantity,
+      value: activityData.value,
+      data_inicio: dataInicio,
+      data_fim: dataFim,
+      date_awarded: new Date().toISOString(),
+      data_atualizacao: new Date().toISOString(),
+    };
 
-    if (error) {
-      // Se ainda houver um erro de chave estrangeira, significa que o perfil
-      // realmente não pôde ser criado, e devemos lançar o erro.
-      console.error('Supabase error ao criar atividade:', error);
-      throw new Error(`Erro ao criar atividade: ${error.message}`);
-    }
+    activities.push(newActivity);
+    saveActivitiesToStorage(activities);
 
-    return data;
+    return newActivity;
   } catch (error) {
     console.error('Erro na função createActivity:', error);
     if (error instanceof Error) {
@@ -74,45 +73,31 @@ export const createActivity = async (activityData: CreateActivityData): Promise<
   }
 };
 
-// As outras funções (getUserActivities, updateActivity, etc.) permanecem as mesmas.
-// ... (cole o resto das suas funções aqui)
 export const getUserActivities = async (userId: string): Promise<Activity[]> => {
   try {
     if (!userId) {
       throw new Error('ID do usuário é obrigatório');
     }
 
-    // Busca atividades com join para a tabela competences
-    let { data, error } = await supabase
-      .from('user_rsc')
-      .select(`
-        *,
-        competences(
-          category,
-          title
-        )
-      `)
-      .eq('user_id', userId)
-      .order('date_awarded', { ascending: false });
+    const activities = getActivitiesFromStorage().filter(a => a.user_id === userId);
+    
+    // Simulate join with competences
+    const joinedActivities = activities.map(activity => {
+      const comp = competencyItems.find(c => c.id === activity.competence_id);
+      return {
+        ...activity,
+        competences: comp ? {
+          category: comp.category,
+          title: comp.title,
+        } : undefined
+      };
+    });
 
-    if (error) {
-      console.error('Erro no join, tentando busca simples:', error);
-      // Se falhar, tenta buscar apenas as atividades
-      const { data: simpleData, error: simpleError } = await supabase
-        .from('user_rsc')
-        .select('*')
-        .eq('user_id', userId)
-        .order('date_awarded', { ascending: false });
-
-      if (simpleError) {
-        console.error('Erro ao buscar atividades:', simpleError);
-        throw new Error(`Erro ao buscar atividades: ${simpleError.message}`);
-      }
-
-      data = simpleData;
-    }
-
-    return data || [];
+    return joinedActivities.sort((a, b) => {
+      const dateA = new Date(a.date_awarded || 0).getTime();
+      const dateB = new Date(b.date_awarded || 0).getTime();
+      return dateB - dateA;
+    });
   } catch (error) {
     console.error('Error loading user activities:', error);
     if (error instanceof Error) {
@@ -123,64 +108,40 @@ export const getUserActivities = async (userId: string): Promise<Activity[]> => 
 };
 
 export const deleteActivity = async (id: number): Promise<void> => {
-  const { error } = await supabase
-    .from('user_rsc')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
+  try {
+    const activities = getActivitiesFromStorage();
+    const filtered = activities.filter(a => a.id !== id);
+    saveActivitiesToStorage(filtered);
+  } catch (error) {
     console.error('Erro ao deletar atividade:', error);
-    throw new Error(`Erro ao deletar atividade: ${error.message}`);
+    throw new Error(`Erro ao deletar atividade`);
   }
 };
 
 export const getUserActivityStats = async (userId: string) => {
   try {
-    // Busca atividades com join para a tabela competences
-    let { data, error } = await supabase
-      .from('user_rsc')
-      .select(`
-        *,
-        competences(
-          category,
-          title
-        )
-      `)
-      .eq('user_id', userId);
+    const data = await getUserActivities(userId);
 
-    if (error) {
-      console.error('Erro no join, tentando busca simples:', error);
-      // Se falhar, tenta buscar apenas as atividades
-      const { data: simpleData, error: simpleError } = await supabase
-        .from('user_rsc')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (simpleError) {
-        console.error('Erro ao buscar estatísticas de atividades:', simpleError);
-        throw new Error(`Erro ao buscar estatísticas: ${simpleError.message}`);
-      }
-
-      data = simpleData;
-    }
-
-    // Calcula estatísticas básicas
     const totalActivities = data ? data.length : 0;
-    const totalPoints = data ? Math.round(data.reduce((sum: number, activity: any) => {
+    const totalPoints = data ? Math.round(data.reduce((sum: number, activity: Activity) => {
       const points = activity.quantity * activity.value;
-      return sum + Math.round(points * 100) / 100; // Arredonda para 2 casas decimais
-    }, 0) * 10) / 10 : 0; // Arredondamento final para 1 casa decimal
+      return sum + Math.round(points * 100) / 100;
+    }, 0) * 10) / 10 : 0;
 
-    // Calcula atividades por categoria usando o campo category do banco
     const activitiesByCategory: Record<string, number> = {};
     const pointsByCategory: Record<string, number> = {};
     const categoryNames: Record<string, string> = {};
     
     if (data) {
-      data.forEach((activity: any) => {
-        // Se temos dados do join, usa a categoria do banco, senão usa o competence_id
+      data.forEach((activity: Activity) => {
         const category = activity.competences?.category || activity.competence_id || 'Desconhecida';
-        const categoryName = getCategoryName(category);
+        
+        // Simulating the getCategoryName function which was imported earlier
+        // if not found, use category string
+        let categoryName = category;
+        try {
+           categoryName = getCategoryName ? getCategoryName(category) : category;
+        } catch(e) {}
         
         activitiesByCategory[category] = (activitiesByCategory[category] || 0) + 1;
         const categoryPoints = activity.quantity * activity.value;
